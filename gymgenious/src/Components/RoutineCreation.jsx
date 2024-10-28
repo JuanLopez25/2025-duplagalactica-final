@@ -364,8 +364,8 @@ export default function RoutineCreation() {
                                 style={{
                                 borderRadius: '10px',
                                 transition: 'all 0.3s ease',
-                                width: isSmallScreen ? '100%' : '50%',
-                                marginBottom:'1%'
+                                marginBottom: isSmallScreen ? '3%' : '1%',
+                                width: isSmallScreen ? '60%' : '30%'
                                 }}
                                 id={filterExercises}
                                 onChange={(e) => setFilterExercises(e.target.value)} 
@@ -374,7 +374,7 @@ export default function RoutineCreation() {
                             <Button onClick={handleOpenSearch}
                             style={{
                                 backgroundColor: '#48CFCB',  
-                                marginBottom:'1%',
+                                marginBottom: isSmallScreen ? '3%' : '1%',
                                 borderRadius: '50%',
                                 width: '5vh',
                                 height: '5vh',
@@ -465,8 +465,8 @@ export default function RoutineCreation() {
                 {errorAddExercise && (<p style={{color: 'red', margin: '0px'}}>Complete all fields</p>)}
               </div>
             </div>
-            <button onClick={() => handleAddExercise(selectedExercise)}>Add exercise</button>
-            <button onClick={handleCloseModal} style={{marginLeft: '10px'}}>Close</button>
+            <button onClick={() => handleAddExercise(selectedExercise)} style={{width: isSmallScreen ? '70%' : '30%'}}>Add exercise</button>
+            <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '30%'}}>Close</button>
           </div>
         </div>
       )}

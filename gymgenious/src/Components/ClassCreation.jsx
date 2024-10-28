@@ -315,6 +315,7 @@ export default function CreateClass() {
 
   const handleComeBack = (e) => {
     setShowSalas(false);
+    setSala(null);
   };
 
   const handleSelectSala = (sala) => {
@@ -403,7 +404,7 @@ export default function CreateClass() {
 
   useEffect(() => {
     if (isSmallScreen) {
-      setMaxWidthImg('80%')
+      setMaxWidthImg('100%')
     } else {
       setMaxWidthImg('200px')
     }
@@ -664,7 +665,7 @@ export default function CreateClass() {
                           {errorDate && (<p style={{color: 'red', margin: '0px'}}>Select a date</p>)}
                         </div>   
                       </div>
-                      <button className='button_login' onClick={handleViewRooms}>
+                      <button className='button_login' style={{width: '70%'}} onClick={handleViewRooms}>
                     Show gymrooms
                   </button>
                     </>
@@ -679,7 +680,7 @@ export default function CreateClass() {
         <>
           <LeftBar/>
             <div className='class-creation-rooms-container'>
-              <div className='class-creation-content'>
+              <div className='class-creation-content' style={{paddingTop: '10px'}}>
               <button 
                 onClick={handleComeBack} 
                 className="custom-button-go-back-managing"

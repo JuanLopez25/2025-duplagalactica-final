@@ -71,7 +71,7 @@ function BarAnimation({ routines, isSmallScreen }) {
                 }]}
           />
         )}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 230, textAlign: 'center', marginRight: '1%' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 220, textAlign: 'center', marginRight: '1%' }}>
             <Typography id="input-item-number" gutterBottom>
               Routines number
             </Typography>
@@ -333,7 +333,7 @@ useEffect(() => {
         ) : (
           <>
             <NewLeftBar/>
-            <div className='input-container' style={{marginLeft: '50px', width: '30%', position: 'absolute', top: '0.5%'}}>
+            <div className='input-container' style={{marginLeft: isSmallScreen ? '60px' : '50px', width: isSmallScreen ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
                         <div className='input-small-container'>
                             {openSearch ? (
                                 <input
@@ -511,8 +511,8 @@ useEffect(() => {
                   <p><strong>Exercises:</strong> {selectedEvent.excercises.length}</p>
                   <p><strong>Users:</strong> {selectedEvent.cant_asignados}</p>
                   <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Owner:</strong> {selectedEvent.owner}</p>
-                  <button onClick={handleViewExercises}>View exercises</button>
-                  <button onClick={handleCloseModal} style={{marginLeft:'10px'}}>Close</button>
+                  <button onClick={handleViewExercises} style={{width: isSmallScreen ? '70%' : '40%'}}>View exercises</button>
+                  <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '40%'}}>Close</button>
                 </div>
               </div>
             )}

@@ -200,8 +200,8 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
                       style={{
                       borderRadius: '10px',
                       transition: 'all 0.3s ease',
-                      width: isSmallScreen ? '100%' : '50%',
-                      marginBottom:'1%'
+                      width: isSmallScreen ? '60%' : '30%',
+                      marginBottom: isSmallScreen ? '3%' : '1%',
                       }}
                       id={filterUsers}
                       onChange={(e) => setFilterUsers(e.target.value)} 
@@ -210,7 +210,7 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
                   <Button onClick={handleOpenSearch}
                   style={{
                       backgroundColor: '#48CFCB',  
-                      marginBottom:'1%',
+                      marginBottom: isSmallScreen ? '3%' : '1%',
                       borderRadius: '50%',
                       width: '5vh',
                       height: '5vh',
