@@ -579,7 +579,7 @@ function CouchClasses() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          <MDBBtn outline color="dark" floating size="sm" style={{color: '#424242' }}><MDBIcon fas icon="comment" /></MDBBtn>
+                          {/* <MDBBtn outline color="dark" floating size="sm" style={{color: '#424242' }}><MDBIcon fas icon="comment" /></MDBBtn> */}
                         </div>
                       </div>
                     </div>
@@ -599,7 +599,7 @@ function CouchClasses() {
                         <CloseIcon sx={{ color: '#F5F5F5' }} />
                       </button>
                       <MDBBtn
-                          style={{ backgroundColor: '#48CFCB', color: 'white' }} 
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
                           block
                           size="lg"
@@ -608,7 +608,7 @@ function CouchClasses() {
                           Edit class
                         </MDBBtn>
                         <MDBBtn
-                          style={{ backgroundColor: '#48CFCB', color: 'white' }} 
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
                           block
                           size="lg"
@@ -639,7 +639,7 @@ function CouchClasses() {
         ) : (
           <>
         <NewLeftBar/>
-        <div className='input-container' style={{marginLeft: '50px', width: '30%', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
               <div className='input-small-container'>
                 {openSearch ? (
                     <input
@@ -947,8 +947,8 @@ function CouchClasses() {
                                   />
                                   {errorForm && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
                                 </div>
-                                <button onClick={handleEditClass} className='button_login'>Cancel</button>
-                                <button onClick={saveClass} style={{merginTop:'10px'}} className='button_login'>Save changes</button>
+                                <button onClick={handleEditClass} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
+                                <button onClick={saveClass} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save changes</button>
                         </div>
                     </div>
                 )}

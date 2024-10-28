@@ -322,7 +322,7 @@ export default function CoachExercises() {
             ) : (
                 <>
                     <NewLeftBar />
-                    <div className='input-container' style={{marginLeft: '50px', width: '30%', position: 'absolute', top: '0.5%'}}>
+                    <div className='input-container' style={{marginLeft: isSmallScreen650 ? '60px' : '50px', width: isSmallScreen650 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
                         <div className='input-small-container'>
                             {openSearch ? (
                                 <input
@@ -542,9 +542,9 @@ export default function CoachExercises() {
                                     }} 
                                 />
                                 {selectedEvent.owner==userMail? (
-                                <button onClick={()=> handleEditExercise(selectedEvent)}>Edit exercise</button>
+                                <button style={{width: isSmallScreen650 ? '70%' : '30%'}} onClick={()=> handleEditExercise(selectedEvent)}>Edit exercise</button>
                                 ) :(<></>)}                            
-                                <button onClick={handleCloseModalEvent} style={{marginLeft:'10px'}}>Close</button>
+                                <button onClick={handleCloseModalEvent} style={{marginTop: isSmallScreen650 ? '10px' : '', marginLeft: isSmallScreen650 ? '' : '10px', width: isSmallScreen650 ? '70%' : '30%'}}>Close</button>
                             </div>
                         </div>
                     )}
@@ -591,8 +591,8 @@ export default function CoachExercises() {
                                         />
                                         </div>
                                     </div>
-                                    <button type="submit" className='button_login'>Save</button>                            
-                                    <button onClick={handleCloseModal} style={{merginTop:'10px'}} className='button_login'>Cancel</button>
+                                    <button type="submit" className='button_login' style={{width: isSmallScreen650 ? '70%' : '30%'}}>Save</button>                            
+                                    <button onClick={handleCloseModal} className='button_login' style={{marginTop: isSmallScreen650 ? '10px' : '', marginLeft: isSmallScreen650 ? '' : '10px', width: isSmallScreen650 ? '70%' : '30%'}}>Cancel</button>
                                 </form>
                             </div>
                         </div>

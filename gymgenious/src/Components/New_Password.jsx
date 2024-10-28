@@ -1,6 +1,7 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import { getAuth, confirmPasswordReset } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
@@ -11,7 +12,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
 export default function ChangePassword() {
     const [password, setPassword] = useState('');
     const [passwordAgain, setPasswordAgain] = useState('');
@@ -27,7 +29,7 @@ export default function ChangePassword() {
     const [failureErrors, setFailureErrors] = useState(false);
     const [errorPassword, setErrorPassword] = useState(false);
     const [errorPasswordRepeated, setErrorPasswordRepeated] = useState(false);
-
+    const isSmallScreen = useMediaQuery('(max-width:700px)');
 
     useEffect(() => {
       if (!oobCode) {
@@ -187,7 +189,7 @@ export default function ChangePassword() {
                     </Popper>
                     {errorPasswordRepeated && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Passwords are not equal</p>)}
                 </div>
-              <button type="submit" className='button_create_account' style={{width: '80%'}}>
+              <button type="submit" className='button_create_account' style={{width: isSmallScreen ? '70%' : '40%'}}>
                   Confirm new password
               </button>
             </form>

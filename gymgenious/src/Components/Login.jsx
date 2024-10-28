@@ -1,6 +1,7 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import { auth } from '../firebase-config.js';
 import {signInWithEmailAndPassword } from 'firebase/auth';
@@ -10,7 +11,8 @@ import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +23,7 @@ export default function Login() {
   const [verifyEmail, setVerifyEmail] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [errorLogin, setErrorLogin] = useState(false);
+  const isSmallScreen = useMediaQuery('(max-width:700px)');
 
   const goToCreateAccount = () => {
     navigate('/create-account');
@@ -110,7 +113,7 @@ export default function Login() {
                     />
                   </div>
                   {errorLogin && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Credentials or server error.</p>)}
-                  <button type="submit" className='button_login'>
+                  <button type="submit" className='button_login' style={{width: isSmallScreen ? '70%' : '40%'}}>
                     Login
                   </button>
                 </form>

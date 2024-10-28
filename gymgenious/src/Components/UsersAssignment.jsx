@@ -6,7 +6,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
-import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -18,6 +17,7 @@ import Typography from '@mui/material/Typography';
 import Loader from '../real_components/loader.jsx';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineSharpIcon from '@mui/icons-material/AddCircleOutlineSharp';
+import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
 
 function intersection(a, b) {
@@ -33,16 +33,23 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   const isSmallScreen = useMediaQuery('(max-width:950px)');
 
   const [openSearch, setOpenSearch] = useState(false);
-  const [filterExercises, setFilterExercises] = useState('');
-  const [totalExercises, setTotalExercises] = useState([]);
+  const [filterUsers, setFilterUsers] = useState('');
+  const [totalUsers, setTotalUsers] = useState([]);
 
   const handleOpenSearch = () => {
     setOpenSearch(true);
   };
 
-  const handleCloseSearchExercises = () => {
+  const handleCloseSearchUsers = () => {
     setOpenSearch(false);
-    setUsers(totalExercises);
+    const totalUsersCorrected = totalUsers.reduce((acc, current) => {
+      const x = acc.find(item => item.Mail === current.Mail);
+      if (!x) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+    setUsers(totalUsersCorrected);
   };
   
   useEffect(() => {
@@ -85,7 +92,7 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
       const filteredRowsRight = allUsers.filter(user => assignedUsers.includes(user.Mail));
       setUsers(filteredRows);
       setSelectedUsers(filteredRowsRight);
-      setTotalExercises(filteredRows.concat(filteredRowsRight));
+      setTotalUsers(filteredRows.concat(filteredRowsRight));
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -98,17 +105,28 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   };
 
   useEffect(() => {
-    console.log(totalExercises)
-    if(filterExercises!=''){
-      const filteredExercisesSearcher = totalExercises.filter(item => 
-        item.Mail.toLowerCase().startsWith(filterExercises.toLowerCase())
-      );
-      setUsers(filteredExercisesSearcher);
+    if(filterUsers!=''){
+      const filteredUsersSearcher = totalUsers
+      .filter(item => item.Mail.toLowerCase().startsWith(filterUsers.toLowerCase()))
+      .reduce((acc, current) => {
+        const x = acc.find(item => item.Mail === current.Mail);
+        if (!x) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+      setUsers(filteredUsersSearcher);
     } else {
-        setUsers(totalExercises);
+      const totalUsersCorrected = totalUsers.reduce((acc, current) => {
+        const x = acc.find(item => item.Mail === current.Mail);
+        if (!x) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+      setUsers(totalUsersCorrected);
     }
-  
-  }, [filterExercises]);
+  }, [filterUsers]);
 
   useEffect(() => {
     if (routine && routineDay) {
@@ -120,12 +138,12 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   }, [routine,routineDay]);
 
   const handleAddUser = (user) => {
-      handleCloseSearchExercises();
+      handleCloseSearchUsers();
       setSelectedUsers([...selectedUsers, user]);
   };
 
   const handleDeleteUser = (user) => {
-    handleCloseSearchExercises();
+    handleCloseSearchUsers();
     const updatedSelectedUsers = selectedUsers.filter(stateUser => stateUser.Mail !== user.Mail);
     setSelectedUsers(updatedSelectedUsers);
   }
@@ -182,17 +200,17 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
                       style={{
                       borderRadius: '10px',
                       transition: 'all 0.3s ease',
-                      width: isSmallScreen ? '100%' : '50%',
-                      marginBottom:'1%'
+                      width: isSmallScreen ? '60%' : '30%',
+                      marginBottom: isSmallScreen ? '3%' : '1%',
                       }}
-                      id={filterExercises}
-                      onChange={(e) => setFilterExercises(e.target.value)} 
+                      id={filterUsers}
+                      onChange={(e) => setFilterUsers(e.target.value)} 
                   />
                   ) : (
                   <Button onClick={handleOpenSearch}
                   style={{
                       backgroundColor: '#48CFCB',  
-                      marginBottom:'1%',
+                      marginBottom: isSmallScreen ? '3%' : '1%',
                       borderRadius: '50%',
                       width: '5vh',
                       height: '5vh',

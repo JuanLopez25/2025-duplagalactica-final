@@ -21,7 +21,7 @@ import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import CloseIcon from '@mui/icons-material/Close';
 
-function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClass, handleSelectEvent }) {
+function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
   const [page, setPage] = useState(0);

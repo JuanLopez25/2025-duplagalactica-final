@@ -50,6 +50,7 @@ export default function CreateClass() {
   const [errorName, setErrorName] = useState(false);
   const [errorRecurrent, setErrorRecurrent] = useState(false);
   const [errorDate, setErrorDate] = useState(false);
+  const [errorDateStart, setErrorDateStart] = useState(false);
   const day = (dateString) => {
     const date = new Date(dateString);
     const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -151,6 +152,19 @@ export default function CreateClass() {
         setErrorDate(true);
       } else {
         setErrorDate(false);
+      }
+
+      let [hourss, minutes] = hour.split(':');
+      let [year, month, dayy] = date.split('-');
+      let dateStart = new Date(parseInt(year), parseInt(month)-1, parseInt(dayy));
+      dateStart.setHours(parseInt(hourss), parseInt(minutes));
+      let today = new Date();
+      console.log(dateStart)
+      if(dateStart<today){
+        errors.push('Cannot create classes in the past');
+        setErrorDateStart(true);
+      } else {
+        setErrorDateStart(false);
       }
 
       setErrors(errors);
@@ -301,6 +315,7 @@ export default function CreateClass() {
 
   const handleComeBack = (e) => {
     setShowSalas(false);
+    setSala(null);
   };
 
   const handleSelectSala = (sala) => {
@@ -389,7 +404,7 @@ export default function CreateClass() {
 
   useEffect(() => {
     if (isSmallScreen) {
-      setMaxWidthImg('80%')
+      setMaxWidthImg('100%')
     } else {
       setMaxWidthImg('200px')
     }
@@ -522,6 +537,7 @@ export default function CreateClass() {
                               onChange={(e) => setDate(e.target.value)} 
                             />
                             {errorDate && (<p style={{color: 'red', margin: '0px'}}>Select a date</p>)}
+                            {errorDateStart && (<p style={{color: 'red', margin: '0px'}}>Cannot create classes in the past</p>)}
                           </div>
                           <div className="input-small-container" style={{ flex: 3, textAlign: 'left', marginBottom: '0px' }}>
                           <label htmlFor="maxNum" style={{color:'#424242'}}>Participants:</label>
@@ -649,7 +665,7 @@ export default function CreateClass() {
                           {errorDate && (<p style={{color: 'red', margin: '0px'}}>Select a date</p>)}
                         </div>   
                       </div>
-                      <button className='button_login' onClick={handleViewRooms}>
+                      <button className='button_login' style={{width: '70%'}} onClick={handleViewRooms}>
                     Show gymrooms
                   </button>
                     </>
@@ -664,7 +680,7 @@ export default function CreateClass() {
         <>
           <LeftBar/>
             <div className='class-creation-rooms-container'>
-              <div className='class-creation-content'>
+              <div className='class-creation-content' style={{paddingTop: '10px'}}>
               <button 
                 onClick={handleComeBack} 
                 className="custom-button-go-back-managing"

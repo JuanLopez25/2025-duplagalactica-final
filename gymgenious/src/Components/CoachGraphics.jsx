@@ -27,7 +27,9 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
+
 function TopRoutines({ routines, isSmallScreen }) {
     const [itemNb, setItemNb] = React.useState(5);
 
@@ -40,27 +42,19 @@ function TopRoutines({ routines, isSmallScreen }) {
       <>
         
         <Box sx={{
-          display: 'flex',
-          justifyContent: 'center', 
-          alignItems: 'center',
-          width: '80%',
-          height: '70%',
-          background: 'rgba(245, 245, 245, 0.7)',
-          position: 'absolute', 
-          top: '50%',
-          borderRadius:'10px',
-          left: '50%', 
-          transform: 'translate(-50%, -50%)', 
-        }}>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="custom-button-go-back-managing"
-          style={{zIndex: '2', position: 'absolute', top: '1%', left: isSmallScreen ? '86%' : '95%',}}
-        >
-          <KeyboardBackspaceIcon sx={{ color: '#F5F5F5' }} />
-        </button>
+            display: 'flex',
+            justifyContent: 'center', 
+            alignItems: 'end',
+            width: '97%',
+            height: isSmallScreen ? '90%' : '70%',
+            background: 'rgba(245, 245, 245, 0.7)',
+            position: 'relative',
+            top: '0', 
+            borderRadius: '10px',
+            marginBottom: isSmallScreen ? '5px' : '0',
+          }}>
           <BarChart
-            height={500}
+            height={isSmallScreen ? 200 : 500}
             series={[{
               data: routineData.slice(0, itemNb),
             }]}
@@ -70,6 +64,7 @@ function TopRoutines({ routines, isSmallScreen }) {
               fill:'red'
             }]}
           />
+          <MDBTypography tag='h3' style={{color: '#424242',fontWeight:'bold', position: 'absolute', top: '15px'}}>Top routines</MDBTypography>
       </Box>
     </>
     );
@@ -83,28 +78,21 @@ function TopRoutines({ routines, isSmallScreen }) {
     const classesData = orderedClasses?.map(clase => clase.BookedUsers.length);
   
     return (
-        <Box sx={{
+      <Box sx={{
           display: 'flex',
           justifyContent: 'center', 
-          alignItems: 'center',
-          width: '80%',
-          height: '70%',
+          alignItems: 'end',
+          width: '97%',
+          height: isSmallScreen ? '90%' : '70%',
           background: 'rgba(245, 245, 245, 0.7)',
-          position: 'absolute', 
-          top: '50%',
-          borderRadius:'10px',
-          left: '50%', 
-          transform: 'translate(-50%, -50%)', 
+          position: 'relative',
+          top: '0', 
+          borderRadius: '10px',
+          marginBottom: isSmallScreen ? '5px' : '0',
         }}>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="custom-button-go-back-managing"
-          style={{zIndex: '2', position: 'absolute', top: '1%', left:  isSmallScreen ? '86%' : '95%',}}
-          >
-          <KeyboardBackspaceIcon sx={{ color: '#F5F5F5' }} />
-        </button>
+          <MDBTypography tag='h3' style={{color: '#424242', fontWeight:'bold', position: 'absolute', top: '15px' }}>Top classes</MDBTypography>
           <BarChart
-            height={500}
+            height={isSmallScreen ? 200 : 500}
             series={[{
               data: classesData.slice(0, itemNb),
             }]}
@@ -125,27 +113,19 @@ function TopRoutines({ routines, isSmallScreen }) {
   
     return (
       <Box sx={{
-        display: 'flex',
-        justifyContent: 'center', 
-        alignItems: 'center',
-        width: '80%',
-        height: '70%',
-        background: 'rgba(245, 245, 245, 0.7)',
-        position: 'absolute', 
-        top: '50%',
-        borderRadius:'10px',
-        left: '50%', 
-        transform: 'translate(-50%, -50%)', 
-      }}>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="custom-button-go-back-managing"
-          style={{zIndex: '2', position: 'absolute', top: '1%', left:  isSmallScreen ? '86%' : '95%',}}
-        >
-          <KeyboardBackspaceIcon sx={{ color: '#F5F5F5' }} />
-        </button>
+          display: 'flex',
+          justifyContent: 'center', 
+          alignItems: 'end',
+          width: '97%',
+          height: isSmallScreen ? '90%' : '70%',
+          background: 'rgba(245, 245, 245, 0.7)',
+          position: 'relative',
+          top: '0', 
+          borderRadius: '10px',
+        }}>
+        <MDBTypography tag='h3' style={{color: '#424242', fontWeight:'bold', position: 'absolute', top: '15px' }}>Top exercises</MDBTypography>
         <BarChart
-          height={500}
+          height={isSmallScreen ? 200 : 500}
           series={[{
             data: classesData.slice(0, itemNb),
           }]}
@@ -167,7 +147,6 @@ function CoachGraphics() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const isSmallScreen250 = useMediaQuery('(max-width:400px)');
   const [routines, setRoutines] = useState([]);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
@@ -370,7 +349,7 @@ function CoachGraphics() {
                 excercises: updatedExercises, 
             };
         });
-
+        
         const exerciseCountMap = {};
 
         for (const user of bookedUsersArray) {
@@ -390,7 +369,6 @@ function CoachGraphics() {
         }
 
         const resultArray = Object.entries(exerciseCountMap).map(([exercise, count]) => ({ exercise, count }));
-        console.log("Ejercicios y conteo:", resultArray);
 
         setExersCoachUsers(resultArray);
     } catch (error) {
@@ -427,67 +405,67 @@ function CoachGraphics() {
   
   const DURATION = 0.25;
   const STAGGER = 0.065;
-  const FlipLink = ({ children, onClick }) => {
-    return (
-      <motion.a
-        initial="initial"
-        whileHover="hovered"
-        onClick={onClick}
-        className="custom-flip-link"
-        style={{
-          lineHeight: 0.75,
-          position: 'relative', 
-        }}
-      >
-        <div className="text-container">
-          {children.split("").map((l, i) => (
-            <motion.span
-              variants={{
-                initial: {
-                  y: 0,
-                },
-                hovered: {
-                  y: "-110%",
-                },
-              }}
-              transition={{
-                duration: DURATION,
-                ease: "easeInOut",
-                delay: STAGGER * i,
-              }}
-              className="inline-block"
-              key={i}
-            >
-              {l}
-            </motion.span>
-          ))}
-        </div>
-        <div className="text-container">
-          {children.split("").map((l, i) => (
-            <motion.span
-              variants={{
-                initial: {
-                  y: "100%", 
-                },
-                hovered: {
-                  y: "-100%",
-                },
-              }}
-              transition={{
-                duration: DURATION,
-                ease: "easeInOut",
-                delay: STAGGER * i,
-              }}
-              className="inline-block"
-              key={i}
-            >
-              {l}
-            </motion.span>
-          ))}
-        </div>
-      </motion.a>
-    );
-  };
+  // const FlipLink = ({ children, onClick }) => {
+  //   return (
+  //     <motion.a
+  //       initial="initial"
+  //       whileHover="hovered"
+  //       onClick={onClick}
+  //       className="custom-flip-link"
+  //       style={{
+  //         lineHeight: 0.75,
+  //         position: 'relative', 
+  //       }}
+  //     >
+  //       <div className="text-container">
+  //         {children.split("").map((l, i) => (
+  //           <motion.span
+  //             variants={{
+  //               initial: {
+  //                 y: 0,
+  //               },
+  //               hovered: {
+  //                 y: "-110%",
+  //               },
+  //             }}
+  //             transition={{
+  //               duration: DURATION,
+  //               ease: "easeInOut",
+  //               delay: STAGGER * i,
+  //             }}
+  //             className="inline-block"
+  //             key={i}
+  //           >
+  //             {l}
+  //           </motion.span>
+  //         ))}
+  //       </div>
+  //       <div className="text-container">
+  //         {children.split("").map((l, i) => (
+  //           <motion.span
+  //             variants={{
+  //               initial: {
+  //                 y: "100%", 
+  //               },
+  //               hovered: {
+  //                 y: "-100%",
+  //               },
+  //             }}
+  //             transition={{
+  //               duration: DURATION,
+  //               ease: "easeInOut",
+  //               delay: STAGGER * i,
+  //             }}
+  //             className="inline-block"
+  //             key={i}
+  //           >
+  //             {l}
+  //           </motion.span>
+  //         ))}
+  //       </div>
+  //     </motion.a>
+  //   );
+  // };
   
   
   
@@ -570,17 +548,28 @@ function CoachGraphics() {
         ) : (
           <>
             <NewLeftBar/>
-            {!activeComponent?(
-            <section className="graficos-selector">
-              <FlipLink onClick={() => handleLinkClick(<TopRoutines routines={routines} isSmallScreen={isSmallScreen}/>)}>Trend.Routines</FlipLink>
-              <FlipLink onClick={() => handleLinkClick(<TopClasses  classes={classes} isSmallScreen={isSmallScreen}/>)}>Trend.Classes</FlipLink>
-              <FlipLink onClick={() => handleLinkClick(<ExercisesVsUsers exersCoachUsers={exersCoachUsers} isSmallScreen={isSmallScreen}/>)} >Favourite.Exercises</FlipLink>
-            </section>
-            ): (
-              <>
-              {activeComponent}
-            </>
-            )}
+            <Box
+            sx={{
+              display: 'flex',
+              flexDirection: isSmallScreen ? 'column' : 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '90%',
+              width: '95%',
+              marginLeft: isSmallScreen ? '4%' : '3%',
+              marginTop: isSmallScreen ? '55px' : '4%',
+            }}
+          >
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <TopRoutines routines={routines} isSmallScreen={isSmallScreen} />
+            </Box>
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <TopClasses classes={classes} isSmallScreen={isSmallScreen} />
+            </Box>
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <ExercisesVsUsers exersCoachUsers={exersCoachUsers} isSmallScreen={isSmallScreen} />
+            </Box>
+          </Box>
             {openCircularProgress ? (
               <Backdrop
               sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}

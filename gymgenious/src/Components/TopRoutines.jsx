@@ -45,13 +45,10 @@ function BarAnimation({ routines, isSmallScreen }) {
       value: routine.cant_asignados, 
     }));
 
-    const colores = ['#02B2AF', '#2E96FF', '#B800D8', '#60009B', '#2731C8'];
-  
     return (
         <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%',backgroundColor:'#F5F5F5',marginTop:'10px',borderRadius:'10px',marginLeft:'2px' }}>
-          <BarChart 
+          <BarChart
             height={250}
-            colors={colores}
             series={[{
               data: routineData.slice(0, itemNb),
               valueFormatter: (item) => `${item} users`,
@@ -74,7 +71,7 @@ function BarAnimation({ routines, isSmallScreen }) {
                 }]}
           />
         )}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 230, textAlign: 'center', marginRight: '1%' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 220, textAlign: 'center', marginRight: '1%' }}>
             <Typography id="input-item-number" gutterBottom>
               Routines number
             </Typography>
@@ -336,7 +333,7 @@ useEffect(() => {
         ) : (
           <>
             <NewLeftBar/>
-            <div className='input-container' style={{marginLeft: '50px', width: '30%', position: 'absolute', top: '0.5%'}}>
+            <div className='input-container' style={{marginLeft: isSmallScreen ? '60px' : '50px', width: isSmallScreen ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
                         <div className='input-small-container'>
                             {openSearch ? (
                                 <input
@@ -514,8 +511,8 @@ useEffect(() => {
                   <p><strong>Exercises:</strong> {selectedEvent.excercises.length}</p>
                   <p><strong>Users:</strong> {selectedEvent.cant_asignados}</p>
                   <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Owner:</strong> {selectedEvent.owner}</p>
-                  <button onClick={handleViewExercises}>View exercises</button>
-                  <button onClick={handleCloseModal} style={{marginLeft:'10px'}}>Close</button>
+                  <button onClick={handleViewExercises} style={{width: isSmallScreen ? '70%' : '40%'}}>View exercises</button>
+                  <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '40%'}}>Close</button>
                 </div>
               </div>
             )}

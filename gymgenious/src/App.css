@@ -452,7 +452,6 @@ iframe {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  width: 100%;
   font-size: 16px;
   margin-top: 10px;
 }
@@ -952,7 +951,7 @@ iframe {
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   width: 70%;
   left: 15%;
-  top: 1%;
+  top: 3%;
   height: auto;
   text-align: center;
   position:absolute;
@@ -964,6 +963,11 @@ iframe {
     left: 10%;
     width: 80%;
     top: 22%;
+  }
+  .class-creation-rooms-container {
+    left: 5%;
+    width: 90%;
+    top: 12%;
   }
 }
 
@@ -1052,6 +1056,7 @@ iframe {
 
 .grid-transfer-content-users {
   max-width: 100%;
+  background-color: #96B6C5;
 }
 
 .grid-transfer-content-small-screen-users {
@@ -1308,13 +1313,11 @@ iframe {
   color:'#F5F5F5';
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 80%;
+  width: 100%;
   left: 10%;
   top: 18%;
-  height: auto;
   text-align: center;
   position:absolute;
-  overflow-y: auto;
 }
 
 .graphic-content {
@@ -1487,7 +1490,6 @@ iframe {
 
 .custom-button-go-back-managing {
   border-radius: 50%;
-  border: 2px dashed #424242; 
   background-color: #48CFCB; 
   font-weight: 600; 
   text-transform: uppercase; 
@@ -1505,7 +1507,6 @@ iframe {
 
 .custom-button-go-back-managing-graphics {
   border-radius: 50%;
-  border: 2px dashed #424242; 
   background-color: #48CFCB; 
   font-weight: 600; 
   text-transform: uppercase; 
@@ -1811,3 +1812,22 @@ iframe {
   font-size: 0px !important;
 }
 
+.MuiBarElement-root.MuiBarElement-series-auto-generated-id-0.css-1qdzy9k-MuiBarElement-root:nth-child(1) {
+  fill: #02B2AF;
+}
+
+.MuiBarElement-root.MuiBarElement-series-auto-generated-id-0.css-1qdzy9k-MuiBarElement-root:nth-child(2) {
+  fill: #2E96FF;
+}
+
+.MuiBarElement-root.MuiBarElement-series-auto-generated-id-0.css-1qdzy9k-MuiBarElement-root:nth-child(3) {
+  fill: #B800D8;
+}
+
+.MuiBarElement-root.MuiBarElement-series-auto-generated-id-0.css-1qdzy9k-MuiBarElement-root:nth-child(4) {
+  fill: #60009B;
+}
+
+.MuiBarElement-root.MuiBarElement-series-auto-generated-id-0.css-1qdzy9k-MuiBarElement-root:nth-child(5) {
+  fill: #2731C8;
+}

@@ -85,7 +85,7 @@ export default function Main_Page() {
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
                       <div className="d-flex align-items-center justify-content-between mb-3">
                         <p className="small mb-0" style={{color: '#424242' }}><AccessAlarmsIcon sx={{ color: '#48CFCB'}} />{event.dateInicio.split('T')[1].split(':').slice(0, 2).join(':')} - {event.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.dateInicio))}</p>
+                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{event.permanent === 'No' ? formatDate(new Date(event.dateInicio)) : formatDate(new Date(event.start))}</p>
                       </div>
                     </div>
                     <div className="d-flex align-items-center mb-4">
@@ -113,15 +113,22 @@ export default function Main_Page() {
                     <hr />
                     <MDBCardText><CollectionsBookmarkIcon sx={{ color: '#48CFCB'}} /> {event.BookedUsers.length} booked users</MDBCardText>
                     <MDBCardText><EmailIcon sx={{ color: '#48CFCB'}} /> For any doubt ask "{event.owner}"</MDBCardText>
-                    {userMail && type === 'client' &&
+                    {userMail && type === 'client' && (
+                      (event.permanent === 'No' &&
                       (new Date(event.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-                      (new Date(event.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) &&
-                      (event.BookedUsers.length<event.capacity)
+                      (new Date(event.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
+                      )
+                      ||
+                      (event.permanent === 'Si' && 
+                      (new Date(event.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+                      (new Date(event.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+                      )
+                    )
                       ? (
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
                               <MDBBtn
-                              style={{ backgroundColor: '#48CFCB', color: 'white' }} 
+                              style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                               rounded
                               block
                               size="lg"
@@ -133,16 +140,17 @@ export default function Main_Page() {
                               <>
                               {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
                               <MDBBtn
-                                style={{ backgroundColor: '#48CFCB', color: 'white' }} 
+                                style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                                 rounded
                                 block
                                 size="lg"
                                 onClick={() => handleBookClass(event.id)}
                               >
-                                Book now
+                                Book
                               </MDBBtn>
                               ) :
-                              (<>
+                              (
+                              
                               <MDBBtn
                                 style={{ backgroundColor: '#48CFCB', color: 'white' }} 
                                 rounded
@@ -151,8 +159,7 @@ export default function Main_Page() {
                               >
                                 FULL
                               </MDBBtn>
-                              </>)
-                              }
+                              )}
                               </>
                         )}
                         <button 
@@ -251,7 +258,7 @@ export default function Main_Page() {
             nextStartDate.setDate(today.getDate() + daysUntilNextClass);
             nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
           }
-  
+          console.log(nextStartDate)
           for (let i = 0; i < 4; i++) {
             calendarEvents.push({
               title: clase.name,
@@ -264,6 +271,7 @@ export default function Main_Page() {
             nextEndDate.setDate(nextEndDate.getDate() + 7);
           }
         } else {
+          if(startDate >= today)
           calendarEvents.push({
             title: clase.name,
             start: new Date(CorrectStarDate),
@@ -506,7 +514,7 @@ export default function Main_Page() {
                 </div>
           </div>
           <div className="Table-Container">
-            <EnhancedTable rows={classes} user={userMail} userType={type} handleBookClass={handleBookClass} handleUnbookClass={handleUnbookClass} handleSelectEvent={handleSelectEvent}/>
+            <EnhancedTable rows={classes} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
         </>
       )}

@@ -2,6 +2,7 @@ import '../App.css';
 import React, { useState } from 'react';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 import { getAuth,sendPasswordResetEmail } from 'firebase/auth';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -9,7 +10,8 @@ import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
 export default function ResetPassword() {
     const [email, setEmail] = useState('');
     const [showNotMatchEmail, setShowNoMatchEmail] = useState(false);
@@ -18,6 +20,7 @@ export default function ResetPassword() {
     const [success, setSuccess] = useState(false);
     const [failure, setFailure] = useState(false);
     const [warningResettingPassword, setWarningResettingPassword] = useState(false);
+    const isSmallScreen = useMediaQuery('(max-width:700px)');
 
     const auth = getAuth();
     const handleSubmit = async (e) => {
@@ -79,8 +82,8 @@ export default function ResetPassword() {
                                 required
                             />
                         </div>
-                        <button type="submit" className='button_create_account' style={{width: '80%'}}>
-                            Send recovery email
+                        <button type="submit" className='button_create_account' style={{width: isSmallScreen ? '70%' : '40%'}}>
+                            Send email
                         </button>
                          { success ? (
                             <div className='alert-container'>

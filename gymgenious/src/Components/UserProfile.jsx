@@ -454,19 +454,19 @@ export default function CreateAccount() {
                     <hr style={{color:'#14213D'}}/>
                     {isDisabled ? (
                                 <>
-                                    <button className='button_create_account' style={{width:'70%'}} type="button" onClick={handleChangeModify}>
+                                    <button className='button_create_account' style={{width: isSmallScreen ? '70%' : ''}} type="button" onClick={handleChangeModify}>
                                         Modify data
                                     </button>
                                 </>
                             ) : (
                                 <>
-                                    <button className='button_create_account2' style={{width: isSmallScreen ? '37%' : ''}} type="button" onClick={goToChangePassword}>
+                                    <button className='button_create_account2' style={{width: isSmallScreen ? '70%' : '', marginBottom: isSmallScreen ? '10px' : ''}} type="button" onClick={goToChangePassword}>
                                         Change password
                                     </button>
-                                    <button onClick={handleSave} className='button_create_account2' style={{width: isSmallScreen ? '18%' : ''}}>
+                                    <button onClick={handleSave} className='button_create_account2' style={{width: isSmallScreen ? '70%' : '', marginBottom: isSmallScreen ? '10px' : ''}}>
                                         Save
                                     </button>
-                                    <button className='button_create_account2' style={{width: isSmallScreen ? '25%' : ''}} type="button" onClick={handleChangeModify}>
+                                    <button className='button_create_account2' style={{width: isSmallScreen ? '70%' : ''}} type="button" onClick={handleChangeModify}>
                                         Cancel
                                     </button>
                                 </>

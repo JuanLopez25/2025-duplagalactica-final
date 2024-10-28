@@ -620,7 +620,7 @@ useEffect(() => {
         ) : (
           <>
             <NewLeftBar/>
-            <div className='input-container' style={{marginLeft: '50px', width: '30%', position: 'absolute', top: '0.5%'}}>
+            <div className='input-container' style={{marginLeft: isSmallScreen ? '60px' : '50px', width: isSmallScreen ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
                         <div className='input-small-container'>
                             {openSearch ? (
                                 <input
@@ -787,20 +787,9 @@ useEffect(() => {
                   <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Description:</strong> {selectedEvent.description}</p>
                   <p><strong>Exercises:</strong> {selectedEvent.excercises.length}</p>
                   <p><strong>Users:</strong> {selectedEvent.cant_asignados}</p>
-                  {isSmallScreen ? (
-                    <>
-                      <button onClick={()=> handleEditRoutine(selectedEvent)} style={{width: '75%'}}>Edit routine</button>
-                      <button onClick={handleCloseModalEvent} style={{marginTop:'10px', width: '75%'}}>Close</button>
-                      <button onClick={()=> handeDeleteRoutine(selectedEvent)} style={{marginTop:'10px', width: '75%'}}>Delete routine</button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={()=> handleEditRoutine(selectedEvent)}>Edit routine</button>
-                      <button onClick={handleCloseModalEvent} style={{marginLeft:'10px'}}>Close</button>
-                      <button onClick={()=> handeDeleteRoutine(selectedEvent)} style={{marginLeft:'10px'}}>Delete routine</button>
-                    </>
-                  )}
-
+                      <button onClick={()=> handleEditRoutine(selectedEvent)} style={{width: '70%'}}>Edit routine</button>
+                      <button onClick={handleCloseModalEvent} style={{marginTop:'10px', width: '70%'}}>Close</button>
+                      <button onClick={()=> handeDeleteRoutine(selectedEvent)} style={{marginTop:'10px', width: '70%'}}>Delete routine</button>
                 </div>
               </div>
             )}
@@ -847,8 +836,8 @@ useEffect(() => {
                                 style={{
                                 borderRadius: '10px',
                                 transition: 'all 0.3s ease',
-                                width: isSmallScreen ? '100%' : '50%',
-                                marginBottom:'1%'
+                                width: isSmallScreen ? '60%' : '30%',
+                                marginBottom: isSmallScreen ? '3%' : '1%',
                                 }}
                                 id={filterExercises}
                                 onChange={(e) => setFilterExercises(e.target.value)} 
@@ -857,7 +846,7 @@ useEffect(() => {
                             <Button onClick={handleOpenSearchExercises}
                             style={{
                                 backgroundColor: '#48CFCB',  
-                                marginBottom:'1%',
+                                marginBottom: isSmallScreen ? '3%' : '1%',
                                 borderRadius: '50%',
                                 width: '5vh',
                                 height: '5vh',
@@ -883,8 +872,8 @@ useEffect(() => {
                           {errorEditRoutine && (<p style={{color: 'red', margin: '0px'}}>No changes were done</p>)}
                       </div>
                     </div>
-                    <button onClick={handleCloseEditRoutine} className='button-create-account2'>Cancel</button>
-                    <button onClick={saveRoutine} style={{ marginLeft: '10px'}} className='button-create-account2'>Save changes</button>
+                    <button onClick={handleCloseEditRoutine} className='button-create-account2' style={{width: isSmallScreen ? '70%' : '30%'}}>Cancel</button>
+                    <button onClick={saveRoutine} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '30%'}} className='button-create-account2'>Save changes</button>
                 </div>
               </div>
             )}
