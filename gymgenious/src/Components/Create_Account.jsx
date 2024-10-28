@@ -1,6 +1,7 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import Box from '@mui/material/Box';
@@ -10,7 +11,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
 export default function CreateAccount() {
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -33,6 +35,7 @@ export default function CreateAccount() {
     const [errorDate, setErrorDate] = useState(false);
     const [errorType, setErrorType] = useState(false);
     const [errorEmailRepeated, setErrorEmailRepeated] = useState(false);
+    const isSmallScreen = useMediaQuery('(max-width:700px)');
 
     const validateForm = () => {
         let errors = [];
@@ -253,7 +256,7 @@ export default function CreateAccount() {
                             </select>
                             {errorType && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a type</p>)}
                         </div>
-                        <button className='button_create_account' onClick={handleSubmit} style={{width: '80%'}}>
+                        <button className='button_create_account' onClick={handleSubmit} style={{width: isSmallScreen ? '70%' : '40%'}}>
                             Create account
                         </button>
                 </div>

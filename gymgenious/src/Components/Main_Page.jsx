@@ -113,14 +113,17 @@ export default function Main_Page() {
                     <hr />
                     <MDBCardText><CollectionsBookmarkIcon sx={{ color: '#48CFCB'}} /> {event.BookedUsers.length} booked users</MDBCardText>
                     <MDBCardText><EmailIcon sx={{ color: '#48CFCB'}} /> For any doubt ask "{event.owner}"</MDBCardText>
-                    {userMail && type === 'client' && ( event.permanent === 'No' &&
+                    {userMail && type === 'client' && (
+                      (event.permanent === 'No' &&
                       (new Date(event.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
                       (new Date(event.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
-                    )
+                      )
                       ||
                       (event.permanent === 'Si' && 
                       (new Date(event.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-                      (new Date(event.start).getTime() >= new Date().setHours(0, 0, 0, 0)))
+                      (new Date(event.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+                      )
+                    )
                       ? (
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
