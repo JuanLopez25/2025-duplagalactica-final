@@ -128,7 +128,7 @@ export default function Main_Page() {
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
                               <MDBBtn
-                              style={{ backgroundColor: '#48CFCB', color: 'white' }} 
+                              style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                               rounded
                               block
                               size="lg"
@@ -140,13 +140,13 @@ export default function Main_Page() {
                               <>
                               {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
                               <MDBBtn
-                                style={{ backgroundColor: '#48CFCB', color: 'white' }} 
+                                style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                                 rounded
                                 block
                                 size="lg"
                                 onClick={() => handleBookClass(event.id)}
                               >
-                                Book now
+                                Book
                               </MDBBtn>
                               ) :
                               (
@@ -514,7 +514,7 @@ export default function Main_Page() {
                 </div>
           </div>
           <div className="Table-Container">
-            <EnhancedTable rows={classes} user={userMail} userType={type} handleBookClass={handleBookClass} handleUnbookClass={handleUnbookClass} handleSelectEvent={handleSelectEvent}/>
+            <EnhancedTable rows={classes} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
         </>
       )}

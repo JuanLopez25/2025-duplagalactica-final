@@ -349,7 +349,7 @@ useEffect(() => {
                         <CloseIcon sx={{ color: '#F5F5F5' }} />
                       </button>
                       <MDBBtn
-                          style={{ backgroundColor: '#48CFCB', color: 'white' }} 
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%'}}
                           rounded
                           block
                           size="lg"
