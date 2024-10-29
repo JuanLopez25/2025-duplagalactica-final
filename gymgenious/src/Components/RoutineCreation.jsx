@@ -124,7 +124,7 @@ export default function RoutineCreation() {
 
     const customList = (items) => (
       <div className='transfer-list'>
-        <List dense component="div" role="list">
+        <List dense component="div" role="list" sx={{maxHeight: '200px'}}>
           {items.map((exercise) => {
             const labelId = `transfer-list-item-${exercise.name}-label`;
             return (
@@ -342,14 +342,22 @@ export default function RoutineCreation() {
           </div>
           <div className="input-create-routine-container" style={{display:'flex', justifyContent: 'space-between'}}>
           <div className="input-small-container">
-                  <label htmlFor="desc" style={{color:'#424242'}}>Description:</label>
-                  <input 
+                  <label htmlFor="desc" style={{color:'#424242'}}>Desc:</label>
+                  {/* <input 
                   type="text" 
                   id="desc" 
                   name="desc" 
                   value={desc} 
                   onChange={(e) => setDesc(e.target.value)} 
-                  />
+                  /> */}
+                  <textarea 
+                  onChange={(e) => setDesc(e.target.value)}
+                  name="desc"
+                  id="desc"
+                  rows={4}
+                  value={desc}
+                  maxLength={300}
+                  style={{maxHeight: '100px', width: '100%', borderRadius: '8px'}} />
               </div>
           </div>
           <div className="'grid-transfer-container" style={{display:'flex', justifyContent: 'space-between'}}>

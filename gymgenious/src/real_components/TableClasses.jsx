@@ -28,11 +28,12 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const isSmallScreen400 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen400 = useMediaQuery('(max-width:360px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
   const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [maxHeight, setMaxHeight] = useState('600px');
+  const [newRows, setNewRows] = useState([]);
 
   function formatDate(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses comienzan desde 0
@@ -61,6 +62,25 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
     setSelectedEvent(null);
   };
 
+  useEffect(() => {
+    const newRowsList=[];
+    rows?.forEach(row => {
+      if(
+        (row.permanent === 'No' &&
+          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
+          )
+          ||
+        (row.permanent === 'Si' && 
+          (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+        )
+      ) {
+        newRowsList.push(row);
+      }
+      setNewRows(newRowsList);
+    });
+  }, [])
 
   useEffect(() => {
     if(isSmallScreen400 || isSmallScreen500) {
@@ -77,7 +97,7 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
 
   const visibleRows = React.useMemo(
     () =>
-      [...rows]
+      [...newRows]
         .sort((a, b) =>
           order === 'asc'
             ? a[orderBy] < b[orderBy]
@@ -88,7 +108,7 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
             : 1
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, rows]
+    [order, orderBy, page, rowsPerPage, newRows]
   );
 
   return (
@@ -185,11 +205,18 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
               ) : (
                 <>
                   {visibleRows.map((row) => {
-                    const isTransparent = user && userType === 'client' &&
-                      (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-                      (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) &&
-                      (row.BookedUsers.length<row.capacity);
-
+                    const conditions = (
+                      (row.permanent === 'No' &&
+                        (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+                        (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
+                        )
+                        ||
+                      (row.permanent === 'Si' && 
+                        (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+                        (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+                      )
+                    )
+                    const isTransparent = user && userType === 'client' && conditions;
                     return (
                       <TableRow
                         onClick={() => handleSelectEvent(row)}
@@ -209,7 +236,7 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
                           <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
                         )}
                         {!isSmallScreen400 && (
-                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.dateInicio))}</TableCell>
+                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
                         )}
                         {!isSmallScreen600 && (
                           <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
@@ -228,7 +255,7 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
               <TablePagination
                 rowsPerPageOptions={[10]}
                 component="div"
-                count={rows.length}
+                count={newRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 sx={{color:'#424242'}}
@@ -238,7 +265,7 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={rows.length}
+                count={newRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 sx={{color:'#424242'}}

@@ -36,7 +36,7 @@ function AllRoutines() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const isSmallScreen250 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen250 = useMediaQuery('(max-width:360px)');
   const [routines, setRoutines] = useState([]);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);

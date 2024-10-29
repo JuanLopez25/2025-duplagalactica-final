@@ -568,13 +568,21 @@ export default function CoachExercises() {
                                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                                         <div className="input-small-container">
                                             <label htmlFor="desc" style={{color:'#14213D'}}>Desc:</label>
-                                            <input 
+                                            {/* <input 
                                             type="text" 
                                             id="desc" 
                                             name="desc" 
                                             value={desc || selectedEvent.description}
                                             onChange={(e) => setDesc(e.target.value)} 
-                                            />
+                                            /> */}
+                                            <textarea 
+                                                onChange={(e) => setDesc(e.target.value)}
+                                                name="desc"
+                                                id="desc"
+                                                rows={4}
+                                                value={desc}
+                                                maxLength={300}
+                                                style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}} />
                                         </div>
                                     </div>
                                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>

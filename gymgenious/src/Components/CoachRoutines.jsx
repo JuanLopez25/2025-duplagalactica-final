@@ -48,7 +48,7 @@ function CoachRoutines() {
   const [editClass, setEditClass] = useState(false);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const isSmallScreen250 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen250 = useMediaQuery('(max-width:360px)');
   const [fetchName,setNameFetch] = useState('');
   const [descFetch,setDescFetch]= useState('');
   const [exersFetch,setExersFetch]= useState([]);
@@ -180,7 +180,7 @@ function CoachRoutines() {
 
     const customList = (items) => (
       <div className='transfer-list'>
-        <List dense component="div" role="list">
+        <List dense component="div" role="list" sx={{maxHeight: '220px'}}>
           {items.map((exercise) => {
             const labelId = `transfer-list-item-${exercise.name}-label`;
             return (
@@ -813,14 +813,22 @@ useEffect(() => {
                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                       <div className="input-small-container">
                         <label htmlFor="desc" style={{color:'#14213D'}}>Description:</label>
-                        <input 
+                        {/* <input 
                         type="text" 
                         id="desc" 
                         name="desc"
                         value={desc} 
                         onChange={(e) => setDesc(e.target.value)}
                         placeholder={descFetch}
-                        />
+                        /> */}
+                        <textarea 
+                          onChange={(e) => setDesc(e.target.value)}
+                          name="desc"
+                          id="desc"
+                          rows={4}
+                          value={desc}
+                          maxLength={300}
+                          style={{maxHeight: '100px', width: '100%', borderRadius: '8px'}} />
                       </div>
                     </div>
                     <div className="'grid-transfer-container" style={{display:'flex', justifyContent: 'space-between'}}>
