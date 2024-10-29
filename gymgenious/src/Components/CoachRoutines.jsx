@@ -48,7 +48,7 @@ function CoachRoutines() {
   const [editClass, setEditClass] = useState(false);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const isSmallScreen250 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen250 = useMediaQuery('(max-width:360px)');
   const [fetchName,setNameFetch] = useState('');
   const [descFetch,setDescFetch]= useState('');
   const [exersFetch,setExersFetch]= useState([]);

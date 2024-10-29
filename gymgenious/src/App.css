@@ -765,15 +765,24 @@ iframe {
   z-index: 1000;
 }
 
-
-
-
-
 .Modal-Content {
   background-color: #F5F5F5;
   padding: 20px;
   border-radius: 8px;
   width: 90%;
+  color: #424242;
+  font-weight: bold;
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+  z-index: 1001;
+}
+
+.Modal-Content-view-exercises {
+  background-color: #F5F5F5;
+  padding: 20px;
+  border-radius: 8px;
+  width: 98%;
   color: #424242;
   font-weight: bold;
   max-width: 500px;
@@ -809,6 +818,32 @@ iframe {
 }
 
 .Modal-Content button:hover {
+  background-color: #424242;
+}
+
+.Modal-Content-view-exercises button {
+  background-color: #48CFCB;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.Modal-Content-view-exercises button:hover {
+  background-color: #424242;
+}
+
+.Modal-Content-class-creation button {
+  background-color: #48CFCB;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.Modal-Content-class-creation button:hover {
   background-color: #424242;
 }
 

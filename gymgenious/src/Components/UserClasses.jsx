@@ -39,7 +39,7 @@ function UsserClasses() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail, setUserMail] = useState('');
   const [classes, setClasses] = useState([]);
-  const isSmallScreen400 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen400 = useMediaQuery('(max-width:360px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');

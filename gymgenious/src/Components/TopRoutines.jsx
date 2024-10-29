@@ -107,7 +107,7 @@ function TopRoutines() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const isSmallScreen250 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen250 = useMediaQuery('(max-width:360px)');
   const [routines, setRoutines] = useState([]);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
@@ -518,7 +518,7 @@ useEffect(() => {
             )}
             {viewExercises && (
                 <div className="Modal" onClick={handleViewExercises}>
-                    <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
+                    <div className="Modal-Content-view-exercises" onClick={(e) => e.stopPropagation()}>
                         <h2>Exercises from {selectedEvent.routine}</h2>
                         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                             <TableContainer sx={{ maxHeight: 440 }}>

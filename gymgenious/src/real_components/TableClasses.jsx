@@ -28,7 +28,7 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const isSmallScreen400 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen400 = useMediaQuery('(max-width:360px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
   const isMobileScreen = useMediaQuery('(min-height:750px)');
