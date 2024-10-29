@@ -25,6 +25,8 @@ import SportsIcon from '@mui/icons-material/Sports';
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import PaidIcon from '@mui/icons-material/Paid';
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = React.useState(false);
@@ -121,7 +123,7 @@ export default function TemporaryDrawer() {
                 {index === 7 && <DirectionsRunIcon sx={{ color: '#48CFCB' }} />}
                 {index === 8 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
                 {index === 9 && <SignalCellularAltIcon sx={{ color: '#48CFCB' }} />}
-                {index === 10 && <SignalCellularAltIcon sx={{ color: '#48CFCB' }} />}
+                {index === 10 && <PaidIcon sx={{ color: '#48CFCB' }} />}
                 {index === 11 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />
@@ -145,7 +147,7 @@ export default function TemporaryDrawer() {
                 {index === 2 && <CheckIcon sx={{ color: '#48CFCB' }} />}
                 {index === 3 && <SportsIcon sx={{ color: '#48CFCB' }} />}
                 {index === 4 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
-                {index === 5 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
+                {index === 5 && <ShoppingCartIcon sx={{ color: '#48CFCB' }} />}
                 {index === 6 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />
