@@ -514,7 +514,7 @@ export default function Main_Page() {
                 </div>
           </div>
           <div className="Table-Container">
-            <EnhancedTable rows={classes} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
+            <EnhancedTable rows={events} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
         </>
       )}
@@ -563,7 +563,7 @@ export default function Main_Page() {
       )}
   </div>
   <div className="Table-Container">
-    <EnhancedTable rows={classes} user={userMail} userType={type} handleBookClass={handleBookClass} handleUnbookClass={handleUnbookClass} handleSelectEvent={handleSelectEvent}/>
+    <EnhancedTable rows={events} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
   </div>
 </>
   )}
