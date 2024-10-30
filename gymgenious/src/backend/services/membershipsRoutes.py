@@ -86,6 +86,14 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
             current_data = doc.to_dict()
             membership = current_data.get('membershipId')
             inicio = current_data.get('ini')
+            exp_date = current_data.get('exp') 
+            fecha_hoy = datetime.utcnow() 
+            fecha_formateada = fecha_hoy.strftime('%Y-%m-%dT%H:%M:%S.') + '{:03d}Z'.format(fecha_hoy.microsecond // 1000)
+            if exp_date <= fecha_formateada:
+                memberships_ref = db.collection('memberships')
+                ref = memberships_ref.document(membership).delete()
+                users_ref.document(doc.id).delete() 
+                aquire_membership_month(fechaInicio,uid,fechaFin,type_memb)
             inicio_date = datetime.fromisoformat(inicio) if isinstance(inicio, str) else inicio
             if type_memb!='extraClass':
                 if type_memb == 'yearly':
