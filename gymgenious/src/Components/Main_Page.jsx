@@ -390,7 +390,7 @@ export default function Main_Page() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ id: event,membId:'QJMEv9rd9SSSQD06WrJX' })
+        body: JSON.stringify({ id: event,membId:membership[0].id })
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
