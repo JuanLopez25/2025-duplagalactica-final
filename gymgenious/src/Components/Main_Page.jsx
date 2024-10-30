@@ -44,6 +44,9 @@ export default function Main_Page() {
   const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
+  const [membership, setMembership] = useState([])
+  const [userAccount, setUserAccount] = useState([])
+  const [amountClasses,setAmountClasses] = useState(0)
 
   const handleChangeCalifyModal = () => {
     setCalifyModal(!califyModal);
@@ -315,6 +318,17 @@ export default function Main_Page() {
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
+      const response2 = await fetch('http://127.0.0.1:5000/use_membership_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ id: event,membId:'QJMEv9rd9SSSQD06WrJX' })
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      }
       await fetchClasses();
       setOpenCircularProgress(false);
       handleCloseModal();
@@ -348,6 +362,14 @@ export default function Main_Page() {
           'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ event: event,mail:userMail })
+      });
+      const response2 = await fetch('http://127.0.0.1:5000/unuse_membership_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ id: event,membId:'QJMEv9rd9SSSQD06WrJX' })
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
@@ -424,17 +446,46 @@ export default function Main_Page() {
       }
       const encodedUserMail = encodeURIComponent(userMail);
       const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setType(data.type);
-        setOpenCircularProgress(false);
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data = await response.json();
+      setUserAccount(data)
+      setType(data.type);
+      console.log("este es el usuario",data)
+      setOpenCircularProgress(false);
+      const response3 = await fetch(`http://127.0.0.1:5000/get_memb_user`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response3.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data3 = await response3.json();
+      const membershipsOfUser = data3.filter(memb => memb.userId == data.uid)
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate);
+      const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
+      const response2 = await fetch(`http://127.0.0.1:5000/get_memberships`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const membresia = await response2.json();
+      const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+      setMembership(firstFiler)
     } catch (error) {
         console.error("Error fetching user:", error);
     }
