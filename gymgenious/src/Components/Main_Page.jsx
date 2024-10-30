@@ -47,6 +47,11 @@ export default function Main_Page() {
   const [membership, setMembership] = useState([])
   const [userAccount, setUserAccount] = useState([])
   const [amountClasses,setAmountClasses] = useState(0)
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const day = String(currentDate.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
 
   const handleChangeCalifyModal = () => {
     setCalifyModal(!califyModal);
@@ -141,7 +146,7 @@ export default function Main_Page() {
                             </MDBBtn>
                             ) : (
                               <>
-                              {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
+                              {selectedEvent.BookedUsers.length<selectedEvent.capacity  && membership[0].BookedClasses.length<membership[0].top? (
                               <MDBBtn
                                 style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                                 rounded
@@ -151,9 +156,22 @@ export default function Main_Page() {
                               >
                                 Book
                               </MDBBtn>
+                              ) : (
+                              <>
+                              {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
+                                <>
+                                <MDBBtn
+                                  style={{ backgroundColor: 'RED', color: 'white', width: '70%', left: '15%' }} 
+                                  rounded
+                                  block
+                                  size="lg"
+                                >
+                                  Book
+                                </MDBBtn>
+                                </>
                               ) :
                               (
-                              
+                              <>
                               <MDBBtn
                                 style={{ backgroundColor: '#48CFCB', color: 'white' }} 
                                 rounded
@@ -162,7 +180,10 @@ export default function Main_Page() {
                               >
                                 FULL
                               </MDBBtn>
+                              </>
                               )}
+                              </>)
+                              }
                               </>
                         )}
                         <button 
@@ -475,7 +496,7 @@ export default function Main_Page() {
       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
       const day = String(currentDate.getDate()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}`;
-      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate);
+      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
       const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
       const response2 = await fetch(`http://127.0.0.1:5000/get_memberships`, {
         method: 'GET', 
@@ -485,6 +506,7 @@ export default function Main_Page() {
       });
       const membresia = await response2.json();
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+      console.log(firstFiler)
       setMembership(firstFiler)
     } catch (error) {
         console.error("Error fetching user:", error);

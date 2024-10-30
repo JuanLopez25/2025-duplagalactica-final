@@ -4,7 +4,7 @@ from firebase_admin import credentials, firestore
 import logging
 from datetime import datetime
 import pytz
-
+from datetime import datetime
 
 def get_memb_user():
     try:
@@ -30,6 +30,12 @@ def get_unique_user_membership():
 
 def use_membership_class(classId,membId): 
     try:
+
+        """ current_datetime = datetime.utcnow()
+        formatted_date = current_datetime.strftime('%Y-%m-%dT%H:%M:%S.000Z')
+        new_class = {'booked':formatted_date,'classID':classId}
+        booked_class_ref  = db.collection('bookedClass').add(new_class)
+        document_id = booked_class_ref[1].get().id """
         users_ref = db.collection('memberships')
         doc_ref = users_ref.document(membId)
         doc = doc_ref.get()
