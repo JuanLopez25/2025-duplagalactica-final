@@ -213,6 +213,7 @@ export default function UserMemberships() {
                             onChange={(e) => setPermanent(e.target.value)} 
                         >
                             <option value="" >Select</option>
+                            <option value="extraClass">Extra class</option>
                             <option value="monthly">Monthly</option>
                             <option value="yearly">Yearly</option>
                         </select>
