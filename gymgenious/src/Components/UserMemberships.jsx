@@ -41,6 +41,7 @@ export default function UserMemberships() {
   const isSmallScreen = useMediaQuery('(max-width:768px)');
   const [type, setType] = useState(null);
   const [myMembership, setMyMembership] = useState(false);
+  const [user,setUser] = useState()
 
   const handleChangeMyMembership = () => {
     setMyMembership(!myMembership);
@@ -55,12 +56,49 @@ export default function UserMemberships() {
           </div>
       ) : (
           <div className="grid-container">
-            <CreateClass>Acquire</CreateClass>
+            <CreateClass onClick={() => handleAquireMembership()}>Acquire</CreateClass>
           </div>
       )}
       </>
     );
   };
+
+  const handleAquireMembership = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const fechaHoy = new Date();
+      let fechaFin; 
+      if (permanent === 'monthly') {
+          fechaFin = new Date(fechaHoy); 
+          fechaFin.setMonth(fechaFin.getMonth() + 1);
+      } else if (permanent === 'yearly') {
+          fechaFin = new Date(fechaHoy); 
+          fechaFin.setFullYear(fechaFin.getFullYear() + 1);
+      } else {
+          fechaFin = 'never';
+      }
+      const response = await fetch('http://127.0.0.1:5000/aquire_membership_month', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ inicio: fechaHoy,userId:user.uid,fin: fechaFin,type_memb:permanent })
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      }
+      
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+    }
+    
+  };
+
 
   const ComponenteBotonEditMembership = () => {
     return (
@@ -141,7 +179,6 @@ export default function UserMemberships() {
       }
       const encodedUserMail = encodeURIComponent(userMail);
       const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-      //const response = await fetch(`http://127.0.0.1:5000/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -151,6 +188,7 @@ export default function UserMemberships() {
             throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
         }
         const data = await response.json();
+        setUser(data)
         setType(data.type);
         if(data.type!='client'){
           navigate('/');

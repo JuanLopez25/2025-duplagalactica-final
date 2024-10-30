@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from services.membershipsRoutes import get_unique_user_membership,use_membership_class,get_memb_user,unuse_membership_class
+from services.membershipsRoutes import get_unique_user_membership,use_membership_class,get_memb_user,unuse_membership_class,aquire_membership_month
 
 
 def get_unique_user_membership_route():
@@ -22,6 +22,13 @@ def use_membership_class_route(classId,membId):
 def unuse_membership_class_route(classId,membId):
     try:
         membresia = unuse_membership_class(classId,membId)
+        return jsonify({"message": "Membresia actualizada exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+def aquire_membership_month_route(fechaInicio,uid,fechaFin,type_memb):
+    try:
+        membresia = aquire_membership_month(fechaInicio,uid,fechaFin,type_memb)
         return jsonify({"message": "Membresia actualizada exitosamente"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
