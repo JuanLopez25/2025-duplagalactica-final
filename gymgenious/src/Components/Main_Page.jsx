@@ -115,6 +115,8 @@ export default function Main_Page() {
   const [membership, setMembership] = useState([])
   const [userAccount, setUserAccount] = useState([])
   const [amountClasses,setAmountClasses] = useState(0)
+  const [changingStars,setChangingStars] = useState(false)
+  const [changingComment,setChangingComment] = useState(false)
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -122,11 +124,13 @@ export default function Main_Page() {
   const formattedDate = `${year}-${month}-${day}`;
 
   const handleChangeCalifyModal = () => {
+    setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
   }
 
   const handleStarsChange = (e) => {
     const newStars = parseInt(e.target.value);
+    setChangingStars(true)
     setStars(newStars);
   }
 
@@ -300,6 +304,10 @@ export default function Main_Page() {
     handleCloseSearch();
   };
 
+  const handleCommentChange = (event) => {
+    setComment(event)
+    setChangingComment(true)
+  }
   const handleCloseModal = () => {
     setSelectedEvent(null);
   };
@@ -330,8 +338,22 @@ export default function Main_Page() {
       const calendarEvents = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-  
-      dataWithSala.forEach(clase => {
+      const response3 = await fetch('http://127.0.0.1:5000/get_comments');
+      if (!response3.ok) {
+        throw new Error('Error al obtener los comentarios: ' + response3.statusText);
+      }
+      const data3 = await response3.json();
+      const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
+      const dataWithSalaAndComments = dataWithSala.map(clase => {
+        const comment = filteredComments.find(c => c.cid === clase.id);
+        return {
+          ...clase,
+          comentario: comment ? comment.commentary : null,
+          puntuacion: comment ? comment.calification : -1,
+        };
+      });
+      console.log("classes obtenidas",userAccount)
+      dataWithSalaAndComments.forEach(clase => {
         const startDate = new Date(clase.dateInicio);
         const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
         const endDate = new Date(clase.dateFin);
@@ -375,7 +397,7 @@ export default function Main_Page() {
       });
       setOpenCircularProgress(false);
       setEvents(calendarEvents);
-      setClasses(dataWithSala);
+      setClasses(dataWithSalaAndComments);
       setTotalClasses(dataWithSala);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -504,8 +526,10 @@ export default function Main_Page() {
     } else {
         console.error('No token found');
     }
-    fetchClasses();
-  }, []);
+    if (userAccount) {
+      fetchClasses();
+    }
+  }, [userAccount]);
 
   useEffect(() => {
     if (userMail) {
@@ -524,6 +548,38 @@ export default function Main_Page() {
     }
 
   }, [filterClasses]);
+
+
+  const saveCalification = async (event) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      console.log("evento",event)
+      let starsValue = changingStars ? stars : event.puntuacion;
+      let commentValue = changingComment ? comment : event.comentario;
+      const response = await fetch('http://127.0.0.1:5000/add_calification', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
+      });
+      setChangingStars(false)
+      setChangingComment(false)
+      setOpenCircularProgress(false);
+      await fetchClasses();
+      setOpenCircularProgress(false);
+      handleChangeCalifyModal()
+      handleCloseModal();
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  }
 
   const fetchUser = async () => {
     setOpenCircularProgress(true);
@@ -773,7 +829,7 @@ export default function Main_Page() {
                     <input 
                     type="number" 
                     id="stars" 
-                    name="stars" 
+                    name="stars"
                     value={stars}
                     min="1"
                     step='1'
@@ -787,14 +843,14 @@ export default function Main_Page() {
                     type="text" 
                     id="comment" 
                     name="comment" 
+                    placeholder={selectedEvent.comentario}
                     value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder='Optionally add a comment'
+                    onChange={(e) => handleCommentChange(e.target.value)}
                     />
                 </div>
             </div>
             <button onClick={handleChangeCalifyModal}>Cancel</button>
-            <button onClick={handleChangeCalifyModal} style={{marginLeft:'10px'}}>Send</button>
+            <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
           </div>
         </div>
       )}
