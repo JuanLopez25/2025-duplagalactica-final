@@ -426,8 +426,38 @@ function CouchClasses() {
           salaInfo, 
         };
       });
-      setClasses(dataWithSala);
-      setTotalClasses(dataWithSala);
+
+      const response3 = await fetch('http://127.0.0.1:5000/get_comments');
+      if (!response3.ok) {
+        throw new Error('Error al obtener los comentarios: ' + response3.statusText);
+      }
+      const data3 = await response3.json();
+    
+      const groupedComments = data3.reduce((acc, comment) => {
+        if (!acc[comment.cid]) {
+          acc[comment.cid] = { califications: [], commentaries: [] };
+        }
+        acc[comment.cid].califications.push(comment.calification);
+        acc[comment.cid].commentaries.push(comment.commentary);
+        return acc;
+      }, {});
+      
+      const aggregatedComments = Object.entries(groupedComments).map(([cid, details]) => ({
+        cid,
+        averageCalification: details.califications.reduce((sum, cal) => sum + cal, 0) / details.califications.length,
+        commentaries: details.commentaries
+      }));
+      
+      const dataWithSalaAndComments = dataWithSala.map(clase => {
+        const comments = aggregatedComments.find(comment => comment.cid === clase.id) || { averageCalification: 0, commentaries: [] };
+        return {
+          ...clase,
+          ...comments
+        };
+      });
+
+      setClasses(dataWithSalaAndComments);
+      setTotalClasses(dataWithSalaAndComments);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -579,7 +609,8 @@ function CouchClasses() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          {/* <MDBBtn outline color="dark" floating size="sm" style={{color: '#424242' }}><MDBIcon fas icon="comment" /></MDBBtn> */}
+                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
+                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
                         </div>
                       </div>
                     </div>
