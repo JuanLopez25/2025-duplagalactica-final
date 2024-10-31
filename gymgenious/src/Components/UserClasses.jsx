@@ -38,6 +38,7 @@ function UsserClasses() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail, setUserMail] = useState('');
+  const [userAccount, setUserAccount] = useState([])
   const [classes, setClasses] = useState([]);
   const isSmallScreen400 = useMediaQuery('(max-width:360px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
@@ -56,7 +57,8 @@ function UsserClasses() {
   const [califyModal, setCalifyModal] = useState(false);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
-
+  const [changingStars,setChangingStars] = useState(false)
+  const [changingComment,setChangingComment] = useState(false)
   const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
@@ -71,16 +73,18 @@ function UsserClasses() {
   };
 
   const handleChangeCalifyModal = () => {
+    setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
   }
 
   const handleStarsChange = (e) => {
     const newStars = parseInt(e.target.value);
+    setChangingStars(true)
     setStars(newStars);
   }
 
   function formatDate(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses comienzan desde 0
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const day = String(date.getDate()).padStart(2, '0');
     const year = date.getFullYear();
     
@@ -175,8 +179,22 @@ function UsserClasses() {
           salaInfo, 
         };
       });
-      setClasses(dataWithSala);
-      setTotalClasses(dataWithSala);
+      const response3 = await fetch('http://127.0.0.1:5000/get_comments');
+      if (!response3.ok) {
+        throw new Error('Error al obtener los comentarios: ' + response3.statusText);
+      }
+      const data3 = await response3.json();
+      const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
+      const dataWithSalaAndComments = dataWithSala.map(clase => {
+        const comment = filteredComments.find(c => c.cid === clase.id);
+        return {
+          ...clase,
+          comentario: comment ? comment.commentary : null,
+          puntuacion: comment ? comment.calification : -1,
+        };
+      });
+      setClasses(dataWithSalaAndComments);
+      setTotalClasses(dataWithSalaAndComments);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -200,6 +218,37 @@ function UsserClasses() {
 
   }, [filterClasses]);
 
+  const saveCalification = async (event) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      console.log("evento",event)
+      let starsValue = changingStars ? stars : event.puntuacion;
+      let commentValue = changingComment ? comment : event.comentario;
+      const response = await fetch('http://127.0.0.1:5000/add_calification', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
+      });
+      setChangingStars(false)
+      setChangingComment(false)
+      setOpenCircularProgress(false);
+      await fetchClasses();
+      setOpenCircularProgress(false);
+      handleChangeCalifyModal()
+      handleCloseModal();
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  }
+  
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
     try {
@@ -234,10 +283,10 @@ useEffect(() => {
 }, [userMail]);
 
   useEffect(() => {
-    if(type==='client'){
+    if(type==='client' && userAccount){
         fetchClasses();
     }
-  }, [type])
+  }, [type,userAccount])
 
   useEffect(() => {
     if(isSmallScreen400 || isSmallScreen500) {
@@ -271,6 +320,7 @@ useEffect(() => {
             throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
         }
         const data = await response.json();
+        setUserAccount(data)
         setType(data.type);
         if(data.type!='client'){
           navigate('/');
@@ -659,13 +709,13 @@ useEffect(() => {
                     id="comment" 
                     name="comment" 
                     value={comment}
+                    placeholder={selectedEvent.comentario}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder='Optionally add a comment'
                     />
                 </div>
             </div>
             <button onClick={handleChangeCalifyModal}>Cancel</button>
-            <button onClick={handleChangeCalifyModal} style={{marginLeft:'10px'}}>Send</button>
+            <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
           </div>
         </div>
       )}
