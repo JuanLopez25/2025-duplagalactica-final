@@ -109,7 +109,7 @@ export default function Main_Page() {
     setOpenAchievements(false);
       setTimeout(() => {
         setVisibleDrawerAchievements(false);
-      }, 500);
+      }, 450);
   }
   
   const [membership, setMembership] = useState([])
@@ -296,7 +296,8 @@ export default function Main_Page() {
 
   const changeShowCalendar = () => {
     setShowCalendar(prevState => !prevState);
-    handleCloseModal()
+    handleCloseSearch();
+    handleCloseModal();
   };
 
   const handleSelectEvent = (event) => {
@@ -646,7 +647,7 @@ export default function Main_Page() {
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
       {type==='client' && (
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '192px' : '114px' : showCalendar ? '50px' : openSearch ? '340px' : '96px', width: isSmallScreen ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button onClick={handleViewAchievements}
               style={{
@@ -713,7 +714,7 @@ export default function Main_Page() {
         </div>
         ) : (
           <>
-            <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: '30%', position: 'absolute', top: '0.5%'}}>
+            <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
               <div className='input-small-container'>
                 {openSearch ? (
                     <input

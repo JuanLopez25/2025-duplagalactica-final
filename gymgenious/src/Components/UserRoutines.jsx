@@ -20,7 +20,63 @@ import DaySelection from '../real_components/DaySelection.jsx';
 import { useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
+import Button from '@mui/material/Button';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LinearProgress from '@mui/material/LinearProgress';
+import Typography from '@mui/material/Typography';
+
+const Carousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const cardCount = 10;
+  const visibleCards = 5;
+
+  const maxIndex = Math.ceil(cardCount / visibleCards) - 1;
+
+  const nextGroup = () => {
+    setCurrentIndex(currentIndex < maxIndex ? currentIndex + 1 : 1);
+  };
+
+  const prevGroup = () => {
+    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : 0);
+  };
+
+  return (
+    <div style={{ width: '100%', height: '40%', overflow: 'hidden', position: 'relative'}}>
+      <div
+        style={{
+          display: 'flex',
+          transition: 'transform 0.3s ease-in-out',
+          transform: `translateX(-${currentIndex * 100}%)`
+        }}
+      >
+        {Array.from({ length: cardCount }, (_, index) => (
+          <div
+            key={index}
+            style={{
+              minWidth: `${100 / visibleCards}%`,
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <div className="card">achievement {index + 1}</div>
+          </div>
+        ))}
+      </div>
+
+      <button onClick={prevGroup} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)' }}>
+        {'<'}
+      </button>
+      <button onClick={nextGroup} style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)' }}>
+        {'>'}
+      </button>
+    </div>
+  );
+};
+
 export default function StickyHeadTable() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -42,6 +98,21 @@ export default function StickyHeadTable() {
     const [warningFetchingUserRoutines, setWarningFetchingUserRoutines] = useState(false);
     const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [maxHeight, setMaxHeight] = useState('600px');
+
+    const [openAchievements, setOpenAchievements] = useState(false);
+    const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
+  
+    const handleViewAchievements = () => {
+      setOpenAchievements(true);
+      setVisibleDrawerAchievements(true);
+    }
+  
+    const handleCloseAchievements = () => {
+      setOpenAchievements(false);
+        setTimeout(() => {
+          setVisibleDrawerAchievements(false);
+        }, 500);
+    }
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -293,6 +364,44 @@ export default function StickyHeadTable() {
         ) : (
           <>
             <NewLeftBar />
+            <div className='input-container' style={{marginLeft: isSmallScreen ? '60px' : '50px', width: isSmallScreen ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+                <div className='input-small-container'>
+                  <Button onClick={handleViewAchievements}
+                    style={{
+                        backgroundColor: '#48CFCB',
+                        position: 'absolute',
+                        borderRadius: '50%',
+                        width: '5vh',
+                        height: '5vh',
+                        minWidth: '0',
+                        minHeight: '0',
+                        padding: '0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                    >
+                    <EmojiEventsIcon sx={{ color: '#424242' }} />
+                  </Button>
+                </div>
+              </div>
+              {visibleDrawerAchievements && type==='client' && (
+              <div className='modal-achievements' onClick={handleCloseAchievements}>
+                <div className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`} onClick={(e)=>e.stopPropagation()}>
+                  <Carousel/>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Box sx={{ width: '75%', mr: 1 }}>
+                      <LinearProgress variant="determinate" value={25} />
+                    </Box>
+                    <Box sx={{ minWidth: 35 }}>
+                      <Typography variant="body2" sx={{ color: 'white' }}>
+                        25%
+                      </Typography>
+                    </Box>
+                  </Box>
+                </div>
+              </div>
+            )}
             <div className="Table-Container">
                 {!isSmallScreen ? (
                     <ColorToggleButton selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
