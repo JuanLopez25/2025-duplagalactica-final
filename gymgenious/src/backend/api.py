@@ -8,6 +8,7 @@ from Controllers.usersController import get_unique_user_by_email_route ,get_user
 from Controllers.excersicesController import create_exersice_route,get_excersice_by_owner_route,get_excersices_route,update_exer_info_route
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
 from Controllers.salasController import get_salas_route
+from Controllers.membershipController import get_unique_user_membership_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -17,6 +18,11 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route('/get_classes', methods=['GET'])
 def get_classes():
     return get_classes_route()
+
+
+@app.route('/get_memb_user', methods=['GET'])
+def get_memb_user():
+    return get_memb_user_route()
 
 @app.route('/get_salas', methods=['GET'])
 def get_salas():
@@ -78,6 +84,35 @@ def book_class():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+    
+
+@app.route('/use_membership_class', methods=['PUT'])
+def use_membership_class():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        classId = request.json.get('id')
+        membId = request.json.get('membId')
+        return use_membership_class_route(classId,membId)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+
+
+@app.route('/unuse_membership_class', methods=['PUT'])
+def unuse_membership_class():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        classId = request.json.get('id')
+        membId = request.json.get('membId')
+        return unuse_membership_class_route(classId,membId)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/unbook_class', methods=['PUT'])
 def unbook_class():
@@ -122,6 +157,10 @@ def get_unique_user_by_email():
     username = request.args.get('mail')
     return get_unique_user_by_email_route(username)
 
+@app.route('/get_memberships', methods=['GET'])
+def get_unique_user_membership():
+    return get_unique_user_membership_route()
+
 @app.route('/get_user', methods=['GET'])
 def get_user():
     try :
@@ -151,7 +190,21 @@ def send_email():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
-
+    
+@app.route('/aquire_membership_month', methods=['PUT'])
+def aquire_membership_month():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        fechaInicio = request.json.get('inicio')
+        uid = request.json.get('userId')
+        fechaFin = request.json.get('fin')
+        type_memb = request.json.get('type_memb')
+        return aquire_membership_month_route(fechaInicio,uid,fechaFin,type_memb)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/update_users_info', methods=['PUT'])
 def update_users_info():
