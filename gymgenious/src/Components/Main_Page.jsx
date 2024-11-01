@@ -23,6 +23,7 @@ import Loader from '../real_components/loader.jsx'
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import DiamondIcon from '@mui/icons-material/Diamond';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 
@@ -694,6 +695,7 @@ export default function Main_Page() {
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
       {type==='client' && (
+        <>
         <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button onClick={handleViewAchievements}
@@ -715,6 +717,30 @@ export default function Main_Page() {
             </Button>
           </div>
         </div>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container'>
+            <Button
+              style={{
+                  backgroundColor: '#48CFCB',
+                  position: 'absolute',
+                  borderRadius: '50%',
+                  width: '5vh',
+                  height: '5vh',
+                  minWidth: '0',
+                  minHeight: '0',
+                  left: '40px',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+              }}
+              >
+              <DiamondIcon sx={{ color: 'light green' }} />
+              <>{userAccount.Gemas}</>
+            </Button>
+          </div>
+        </div>
+        </>
       )}
       {visibleDrawerAchievements && type==='client' && (
         <div className='modal-achievements' onClick={handleCloseAchievements}>

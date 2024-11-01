@@ -37,11 +37,20 @@ def get_missions():
 def delete_missions(misiones):
     try:
         misiones = misiones.split(',')
+        usuarios = []
         mis_ref = db.collection('missions')
         for mis in misiones:
             doc_ref = mis_ref.document(mis)
             doc = doc_ref.get()
+            uid = doc.to_dict().get('uid',' ')
+            usuarios.append(uid)
             doc.reference.delete()
+        user_ref = db.collection('users')
+        for uid in usuarios:
+            documento = user_ref.where('uid', '==', uid).get() 
+            for doc in documento: 
+                gemas = doc.to_dict().get('Gemas', 0)  
+                user_ref.document(doc.id).update({'Gemas': gemas + len(misiones)}) 
     except Exception as e:
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
