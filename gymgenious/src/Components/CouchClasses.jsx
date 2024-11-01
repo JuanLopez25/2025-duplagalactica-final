@@ -35,6 +35,7 @@ import { FixedSizeList } from 'react-window';
 import Checkbox from '@mui/material/Checkbox';
 import { select } from 'framer-motion/client';
 
+
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
@@ -95,7 +96,6 @@ function CouchClasses() {
       : [...prev, userId]
     );
   };
-
   const hanldeCheckList = () => {
     setOpenCheckList(true);
   };

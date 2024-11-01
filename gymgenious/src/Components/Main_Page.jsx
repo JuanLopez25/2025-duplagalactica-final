@@ -676,9 +676,6 @@ export default function Main_Page() {
       });
       const membresia = await response2.json();
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
-
-      
-
       console.log("membresia",firstFiler)
       setMembership(firstFiler)
     } catch (error) {
