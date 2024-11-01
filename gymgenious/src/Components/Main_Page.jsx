@@ -109,7 +109,7 @@ export default function Main_Page() {
     setOpenAchievements(false);
       setTimeout(() => {
         setVisibleDrawerAchievements(false);
-      }, 500);
+      }, 450);
   }
   
   const [membership, setMembership] = useState([])
@@ -186,7 +186,13 @@ export default function Main_Page() {
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
                           {userMail && type==='client' && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
-                          )}         
+                          )}    
+                          {userMail && type==='coach' && (
+                            <>
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
+                            </>
+                          )}       
                         </div>
                       </div>
                     </div>
@@ -296,7 +302,8 @@ export default function Main_Page() {
 
   const changeShowCalendar = () => {
     setShowCalendar(prevState => !prevState);
-    handleCloseModal()
+    handleCloseSearch();
+    handleCloseModal();
   };
 
   const handleSelectEvent = (event) => {
@@ -352,7 +359,7 @@ export default function Main_Page() {
           puntuacion: comment ? comment.calification : -1,
         };
       });
-      console.log("classes obtenidas",userAccount)
+      
       dataWithSalaAndComments.forEach(clase => {
         const startDate = new Date(clase.dateInicio);
         const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
@@ -372,7 +379,7 @@ export default function Main_Page() {
             nextStartDate.setDate(today.getDate() + daysUntilNextClass);
             nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
           }
-          console.log(nextStartDate)
+          
           for (let i = 0; i < 4; i++) {
             calendarEvents.push({
               title: clase.name,
@@ -396,6 +403,7 @@ export default function Main_Page() {
         }
       });
       setOpenCircularProgress(false);
+      console.log(calendarEvents)
       setEvents(calendarEvents);
       setClasses(dataWithSalaAndComments);
       setTotalClasses(dataWithSala);
@@ -558,7 +566,6 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      console.log("evento",event)
       let starsValue = changingStars ? stars : event.puntuacion;
       let commentValue = changingComment ? comment : event.comentario;
       const response = await fetch('http://127.0.0.1:5000/add_calification', {
@@ -630,7 +637,6 @@ export default function Main_Page() {
       });
       const membresia = await response2.json();
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
-      console.log(firstFiler)
       setMembership(firstFiler)
     } catch (error) {
         console.error("Error fetching user:", error);
@@ -646,7 +652,7 @@ export default function Main_Page() {
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
       {type==='client' && (
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '192px' : '114px' : showCalendar ? '50px' : openSearch ? '340px' : '96px', width: isSmallScreen ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button onClick={handleViewAchievements}
               style={{
@@ -713,7 +719,7 @@ export default function Main_Page() {
         </div>
         ) : (
           <>
-            <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: '30%', position: 'absolute', top: '0.5%'}}>
+            <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
               <div className='input-small-container'>
                 {openSearch ? (
                     <input
