@@ -23,6 +23,7 @@ import Loader from '../real_components/loader.jsx'
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import DiamondIcon from '@mui/icons-material/Diamond';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 
@@ -443,7 +444,7 @@ export default function Main_Page() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ id: event,membId:'QJMEv9rd9SSSQD06WrJX' })
+        body: JSON.stringify({ id: event,membId:membership[0].id })
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
@@ -536,6 +537,7 @@ export default function Main_Page() {
     }
     if (userAccount) {
       fetchClasses();
+      fetchMissions()
     }
   }, [userAccount]);
 
@@ -588,6 +590,43 @@ export default function Main_Page() {
     }
   }
 
+
+  const fetchMissions = async () =>{
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response4 = await fetch(`http://127.0.0.1:5000/get_missions`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const missions = await response4.json();
+      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.id)
+      console.log("misiones",missionsIds)
+      const formData = new FormData();
+      formData.append('misiones', missionsIds);
+      if (missionsIds.length!=0) {
+        const response5 = await fetch('http://127.0.0.1:5000/delete_missions', {
+          method: 'DELETE', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: formData
+        });
+        if (!response5.ok) {
+          throw new Error('Error al actualizar la clase: ' + response5.statusText);
+        }
+      }
+    } catch (e) {
+
+    }
+  }
+
+
   const fetchUser = async () => {
     setOpenCircularProgress(true);
     try {
@@ -637,6 +676,7 @@ export default function Main_Page() {
       });
       const membresia = await response2.json();
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+      console.log("membresia",firstFiler)
       setMembership(firstFiler)
     } catch (error) {
         console.error("Error fetching user:", error);
@@ -652,6 +692,7 @@ export default function Main_Page() {
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
       {type==='client' && (
+        <>
         <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button onClick={handleViewAchievements}
@@ -673,6 +714,30 @@ export default function Main_Page() {
             </Button>
           </div>
         </div>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container'>
+            <Button
+              style={{
+                  backgroundColor: '#48CFCB',
+                  position: 'absolute',
+                  borderRadius: '50%',
+                  width: '5vh',
+                  height: '5vh',
+                  minWidth: '0',
+                  minHeight: '0',
+                  left: '40px',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+              }}
+              >
+              <DiamondIcon sx={{ color: 'light green' }} />
+              <>{userAccount.Gemas}</>
+            </Button>
+          </div>
+        </div>
+        </>
       )}
       {visibleDrawerAchievements && type==='client' && (
         <div className='modal-achievements' onClick={handleCloseAchievements}>

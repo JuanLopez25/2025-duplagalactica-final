@@ -137,3 +137,52 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
     except Exception as e:
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
+
+
+def update_class_use(usuarios,selectedEvent):
+    try:
+        usuarios = usuarios.split(',')
+        users_ref = db.collection('membershipsUsers')
+        membership_ids = []
+        membresias_eliminadas = []
+        for user_id in usuarios:
+            user_doc = users_ref.where('userId', '==', user_id).get()
+            for doc in user_doc:
+                membership_ids.append(doc.to_dict().get('membershipId'))
+        memb_ref = db.collection('memberships')
+        for membership_id in membership_ids:
+            memb_doc = memb_ref.document(membership_id).get()
+            if memb_doc.exists:
+                current_top = memb_doc.to_dict().get('top', 0) 
+                new_top = current_top - 1  
+                memb_ref.document(membership_id).update({'top': new_top})
+                booked_classes = memb_doc.to_dict().get('BookedClasses', [])
+                if new_top < len(booked_classes):
+                    if selectedEvent in booked_classes:
+                        booked_classes.remove(selectedEvent)
+                        membresias_eliminadas.append(membership_id)
+                        memb_ref.document(membership_id).update({'BookedClasses': booked_classes})
+        usuarios_eliminados = []
+        for mem in membresias_eliminadas:
+            documento = users_ref.where('membershipId', '==', mem).get()
+            for doc in documento:
+                if doc.exists:
+                    usuarios_eliminados.append(doc.to_dict().get('userId'))
+        usuarios_referencia = db.collection('users')
+        mails_eliminados = []
+        for usuario in usuarios_eliminados:
+            documento = usuarios_referencia.where('uid','==',usuario).get()
+            for doc in documento:
+                if doc.exists:
+                    mails_eliminados.append(doc.to_dict().get('Mail'))
+        clases_ref = db.collection('classes')
+        documento_clase = clases_ref.document(selectedEvent).get()
+        if documento_clase.exists:
+            booked_users = documento_clase.to_dict().get('BookedUsers', [])
+            for mail in mails_eliminados:
+                booked_users.remove(mail)
+            clases_ref.document(selectedEvent).update({'BookedUsers': booked_users})
+        return {"message": "Actualización realizada"} 
+    except Exception as e:
+        print(f"Error actualizando la clase: {e}")
+        raise RuntimeError("No se pudo actualizar la clase")

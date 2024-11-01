@@ -33,6 +33,8 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { FixedSizeList } from 'react-window';
 import Checkbox from '@mui/material/Checkbox';
+import { select } from 'framer-motion/client';
+
 
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
@@ -85,8 +87,15 @@ function CouchClasses() {
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
   const [openCheckList, setOpenCheckList] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState(['1']);
 
-
+  const toggleUserSelection = (userId) => {
+    setSelectedUsers((prev) => 
+      prev.includes(userId) 
+      ? prev.filter(id => id !== userId) 
+      : [...prev, userId]
+    );
+  };
   const hanldeCheckList = () => {
     setOpenCheckList(true);
   };
@@ -94,6 +103,62 @@ function CouchClasses() {
   const closeCheckList = () => {
     setOpenCheckList(false);
   };
+
+  const saveCheckList = async () => {
+    setOpenCircularProgress(true)
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+      console.error('Token no disponible en localStorage');
+      return;
+    }
+    const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_users`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+    });
+    if (!response.ok) {
+        throw new Error('Error al obtener las rutinas: ' + response.statusText);
+    }
+    const data = await response.json();
+    const emailToUidMap = data.reduce((acc, user) => {
+      acc[user.Mail] = user.uid;
+      return acc;
+    }, {});
+    const updatedSelectedUsers = selectedUsers.map(email => emailToUidMap[email] || email);
+    if (selectedEvent.permanent=='Si') {
+      const formData = new FormData();
+      formData.append('usuarios', updatedSelectedUsers);
+      formData.append('selectedEvent',selectedEvent.id);
+      const response2 = await fetch('http://127.0.0.1:5000/update_class_use', {
+          method: 'PUT', 
+          headers: {
+              'Authorization': `Bearer ${authToken}`
+          },
+          body: formData,
+      });
+      if (!response2.ok) {
+          throw new Error('Error al actualizar los datos del usuario: ' + response.statusText);
+      }
+    }
+    const formData3 = new FormData();
+    formData3.append('usuarios', updatedSelectedUsers);
+    formData3.append('selectedEvent',selectedEvent.id);
+    const response3 = await fetch('http://127.0.0.1:5000/add_missions', {
+        method: 'POST', 
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        },
+        body: formData3,
+    });
+    if (!response3.ok) {
+        throw new Error('Error al actualizar los datos de las misiones: ' + response3.statusText);
+    }
+    setTimeout(() => {
+      setOpenCircularProgress(false);
+    }, 2000);
+    window.location.reload()
+  }
 
   const handleOpenSearch = () => {
     setOpenSearch(true);
@@ -128,7 +193,7 @@ function CouchClasses() {
         <ListItem style={style} key={user} component="div" disablePadding>
           <ListItemButton>
             <ListItemText primary={user} />
-            <Checkbox {...label} defaultChecked />
+            <Checkbox {...label} defaultChecked onChange={() => toggleUserSelection(user)} />
           </ListItemButton>
         </ListItem>
         ))}
@@ -943,7 +1008,7 @@ function CouchClasses() {
                       </FixedSizeList>
                     </Box>
                     <button onClick={closeCheckList} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
-                    <button onClick={closeCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
+                    <button onClick={saveCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
                     </div>
                   </div>
                 )}
