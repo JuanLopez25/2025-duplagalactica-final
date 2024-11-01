@@ -137,3 +137,34 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
     except Exception as e:
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
+
+
+def update_class_use(usuarios,selectedEvent):
+    try:
+        usuarios = usuarios.split(',')
+        users_ref = db.collection('membershipsUsers')
+        membership_ids = []
+        usuarios_a_eliminar = []
+        for user_id in usuarios:
+            user_doc = users_ref.where('userId', '==', user_id).get()
+            for doc in user_doc:
+                membership_ids.append(doc.to_dict().get('membershipId'))
+        
+        memb_ref = db.collection('memberships')
+        for membership_id in membership_ids:
+            memb_doc = memb_ref.document(membership_id).get()
+            if memb_doc.exists:
+                current_top = memb_doc.to_dict().get('top', 0) 
+                new_top = current_top - 1  
+                memb_ref.document(membership_id).update({'top': new_top})
+
+                booked_classes = memb_doc.to_dict().get('BookedClasses', [])
+                if new_top < len(booked_classes):
+                    if selectedEvent in booked_classes:
+                        booked_classes.remove(selectedEvent)
+                        usuarios_a_eliminar.extend([user_id.strip() for user_id in usuarios if user_id.strip() in booked_classes])
+                        memb_ref.document(membership_id).update({'BookedClasses': booked_classes})
+        return {"message": "Actualización realizada"} 
+    except Exception as e:
+        print(f"Error actualizando la clase: {e}")
+        raise RuntimeError("No se pudo actualizar la clase")

@@ -28,6 +28,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import { FixedSizeList } from 'react-window';
+import Checkbox from '@mui/material/Checkbox';
+import { select } from 'framer-motion/client';
 
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
@@ -79,6 +85,63 @@ function CouchClasses() {
   const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
+  const [openCheckList, setOpenCheckList] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState(['1']);
+
+  const toggleUserSelection = (userId) => {
+    setSelectedUsers((prev) => 
+      prev.includes(userId) 
+      ? prev.filter(id => id !== userId) 
+      : [...prev, userId]
+    );
+  };
+
+  const hanldeCheckList = () => {
+    setOpenCheckList(true);
+  };
+
+  const closeCheckList = () => {
+    setOpenCheckList(false);
+  };
+
+  const saveCheckList = async () => {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+      console.error('Token no disponible en localStorage');
+      return;
+    }
+    const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_users`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+    });
+    if (!response.ok) {
+        throw new Error('Error al obtener las rutinas: ' + response.statusText);
+    }
+    const data = await response.json();
+    const emailToUidMap = data.reduce((acc, user) => {
+      acc[user.Mail] = user.uid;
+      return acc;
+    }, {});
+    const updatedSelectedUsers = selectedUsers.map(email => emailToUidMap[email] || email);
+    if (selectedEvent.permanent=='Si') {
+      const formData = new FormData();
+      formData.append('usuarios', updatedSelectedUsers);
+      formData.append('selectedEvent',selectedEvent.id)
+      const response2 = await fetch('http://127.0.0.1:5000/update_class_use', {
+          method: 'PUT', 
+          headers: {
+              'Authorization': `Bearer ${authToken}`
+          },
+          body: formData,
+      });
+      if (!response2.ok) {
+          throw new Error('Error al actualizar los datos del usuario: ' + response.statusText);
+      }
+    }
+    console.log("evento",selectedEvent)
+  }
 
   const handleOpenSearch = () => {
     setOpenSearch(true);
@@ -101,6 +164,24 @@ function CouchClasses() {
     const year = date.getFullYear();
     
     return `${year}-${month}-${day}`;
+  }
+
+  function renderRow(props) {
+    const { index, style } = props;
+    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+  
+    return (
+      <>
+        {selectedEvent?.BookedUsers?.map((user) => (
+        <ListItem style={style} key={user} component="div" disablePadding>
+          <ListItemButton>
+            <ListItemText primary={user} />
+            <Checkbox {...label} defaultChecked onChange={() => toggleUserSelection(user)} />
+          </ListItemButton>
+        </ListItem>
+        ))}
+      </>
+    );
   }
 
   useEffect(() => {
@@ -643,6 +724,15 @@ function CouchClasses() {
                           rounded
                           block
                           size="lg"
+                          onClick={()=>hanldeCheckList(event)}
+                        >
+                          Check list
+                        </MDBBtn>
+                        <MDBBtn
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                          rounded
+                          block
+                          size="lg"
                           onClick={()=>handleDeleteClass(event.id)}
                         >
                           Delete class
@@ -883,7 +973,28 @@ function CouchClasses() {
                       null
                     )}
                 </Paper>
-
+                {openCheckList && (
+                  <div className="Modal" style={{zIndex:'1001'}}>
+                    <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
+                      <h2>Assist?</h2>
+                      <Box
+                      sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
+                    >
+                      <FixedSizeList
+                        height={400}
+                        width={'80%'}
+                        itemSize={46}
+                        itemCount={selectedEvent?.BookedUsers?.length}
+                        overscanCount={5}
+                      >
+                        {renderRow}
+                      </FixedSizeList>
+                    </Box>
+                    <button onClick={closeCheckList} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
+                    <button onClick={saveCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
+                    </div>
+                  </div>
+                )}
                 {editClass && (
                     <div className="Modal" style={{zIndex:'1001'}}>
                         <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
