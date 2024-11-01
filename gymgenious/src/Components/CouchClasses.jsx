@@ -105,6 +105,7 @@ function CouchClasses() {
   };
 
   const saveCheckList = async () => {
+    setOpenCircularProgress(true)
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
       console.error('Token no disponible en localStorage');
@@ -128,7 +129,7 @@ function CouchClasses() {
     if (selectedEvent.permanent=='Si') {
       const formData = new FormData();
       formData.append('usuarios', updatedSelectedUsers);
-      formData.append('selectedEvent',selectedEvent.id)
+      formData.append('selectedEvent',selectedEvent.id);
       const response2 = await fetch('http://127.0.0.1:5000/update_class_use', {
           method: 'PUT', 
           headers: {
@@ -140,7 +141,23 @@ function CouchClasses() {
           throw new Error('Error al actualizar los datos del usuario: ' + response.statusText);
       }
     }
-    console.log("evento",selectedEvent)
+    const formData3 = new FormData();
+    formData3.append('usuarios', updatedSelectedUsers);
+    formData3.append('selectedEvent',selectedEvent.id);
+    const response3 = await fetch('http://127.0.0.1:5000/add_missions', {
+        method: 'POST', 
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        },
+        body: formData3,
+    });
+    if (!response3.ok) {
+        throw new Error('Error al actualizar los datos de las misiones: ' + response3.statusText);
+    }
+    setTimeout(() => {
+      setOpenCircularProgress(false);
+    }, 2000);
+    window.location.reload()
   }
 
   const handleOpenSearch = () => {
