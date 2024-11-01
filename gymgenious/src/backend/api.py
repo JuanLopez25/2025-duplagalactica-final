@@ -8,7 +8,7 @@ from Controllers.usersController import get_unique_user_by_email_route ,get_user
 from Controllers.excersicesController import create_exersice_route,get_excersice_by_owner_route,get_excersices_route,update_exer_info_route
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
 from Controllers.salasController import get_salas_route
-from Controllers.missionsController import add_missions_route
+from Controllers.missionsController import add_missions_route,get_missions_route,delete_missions_route
 from Controllers.membershipController import get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 
 
@@ -21,6 +21,11 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route('/get_classes', methods=['GET'])
 def get_classes():
     return get_classes_route()
+
+@app.route('/get_missions', methods=['GET'])
+def get_missions():
+    return get_missions_route()
+
 
 @app.route('/get_comments', methods=['GET'])
 def get_comments():
@@ -146,6 +151,20 @@ def update_class_use():
         event = request.form.get('selectedEvent')
         print(usuarios)
         return update_class_use_route(usuarios,event)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/delete_missions', methods=['DELETE'])
+def delete_missions():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        misiones = request.form.get('misiones')
+        print("llegue acs",misiones)
+        
+        return delete_missions_route(misiones)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})

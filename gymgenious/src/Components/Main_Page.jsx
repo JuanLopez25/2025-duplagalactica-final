@@ -536,6 +536,7 @@ export default function Main_Page() {
     }
     if (userAccount) {
       fetchClasses();
+      fetchMissions()
     }
   }, [userAccount]);
 
@@ -588,6 +589,43 @@ export default function Main_Page() {
     }
   }
 
+
+  const fetchMissions = async () =>{
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response4 = await fetch(`http://127.0.0.1:5000/get_missions`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const missions = await response4.json();
+      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.id)
+      console.log("misiones",missionsIds)
+      const formData = new FormData();
+      formData.append('misiones', missionsIds);
+      if (missionsIds.length!=0) {
+        const response5 = await fetch('http://127.0.0.1:5000/delete_missions', {
+          method: 'DELETE', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: formData
+        });
+        if (!response5.ok) {
+          throw new Error('Error al actualizar la clase: ' + response5.statusText);
+        }
+      }
+    } catch (e) {
+
+    }
+  }
+
+
   const fetchUser = async () => {
     setOpenCircularProgress(true);
     try {
@@ -637,6 +675,9 @@ export default function Main_Page() {
       });
       const membresia = await response2.json();
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+
+      
+
       console.log("membresia",firstFiler)
       setMembership(firstFiler)
     } catch (error) {

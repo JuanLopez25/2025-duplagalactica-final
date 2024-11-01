@@ -23,3 +23,25 @@ def add_missions(usuarios,selectedEvent):
     except Exception as e:
         print(f"Error al crear la clase: {e}")
         raise RuntimeError("No se pudo crear la clase")
+
+def get_missions():
+    try:
+        missions_ref = db.collection('missions')
+        docs = missions_ref.stream()
+        classes = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return classes
+    except Exception as e:
+        print(f"Error al obtener las clases: {e}")
+        raise RuntimeError("No se pudo obtener las clases")
+
+def delete_missions(misiones):
+    try:
+        misiones = misiones.split(',')
+        mis_ref = db.collection('missions')
+        for mis in misiones:
+            doc_ref = mis_ref.document(mis)
+            doc = doc_ref.get()
+            doc.reference.delete()
+    except Exception as e:
+        print(f"Error actualizando el usuario: {e}")
+        raise RuntimeError("No se pudo actualizar el usuario")
