@@ -186,7 +186,13 @@ export default function Main_Page() {
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
                           {userMail && type==='client' && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
-                          )}         
+                          )}    
+                          {userMail && type==='coach' && (
+                            <>
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
+                            </>
+                          )}       
                         </div>
                       </div>
                     </div>
@@ -353,7 +359,7 @@ export default function Main_Page() {
           puntuacion: comment ? comment.calification : -1,
         };
       });
-      console.log("classes obtenidas",userAccount)
+      
       dataWithSalaAndComments.forEach(clase => {
         const startDate = new Date(clase.dateInicio);
         const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
@@ -373,7 +379,7 @@ export default function Main_Page() {
             nextStartDate.setDate(today.getDate() + daysUntilNextClass);
             nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
           }
-          console.log(nextStartDate)
+          
           for (let i = 0; i < 4; i++) {
             calendarEvents.push({
               title: clase.name,
@@ -397,6 +403,7 @@ export default function Main_Page() {
         }
       });
       setOpenCircularProgress(false);
+      console.log(calendarEvents)
       setEvents(calendarEvents);
       setClasses(dataWithSalaAndComments);
       setTotalClasses(dataWithSala);
@@ -559,7 +566,6 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      console.log("evento",event)
       let starsValue = changingStars ? stars : event.puntuacion;
       let commentValue = changingComment ? comment : event.comentario;
       const response = await fetch('http://127.0.0.1:5000/add_calification', {
@@ -631,7 +637,6 @@ export default function Main_Page() {
       });
       const membresia = await response2.json();
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
-      console.log(firstFiler)
       setMembership(firstFiler)
     } catch (error) {
         console.error("Error fetching user:", error);

@@ -28,6 +28,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import { FixedSizeList } from 'react-window';
+import Checkbox from '@mui/material/Checkbox';
 
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
@@ -79,6 +84,16 @@ function CouchClasses() {
   const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
+  const [openCheckList, setOpenCheckList] = useState(false);
+
+
+  const hanldeCheckList = () => {
+    setOpenCheckList(true);
+  };
+
+  const closeCheckList = () => {
+    setOpenCheckList(false);
+  };
 
   const handleOpenSearch = () => {
     setOpenSearch(true);
@@ -101,6 +116,24 @@ function CouchClasses() {
     const year = date.getFullYear();
     
     return `${year}-${month}-${day}`;
+  }
+
+  function renderRow(props) {
+    const { index, style } = props;
+    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+  
+    return (
+      <>
+        {selectedEvent?.BookedUsers?.map((user) => (
+        <ListItem style={style} key={user} component="div" disablePadding>
+          <ListItemButton>
+            <ListItemText primary={user} />
+            <Checkbox {...label} defaultChecked />
+          </ListItemButton>
+        </ListItem>
+        ))}
+      </>
+    );
   }
 
   useEffect(() => {
@@ -643,6 +676,15 @@ function CouchClasses() {
                           rounded
                           block
                           size="lg"
+                          onClick={()=>hanldeCheckList(event)}
+                        >
+                          Check list
+                        </MDBBtn>
+                        <MDBBtn
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                          rounded
+                          block
+                          size="lg"
                           onClick={()=>handleDeleteClass(event.id)}
                         >
                           Delete class
@@ -883,7 +925,28 @@ function CouchClasses() {
                       null
                     )}
                 </Paper>
-
+                {openCheckList && (
+                  <div className="Modal" style={{zIndex:'1001'}}>
+                    <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
+                      <h2>Assist?</h2>
+                      <Box
+                      sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
+                    >
+                      <FixedSizeList
+                        height={400}
+                        width={'80%'}
+                        itemSize={46}
+                        itemCount={selectedEvent?.BookedUsers?.length}
+                        overscanCount={5}
+                      >
+                        {renderRow}
+                      </FixedSizeList>
+                    </Box>
+                    <button onClick={closeCheckList} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
+                    <button onClick={closeCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
+                    </div>
+                  </div>
+                )}
                 {editClass && (
                     <div className="Modal" style={{zIndex:'1001'}}>
                         <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
