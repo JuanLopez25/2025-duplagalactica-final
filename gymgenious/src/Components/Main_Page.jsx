@@ -7,6 +7,7 @@ import {jwtDecode} from "jwt-decode";
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import Slide from '@mui/material/Slide';
 import CheckIcon from '@mui/icons-material/Check';
 import Calendar from '../real_components/Calendar.jsx';
@@ -987,7 +988,7 @@ export default function Main_Page() {
                   justifyContent: 'center',
               }}
               >
-              <NotificationsActiveIcon sx={{ color: '#424242' }} />
+              <NotificationsIcon sx={{ color: '#424242' }} />
             </Button>
           </div>
         </div></>)

@@ -1049,20 +1049,42 @@ function CouchClasses() {
                             ) : (
                               <>
                                 {visibleRows.map((row) => (
-                                    <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
-                                    <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                        {row.name}
-                                    </TableCell>
-                                    {!isSmallScreen500 && (
-                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
-                                    )}
-                                    {!isSmallScreen400 && (
-                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
-                                    )}
-                                    {!isSmallScreen600 && (
-                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
-                                    )}
-                                    </TableRow>
+                                    <>
+                                    {row.fecha==null ? (
+                                      <>
+                                      <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
+                                      <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red',borderRight: '1px solid #424242', color:'black', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
+                                          {row.name}
+                                      </TableCell>
+                                      {!isSmallScreen500 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red', borderRight: '1px solid #424242', color: 'black' }}>{row.hour}</TableCell>
+                                      )}
+                                      {!isSmallScreen400 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red', borderRight: '1px solid #424242', color: 'black' }}>{formatDate(new Date(row.start))}</TableCell>
+                                      )}
+                                      {!isSmallScreen600 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red', color: 'black' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
+                                      )}
+                                      </TableRow>
+                                      </> ) : 
+                                      (<>
+                                      <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
+                                      <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
+                                          {row.name}
+                                      </TableCell>
+                                      {!isSmallScreen500 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
+                                      )}
+                                      {!isSmallScreen400 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
+                                      )}
+                                      {!isSmallScreen600 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
+                                      )}
+                                      </TableRow>
+                                      </>)
+                                    }
+                                    </>
                                 ))}
                               </>
                             )}
