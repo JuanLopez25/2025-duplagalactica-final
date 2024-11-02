@@ -41,7 +41,9 @@ export default function UserMemberships() {
   const isSmallScreen = useMediaQuery('(max-width:768px)');
   const [type, setType] = useState(null);
   const [myMembership, setMyMembership] = useState(false);
-  const [user,setUser] = useState()
+  const [user,setUser] = useState();
+  const [membership, setMembership] = useState([]);
+  const [userAccount, setUserAccount] = useState([]);
 
   const handleChangeMyMembership = () => {
     setMyMembership(!myMembership);
@@ -171,6 +173,7 @@ export default function UserMemberships() {
   }, [userMail]);
 
   const fetchUser = async () => {
+    setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
@@ -179,20 +182,48 @@ export default function UserMemberships() {
       }
       const encodedUserMail = encodeURIComponent(userMail);
       const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setUser(data)
-        setType(data.type);
-        if(data.type!='client'){
-          navigate('/');
-        }
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data = await response.json();
+      setUserAccount(data)
+      setType(data.type);
+      //console.log("este es el usuario",data)
+      const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response3.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data3 = await response3.json();
+      const membershipsOfUser = data3.filter(memb => memb.userId == data.uid);
+      console.log(data3)
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
+      const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
+      const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memberships`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const membresia = await response2.json();
+      const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+      //console.log("membresia",firstFiler)
+      setMembership(firstFiler)
+      setOpenCircularProgress(false);
     } catch (error) {
         console.error("Error fetching user:", error);
     }
@@ -233,11 +264,10 @@ export default function UserMemberships() {
             <h2 style={{color:'#424242'}}>My Membership</h2>
                 <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                     <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                        <p>my membership</p>
-                        <p>months remaining</p>
+                        <p>Classes booked {membership[0].BookedClasses.length}/{membership[0].top}</p>
+                        <p>Days remaining</p>
                     </div>   
                 </div>
-                <button>cancel my membership</button>
                 <button onClick={handleChangeMyMembership}>upgrade</button>
             </div>
         </div>
