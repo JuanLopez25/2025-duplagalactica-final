@@ -14,6 +14,7 @@ def add_missions(usuarios,selectedEvent):
         usuarios.remove('1')
         class_ref = db.collection('classes')
         document = class_ref.document(selectedEvent).get()
+        created_class = []
         if document.exists:
             dia = document.to_dict().get('day','Viernes')
             for usuario in usuarios:
