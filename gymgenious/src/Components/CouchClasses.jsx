@@ -89,8 +89,10 @@ function CouchClasses() {
   const [totalClasses, setTotalClasses] = useState([]);
   const [openCheckList, setOpenCheckList] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState(['1']);
+  const [checked, setChecked] = useState(false);
 
   const toggleUserSelection = (userId) => {
+    setChecked(!checked)
     setSelectedUsers((prev) => 
       prev.includes(userId) 
       ? prev.filter(id => id !== userId) 
@@ -186,7 +188,6 @@ function CouchClasses() {
 
   function renderRow(props) {
     const { index, style } = props;
-    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
   
     return (
       <>
@@ -194,7 +195,7 @@ function CouchClasses() {
         <ListItem style={style} key={user} component="div" disablePadding>
           <ListItemButton>
             <ListItemText primary={user} />
-            <Checkbox {...label} defaultChecked onChange={() => toggleUserSelection(user)} />
+            <Checkbox checked={checked} onChange={() => toggleUserSelection(user)} inputProps={{ 'aria-label': 'controlled' }}/>
           </ListItemButton>
         </ListItem>
         ))}
@@ -647,12 +648,12 @@ function CouchClasses() {
     classes?.forEach(row => {
       if(
         (row.permanent === 'No' &&
-          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000) &&
           (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
           )
           ||
         (row.permanent === 'Si' && 
-          (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000) &&
           (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
         )
       ) {
@@ -802,6 +803,7 @@ function CouchClasses() {
                         >
                           Edit class
                         </MDBBtn>
+                        {new Date(event.start).getDate() == new Date().getDate() && (
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -811,6 +813,7 @@ function CouchClasses() {
                         >
                           Check list
                         </MDBBtn>
+                        )}
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
