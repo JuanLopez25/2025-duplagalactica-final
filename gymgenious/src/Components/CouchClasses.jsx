@@ -126,10 +126,11 @@ function CouchClasses() {
       acc[user.Mail] = user.uid;
       return acc;
     }, {});
+    const allUsers = selectedEvent.BookedUsers.map(email => emailToUidMap[email] || email)
     const updatedSelectedUsers = selectedUsers.map(email => emailToUidMap[email] || email);
     if (selectedEvent.permanent=='Si') {
       const formData = new FormData();
-      formData.append('usuarios', updatedSelectedUsers);
+      formData.append('usuarios', allUsers);
       formData.append('selectedEvent',selectedEvent.id);
       const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_class_use', {
           method: 'PUT', 

@@ -523,6 +523,7 @@ export default function Main_Page() {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
       await fetchClasses();
+      window.location.reload();
       setOpenCircularProgress(false);
       handleCloseModal();
       setSuccessBook(true)
@@ -568,6 +569,7 @@ export default function Main_Page() {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
       await fetchClasses();
+      window.location.reload();
       setOpenCircularProgress(false);
       handleCloseModal();
       setSuccessUnbook(true);

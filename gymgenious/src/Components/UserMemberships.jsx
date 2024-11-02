@@ -42,6 +42,7 @@ export default function UserMemberships() {
   const [type, setType] = useState(null);
   const [myMembership, setMyMembership] = useState(false);
   const [user,setUser] = useState()
+  const [membership, setMembership] = useState([])
 
   const handleChangeMyMembership = () => {
     setMyMembership(!myMembership);
@@ -64,6 +65,7 @@ export default function UserMemberships() {
   };
 
   const handleAquireMembership = async () => {
+    setOpenCircularProgress(true)
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
@@ -92,7 +94,8 @@ export default function UserMemberships() {
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
-      
+      window.location.reload()
+      setOpenCircularProgress(false)
     } catch (error) {
       console.error("Error fetching classes:", error);
     }
@@ -190,6 +193,41 @@ export default function UserMemberships() {
         const data = await response.json();
         setUser(data)
         setType(data.type);
+        const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
+            method: 'GET', 
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (!response3.ok) {
+            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+        }
+        const data3 = await response3.json();
+        const membershipsOfUser = data3.filter(memb => memb.userId == data.uid)
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
+        const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
+        const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memberships`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+        });
+        const membresia = await response2.json();
+        const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+        const membFinal = membresiaFiltered.map(memb => {
+          const membInfo = membresia.find(membresia => membresia.id === memb.membershipId);
+          return {
+            ...memb,
+            membInfo, 
+          };
+        });
+        console.log("membresia",membFinal)
+        setMembership(membFinal)
         if(data.type!='client'){
           navigate('/');
         }
@@ -233,8 +271,9 @@ export default function UserMemberships() {
             <h2 style={{color:'#424242'}}>My Membership</h2>
                 <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                     <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                        <p>my membership</p>
-                        <p>months remaining</p>
+                        <p>Type: {membership[0].membInfo.type}</p>
+                        <p>Expiration: {membership[0].exp.split('T')[0]}</p>
+                        <p>Remaining class to anotate: {membership[0].membInfo.top-membership[0].membInfo.BookedClasses.length}</p>
                     </div>   
                 </div>
                 <button>cancel my membership</button>
