@@ -68,6 +68,7 @@ function CouchClasses() {
   const [errorSala, setErrorSala] = useState(false);
   const [errorHour, setErrorHour] = useState(false);
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
+  const [newRows, setNewRows] = useState([]);
 
 
   const [fetchId,setFetchId] = useState('');
@@ -553,9 +554,54 @@ function CouchClasses() {
           ...comments
         };
       });
-
-      setClasses(dataWithSalaAndComments);
-      setTotalClasses(dataWithSalaAndComments);
+      const calendarEvents = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      dataWithSalaAndComments.forEach(clase => {
+        const startDate = new Date(clase.dateInicio);
+        const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
+        const endDate = new Date(clase.dateFin);
+        const CorrectEndDate = new Date(endDate.getTime() + 60 * 3 * 60 * 1000);
+  
+        if (clase.permanent === "Si") {
+          let nextStartDate = new Date(CorrectStarDate);
+          let nextEndDate = new Date(CorrectEndDate);
+  
+          if (nextStartDate < today) {
+            const dayOfWeek = CorrectStarDate.getDay();
+            let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
+            if (daysUntilNextClass === 0 && today > CorrectStarDate) {
+              daysUntilNextClass = 7;
+            }
+            nextStartDate.setDate(today.getDate() + daysUntilNextClass);
+            nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
+          }
+          
+          for (let i = 0; i < 4; i++) {
+            calendarEvents.push({
+              title: clase.name,
+              start: new Date(nextStartDate),
+              end: new Date(nextEndDate),
+              allDay: false,
+              ...clase,
+            });
+            nextStartDate.setDate(nextStartDate.getDate() + 7);
+            nextEndDate.setDate(nextEndDate.getDate() + 7);
+          }
+        } else {
+          if(startDate >= today)
+          calendarEvents.push({
+            title: clase.name,
+            start: new Date(CorrectStarDate),
+            end: new Date(CorrectEndDate),
+            allDay: false,
+            ...clase,
+          });
+        }
+      });
+      setClasses(calendarEvents);
+      setTotalClasses(calendarEvents);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -595,6 +641,26 @@ function CouchClasses() {
         throw error;
     }
   };
+
+  useEffect(() => {
+    const newRowsList=[];
+    classes?.forEach(row => {
+      if(
+        (row.permanent === 'No' &&
+          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
+          )
+          ||
+        (row.permanent === 'Si' && 
+          (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+        )
+      ) {
+        newRowsList.push(row);
+      }
+      setNewRows(newRowsList);
+    });
+  }, [classes])
   
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -661,7 +727,7 @@ function CouchClasses() {
 
   const visibleRows = React.useMemo(
     () =>
-      [...classes]
+      [...newRows]
         .sort((a, b) =>
           order === 'asc'
             ? a[orderBy] < b[orderBy]
@@ -672,7 +738,7 @@ function CouchClasses() {
             : 1
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, classes]
+    [order, orderBy, page, rowsPerPage, newRows]
   );
 
   function ECommerce({event}) {
@@ -688,7 +754,7 @@ function CouchClasses() {
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
                       <div className="d-flex align-items-center justify-content-between mb-3">
                         <p className="small mb-0" style={{color: '#424242' }}><AccessAlarmsIcon sx={{ color: '#48CFCB'}} />{event.dateInicio.split('T')[1].split(':').slice(0, 2).join(':')} - {event.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.dateInicio))}</p>
+                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.start))}</p>
                       </div>
                     </div>
                     <div className="d-flex align-items-center mb-4">
@@ -902,12 +968,12 @@ function CouchClasses() {
                                     {!isSmallScreen400 && (
                                     <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
                                         <TableSortLabel
-                                        active={orderBy === 'dateInicio'}
-                                        direction={orderBy === 'dateInicio' ? order : 'asc'}
-                                        onClick={(event) => handleRequestSort(event, 'dateInicio')}
+                                        active={orderBy === 'start'}
+                                        direction={orderBy === 'start' ? order : 'asc'}
+                                        onClick={(event) => handleRequestSort(event, 'start')}
                                         >
                                         Date
-                                        {orderBy === 'dateInicio' ? (
+                                        {orderBy === 'start' ? (
                                             <Box component="span" sx={visuallyHidden}>
                                             {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                                             </Box>
@@ -951,7 +1017,7 @@ function CouchClasses() {
                                         <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
                                     )}
                                     {!isSmallScreen400 && (
-                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.dateInicio))}</TableCell>
+                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
                                     )}
                                     {!isSmallScreen600 && (
                                         <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
@@ -969,7 +1035,7 @@ function CouchClasses() {
                         <TablePagination
                             rowsPerPageOptions={[10]}
                             component="div"
-                            count={classes.length}
+                            count={newRows.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
                             onPageChange={handleChangePage}
@@ -978,7 +1044,7 @@ function CouchClasses() {
                         <TablePagination
                             rowsPerPageOptions={[5, 10, 25]}
                             component="div"
-                            count={classes.length}
+                            count={newRows.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
                             onPageChange={handleChangePage}
