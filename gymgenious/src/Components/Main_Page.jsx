@@ -100,6 +100,7 @@ export default function Main_Page() {
   const [totalClasses, setTotalClasses] = useState([]);
   const [openAchievements, setOpenAchievements] = useState(false);
   const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
+  const [progress,setProgress] = useState()
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -535,11 +536,16 @@ export default function Main_Page() {
     } else {
         console.error('No token found');
     }
+    
+  }, [userAccount]);
+
+  useEffect(()=> {
     if (userAccount) {
       fetchClasses();
-      fetchMissions()
+      fetchMissions();
+      fetchMissionsProgress();
     }
-  }, [userAccount]);
+  },[userAccount])
 
   useEffect(() => {
     if (userMail) {
@@ -558,6 +564,36 @@ export default function Main_Page() {
     }
 
   }, [filterClasses]);
+
+
+  const handleClaimMission = async (missionProgressId) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('misiones', missionProgressId);
+      const response5 = await fetch('http://127.0.0.1:5000/delete_missions', {
+        method: 'DELETE', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: formData
+      });
+      if (!response5.ok) {
+        throw new Error('Error al actualizar la clase: ' + response5.statusText);
+      }
+      setOpenCircularProgress(false);
+      window.location.reload();
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  }
+
+
 
 
   const saveCalification = async (event) => {
@@ -580,7 +616,6 @@ export default function Main_Page() {
       });
       setChangingStars(false)
       setChangingComment(false)
-      setOpenCircularProgress(false);
       await fetchClasses();
       setOpenCircularProgress(false);
       handleChangeCalifyModal()
@@ -592,6 +627,7 @@ export default function Main_Page() {
 
 
   const fetchMissions = async () =>{
+    setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
@@ -610,7 +646,7 @@ export default function Main_Page() {
       const formData = new FormData();
       formData.append('misiones', missionsIds);
       if (missionsIds.length!=0) {
-        const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_missions', {
+        const response5 = await fetch('http://127.0.0.1:5000/add_mission_progress', {
           method: 'DELETE', 
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -620,12 +656,66 @@ export default function Main_Page() {
         if (!response5.ok) {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
-      }
+      } 
+      setOpenCircularProgress(false);
     } catch (e) {
 
     }
   }
 
+  const fetchMissionsProgress = async () =>{
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response4 = await fetch(`http://127.0.0.1:5000/get_missions_progress`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const missions = await response4.json();
+      const progress = missions.filter(mis => mis.uid === userAccount.uid)
+      if (progress.length<3 && (userAccount.length!=0)) {
+        const formData = new FormData();
+        formData.append('cant', (3-progress.length));
+        formData.append('uid', userAccount.uid);
+        const response = await fetch('http://127.0.0.1:5000/assign_mission', {
+              method: 'POST',
+              headers: {
+                  'Authorization': `Bearer ${authToken}`
+              },
+              body: formData,
+        });
+        if (!response.ok) {
+          throw new Error('Error al actualizar la clase: ' + response5.statusText);
+        }
+        window.location.reload();
+      }
+      const response5 = await fetch(`http://127.0.0.1:5000/get_missions_template`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      if (!response5.ok) {
+        throw new Error('Error al actualizar la clase: ' + response5.statusText);
+      } 
+      const templates = await response5.json();
+      const enrichedProgress = progress.map(mission => {
+        const template = templates.find(temp => temp.id === mission.mid);
+        return template ? { ...mission, ...template } : mission;
+      });
+      setProgress(enrichedProgress)
+      console.log("progresos",enrichedProgress)
+      setOpenCircularProgress(false);
+    } catch (e) {
+
+    }
+  }
 
   const fetchUser = async () => {
     setOpenCircularProgress(true);
@@ -649,7 +739,6 @@ export default function Main_Page() {
       setUserAccount(data)
       setType(data.type);
       console.log("este es el usuario",data)
-      setOpenCircularProgress(false);
       const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
           method: 'GET', 
           headers: {
@@ -678,6 +767,7 @@ export default function Main_Page() {
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
       console.log("membresia",firstFiler)
       setMembership(firstFiler)
+      setOpenCircularProgress(false);
     } catch (error) {
         console.error("Error fetching user:", error);
     }
@@ -742,17 +832,55 @@ export default function Main_Page() {
       {visibleDrawerAchievements && type==='client' && (
         <div className='modal-achievements' onClick={handleCloseAchievements}>
           <div className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`} onClick={(e)=>e.stopPropagation()}>
-            <Carousel/>
+            {/* <Carousel/> */}
+            {progress.length >=1 ? (
+            <>
+            <>Asistir a {progress[0].Objective} clase los {progress[0].Day}</>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ width: '75%', mr: 1 }}>
-                <LinearProgress variant="determinate" value={25} />
+                <LinearProgress variant="determinate" value={(progress[0].progress*100)/progress[0].Objective} />
               </Box>
               <Box sx={{ minWidth: 35 }}>
                 <Typography variant="body2" sx={{ color: 'white' }}>
-                  25%
+                {(progress[0].progress*100)/progress[0].Objective>=100 ? (<>100%</>):(<>{(progress[0].progress*100)/progress[0].Objective}%</>)}
                 </Typography>
               </Box>
+              {(progress[0].progress*100)/progress[0].Objective>=100 ? (<button onClick={()=>handleClaimMission(progress[0].idMission)}>CLAIM MISSION</button>):(<button>NOT  MISSION</button>)}
             </Box>
+            </>
+            ):(<></>)}
+            {progress.length >= 2 ? (
+            <>
+            <>Asistir a {progress[1].Objective} clase los {progress[1].Day}</>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ width: '75%', mr: 1 }}>
+                <LinearProgress variant="determinate" value={(progress[1].progress*100)/progress[1].Objective} />
+              </Box>
+              <Box sx={{ minWidth: 35 }}>
+                <Typography variant="body2" sx={{ color: 'white' }}>
+                  {(progress[1].progress*100)/progress[1].Objective>=100 ? (<>100%</>):(<>{(progress[1].progress*100)/progress[1].Objective}%</>)}
+                </Typography>
+              </Box>
+              {(progress[1].progress*100)/progress[1].Objective>=100 ? (<button onClick={()=>handleClaimMission(progress[1].idMission)}>CLAIM MISSION</button>):(<button>NOT  MISSION</button>)}
+            </Box>
+            </>
+            ) :(<></>)}
+            {progress.length>=3 ? (
+            <>
+            <>Asistir a {progress[2].Objective} clase los {progress[2].Day}</>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ width: '75%', mr: 1 }}>
+                <LinearProgress variant="determinate" value={(progress[2].progress*100)/progress[2].Objective} />
+              </Box>
+              <Box sx={{ minWidth: 35 }}>
+                <Typography variant="body2" sx={{ color: 'white' }}>
+                {(progress[2].progress*100)/progress[2].Objective>=100 ? (<>100%</>):(<>{(progress[2].progress*100)/progress[2].Objective}%</>)}
+                </Typography>
+              </Box>
+              {(progress[2].progress*100)/progress[2].Objective>=100 ? (<button onClick={()=>handleClaimMission(progress[2].idMission)}>CLAIM MISSION</button>):(<button>NOT  MISSION</button>)}
+            </Box>
+            </>):(<></>)
+            }
           </div>
         </div>
       )}
