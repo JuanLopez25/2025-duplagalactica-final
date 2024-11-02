@@ -35,9 +35,9 @@ def create_class_route(new_class):
         return jsonify({"error": str(e)}), 500
 
 
-def add_assistance_route(class_assist,fecha):
+def add_assistance_route(class_assist,fecha,uid):
     try:
-        created_class = add_assistance(class_assist,fecha)
+        created_class = add_assistance(class_assist,fecha,uid)
         return jsonify(created_class), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500

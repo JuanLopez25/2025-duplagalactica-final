@@ -239,8 +239,9 @@ def create_user():
 @app.route('/add_assistance', methods=['POST'])
 def add_assistance():
     clase = request.form.get('selectedEvent')
+    uid = request.form.get('uid')
     fecha = request.form.get('fecha')
-    return add_assistance_route(clase,fecha)
+    return add_assistance_route(clase,fecha,uid)
 
 @app.route('/assign_mission', methods=['POST'])
 def assign_mission():
@@ -361,10 +362,7 @@ def get_users():
     
 @app.route('/get_assistance', methods=['GET'])
 def get_assistance():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
+    try:
         return get_assistance_route()
     except Exception as e:
         print("Error")
