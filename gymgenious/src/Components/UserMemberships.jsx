@@ -81,7 +81,7 @@ export default function UserMemberships() {
       } else {
           fechaFin = 'never';
       }
-      const response = await fetch('http://127.0.0.1:5000/aquire_membership_month', {
+      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/aquire_membership_month', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',

@@ -130,7 +130,7 @@ function CouchClasses() {
       const formData = new FormData();
       formData.append('usuarios', updatedSelectedUsers);
       formData.append('selectedEvent',selectedEvent.id);
-      const response2 = await fetch('http://127.0.0.1:5000/update_class_use', {
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_class_use', {
           method: 'PUT', 
           headers: {
               'Authorization': `Bearer ${authToken}`
@@ -144,7 +144,7 @@ function CouchClasses() {
     const formData3 = new FormData();
     formData3.append('usuarios', updatedSelectedUsers);
     formData3.append('selectedEvent',selectedEvent.id);
-    const response3 = await fetch('http://127.0.0.1:5000/add_missions', {
+    const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_missions', {
         method: 'POST', 
         headers: {
             'Authorization': `Bearer ${authToken}`
@@ -525,7 +525,7 @@ function CouchClasses() {
         };
       });
 
-      const response3 = await fetch('http://127.0.0.1:5000/get_comments');
+      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }

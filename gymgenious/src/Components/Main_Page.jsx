@@ -346,7 +346,7 @@ export default function Main_Page() {
       const calendarEvents = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const response3 = await fetch('http://127.0.0.1:5000/get_comments');
+      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
@@ -438,7 +438,7 @@ export default function Main_Page() {
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
-      const response2 = await fetch('http://127.0.0.1:5000/use_membership_class', {
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_membership_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -483,7 +483,7 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ event: event,mail:userMail })
       });
-      const response2 = await fetch('http://127.0.0.1:5000/unuse_membership_class', {
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/unuse_membership_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -570,7 +570,7 @@ export default function Main_Page() {
       }
       let starsValue = changingStars ? stars : event.puntuacion;
       let commentValue = changingComment ? comment : event.comentario;
-      const response = await fetch('http://127.0.0.1:5000/add_calification', {
+      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -598,7 +598,7 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response4 = await fetch(`http://127.0.0.1:5000/get_missions`, {
+      const response4 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_missions`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -610,7 +610,7 @@ export default function Main_Page() {
       const formData = new FormData();
       formData.append('misiones', missionsIds);
       if (missionsIds.length!=0) {
-        const response5 = await fetch('http://127.0.0.1:5000/delete_missions', {
+        const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_missions', {
           method: 'DELETE', 
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -650,7 +650,7 @@ export default function Main_Page() {
       setType(data.type);
       console.log("este es el usuario",data)
       setOpenCircularProgress(false);
-      const response3 = await fetch(`http://127.0.0.1:5000/get_memb_user`, {
+      const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
           method: 'GET', 
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -668,7 +668,7 @@ export default function Main_Page() {
       const formattedDate = `${year}-${month}-${day}`;
       const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
       const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
-      const response2 = await fetch(`http://127.0.0.1:5000/get_memberships`, {
+      const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memberships`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
