@@ -132,7 +132,7 @@ function CouchClasses() {
       const formData = new FormData();
       formData.append('usuarios', allUsers);
       formData.append('selectedEvent',selectedEvent.id);
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_class_use', {
+      const response2 = await fetch('http://127.0.0.1:5000/update_class_use', {
           method: 'PUT', 
           headers: {
               'Authorization': `Bearer ${authToken}`
@@ -146,7 +146,7 @@ function CouchClasses() {
     const formData3 = new FormData();
     formData3.append('usuarios', updatedSelectedUsers);
     formData3.append('selectedEvent',selectedEvent.id);
-    const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_missions', {
+    const response3 = await fetch('http://127.0.0.1:5000/add_missions', {
         method: 'POST', 
         headers: {
             'Authorization': `Bearer ${authToken}`
@@ -155,6 +155,19 @@ function CouchClasses() {
     });
     if (!response3.ok) {
         throw new Error('Error al actualizar los datos de las misiones: ' + response3.statusText);
+    }
+    const formData4 = new FormData();
+    formData4.append('selectedEvent',selectedEvent.id);
+    formData4.append('fecha',formatDate(new Date(selectedEvent.start)))
+    const response4 = await fetch('http://127.0.0.1:5000/add_assistance', {
+        method: 'POST', 
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        },
+        body: formData4,
+    });
+    if (!response4.ok) {
+        throw new Error('Error al actualizar los datos de la asistencia: ' + response4.statusText);
     }
     setTimeout(() => {
       setOpenCircularProgress(false);
@@ -601,8 +614,31 @@ function CouchClasses() {
           });
         }
       });
-      setClasses(calendarEvents);
-      setTotalClasses(calendarEvents);
+      console.log("asi se ven las clases",calendarEvents)
+      const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      if (!response4.ok) {
+        throw new Error('Error al obtener las salas: ' + response4.statusText);
+      }
+      const assistance_references = await response4.json();
+      console.log("estas son las asistencias",assistance_references)
+      const dataMatches = calendarEvents.map(evento => {
+        const comment = assistance_references.find(c => 
+          (c.cid === evento.cid) && 
+          (new Date(evento.start).toISOString().split('T')[0] === new Date(c.date).toISOString().split('T')[0])
+        );
+        return {
+          ...evento,
+          fecha: comment ? comment.date : null,
+        };
+      });
+      
+      setClasses(dataMatches);
+      setTotalClasses(dataMatches);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -803,6 +839,7 @@ function CouchClasses() {
                         >
                           Edit class
                         </MDBBtn>
+                        {event.fecha==null ? (
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -811,7 +848,9 @@ function CouchClasses() {
                           onClick={()=>hanldeCheckList(event)}
                         >
                           Check list
-                        </MDBBtn>
+                        </MDBBtn>):
+                        (<></>)}
+                        
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded

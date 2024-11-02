@@ -24,11 +24,32 @@ def get_comments():
     except Exception as e:
         print(f"Error al obtener las clases: {e}")
         raise RuntimeError("No se pudo obtener las clases")
+
+def get_assistance():
+    try:
+        classes_ref = db.collection('classAssistance')
+        docs = classes_ref.stream()
+        classes = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return classes
+    except Exception as e:
+        print(f"Error al obtener las clases: {e}")
+        raise RuntimeError("No se pudo obtener las clases")
     
 def create_class(new_class):
     try:
         class_ref = db.collection('classes').add(new_class)
         created_class = {**new_class}
+        return created_class
+    except Exception as e:
+        print(f"Error al crear la clase: {e}")
+        raise RuntimeError("No se pudo crear la clase")
+    
+
+def add_assistance(class_assistance,fecha):
+    try:
+        new_assist = {'date':fecha,'cid':class_assistance}
+        class_ref = db.collection('classAssistance').add(new_assist)
+        created_class = {**new_assist}
         return created_class
     except Exception as e:
         print(f"Error al crear la clase: {e}")

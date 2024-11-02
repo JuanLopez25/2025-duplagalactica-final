@@ -83,7 +83,7 @@ export default function UserMemberships() {
       } else {
           fechaFin = 'never';
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/aquire_membership_month', {
+      const response = await fetch('http://127.0.0.1:5000/aquire_membership_month', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -271,12 +271,10 @@ export default function UserMemberships() {
             <h2 style={{color:'#424242'}}>My Membership</h2>
                 <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                     <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                        <p>Type: {membership[0].membInfo.type}</p>
                         <p>Expiration: {membership[0].exp.split('T')[0]}</p>
                         <p>Remaining class to anotate: {membership[0].membInfo.top-membership[0].membInfo.BookedClasses.length}</p>
                     </div>   
                 </div>
-                <button>cancel my membership</button>
                 <button onClick={handleChangeMyMembership}>upgrade</button>
             </div>
         </div>
