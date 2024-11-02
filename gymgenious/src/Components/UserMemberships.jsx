@@ -41,8 +41,9 @@ export default function UserMemberships() {
   const isSmallScreen = useMediaQuery('(max-width:768px)');
   const [type, setType] = useState(null);
   const [myMembership, setMyMembership] = useState(false);
-  const [user,setUser] = useState()
-  const [membership, setMembership] = useState([])
+  const [user,setUser] = useState();
+  const [membership, setMembership] = useState([]);
+  const [userAccount, setUserAccount] = useState([]);
 
   const handleChangeMyMembership = () => {
     setMyMembership(!myMembership);
@@ -174,6 +175,7 @@ export default function UserMemberships() {
   }, [userMail]);
 
   const fetchUser = async () => {
+    setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
@@ -271,8 +273,10 @@ export default function UserMemberships() {
             <h2 style={{color:'#424242'}}>My Membership</h2>
                 <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                     <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
+
                         <p>Expiration: {membership[0].exp.split('T')[0]}</p>
                         <p>Remaining class to anotate: {membership[0].membInfo.top-membership[0].membInfo.BookedClasses.length}</p>
+
                     </div>   
                 </div>
                 <button onClick={handleChangeMyMembership}>upgrade</button>

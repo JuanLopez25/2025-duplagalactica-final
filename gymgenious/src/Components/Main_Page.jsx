@@ -100,7 +100,8 @@ export default function Main_Page() {
   const [totalClasses, setTotalClasses] = useState([]);
   const [openAchievements, setOpenAchievements] = useState(false);
   const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
-  const [progress,setProgress] = useState()
+  const [progress,setProgress] = useState();
+  const [newRows, setNewRows] = useState([]);
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -152,6 +153,27 @@ export default function Main_Page() {
     
     return `${year}-${month}-${day}`;
   }
+
+  useEffect(() => {
+    console.log(new Date().getTime())
+    const newRowsList=[];
+    classes?.forEach(row => {
+      if(
+        (row.permanent === 'No' &&
+          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.dateInicio).getTime() >= new Date().getTime())
+          )
+          ||
+        (row.permanent === 'Si' && 
+          (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+          (new Date(row.start).getTime() >= new Date().getTime())
+        )
+      ) {
+        newRowsList.push(row);
+      }
+      setNewRows(newRowsList);
+    });
+  }, [classes])
 
   function ECommerce({event}) {
     
@@ -476,11 +498,10 @@ export default function Main_Page() {
           });
         }
       });
-      setOpenCircularProgress(false);
-      console.log(calendarEvents)
       setEvents(calendarEvents);
-      setClasses(dataWithSalaAndComments);
-      setTotalClasses(dataWithSala);
+      setClasses(calendarEvents);
+      setTotalClasses(calendarEvents);
+      setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
@@ -587,14 +608,11 @@ export default function Main_Page() {
   };
 
   const verifyToken = async (token) => {
-    setOpenCircularProgress(true);
     try {
         const decodedToken = jwtDecode(token);
         setUserMail(decodedToken.email);
-        setOpenCircularProgress(false);
     } catch (error) {
         console.error('Error al verificar el token:', error);
-        setOpenCircularProgress(false);
         setErrorToken(true);
         setTimeout(() => {
           setErrorToken(false);
@@ -660,7 +678,6 @@ export default function Main_Page() {
       if (!response5.ok) {
         throw new Error('Error al actualizar la clase: ' + response5.statusText);
       }
-      setOpenCircularProgress(false);
       window.location.reload();
     } catch (error) {
         console.error("Error fetching user:", error);
@@ -731,7 +748,6 @@ export default function Main_Page() {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
       } 
-      setOpenCircularProgress(false);
     } catch (e) {
 
     }
@@ -1024,7 +1040,7 @@ export default function Main_Page() {
                 </div>
           </div>
           <div className="Table-Container">
-            <EnhancedTable rows={events} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
+            <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
         </>
       )}
@@ -1073,7 +1089,7 @@ export default function Main_Page() {
       )}
   </div>
   <div className="Table-Container">
-    <EnhancedTable rows={events} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
+    <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
   </div>
 </>
   )}

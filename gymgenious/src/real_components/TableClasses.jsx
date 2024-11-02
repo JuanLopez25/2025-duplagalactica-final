@@ -21,7 +21,7 @@ import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import CloseIcon from '@mui/icons-material/Close';
 
-function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
+function EnhancedTable({ newRows, user, userType, handleSelectEvent }) {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
   const [page, setPage] = useState(0);
@@ -33,7 +33,6 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
   const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [maxHeight, setMaxHeight] = useState('600px');
-  const [newRows, setNewRows] = useState([]);
 
   function formatDate(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses comienzan desde 0
@@ -61,26 +60,6 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
   const handleCloseModal = () => {
     setSelectedEvent(null);
   };
-
-  useEffect(() => {
-    const newRowsList=[];
-    rows?.forEach(row => {
-      if(
-        (row.permanent === 'No' &&
-          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
-          )
-          ||
-        (row.permanent === 'Si' && 
-          (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
-        )
-      ) {
-        newRowsList.push(row);
-      }
-      setNewRows(newRowsList);
-    });
-  }, [])
 
   useEffect(() => {
     if(isSmallScreen400 || isSmallScreen500) {
@@ -164,12 +143,12 @@ function EnhancedTable({ rows, user, userType, handleSelectEvent }) {
                 {!isSmallScreen400 && (
                   <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
                     <TableSortLabel
-                      active={orderBy === 'dateInicio'}
-                      direction={orderBy === 'dateInicio' ? order : 'asc'}
-                      onClick={(event) => handleRequestSort(event, 'dateInicio')}
+                      active={orderBy === 'start'}
+                      direction={orderBy === 'start' ? order : 'asc'}
+                      onClick={(event) => handleRequestSort(event, 'start')}
                     >
                       Date
-                      {orderBy === 'dateInicio' ? (
+                      {orderBy === 'start' ? (
                         <Box component="span" sx={visuallyHidden}>
                           {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                         </Box>
