@@ -215,56 +215,92 @@ export default function Main_Page() {
                       ? (
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
-                              <MDBBtn
-                              style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
-                              rounded
-                              block
-                              size="lg"
-                              onClick={() => handleUnbookClass(event.id)}
-                            >
-                              Unbook
-                            </MDBBtn>
+                          <>
+                          {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                            <MDBBtn
+                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                          >
+                            Class is today
+                          </MDBBtn>
+                          ) : (
+                          <MDBBtn
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                          rounded
+                          block
+                          size="lg"
+                          onClick={() => handleUnbookClass(event.id)}
+                        >
+                          Unbook
+                        </MDBBtn>
+                          )}
+                            </>
                             ) : (
                               <>
-                              {selectedEvent.BookedUsers.length<selectedEvent.capacity  && membership[0].BookedClasses.length<membership[0].top? (
+                              {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                              
                               <MDBBtn
-                                style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
-                                rounded
-                                block
-                                size="lg"
-                                onClick={() => handleBookClass(event.id)}
-                              >
-                                Book
-                              </MDBBtn>
-                              ) : (
+                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                          >
+                            Class is today
+                          </MDBBtn>
+                            ) : (
                               <>
-                              {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
-                                <>
+                              {!membership[0] ? (
                                 <MDBBtn
-                                  style={{ backgroundColor: 'RED', color: 'white', width: '70%', left: '15%' }} 
+                                  style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                                  rounded
+                                  block
+                                  size="lg"
+                                  
+                                >
+                                  no tenes pase
+                                </MDBBtn>
+                                ) : (
+                                <>
+                                {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
+                                  <>
+                                  {membership[0].BookedClasses.length<membership[0].top ? (
+                                    <MDBBtn
+                                    style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                                    rounded
+                                    block
+                                    size="lg"
+                                    onClick={() => handleBookClass(event.id)}
+                                  >
+                                    Book
+                                  </MDBBtn>
+                                  ) : (
+                                    <MDBBtn
+                                    style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                                    rounded
+                                    block
+                                    size="lg"
+                                  >
+                                    No tenes mas pase
+                                  </MDBBtn>
+                                  )}
+                                  </>
+                                ) : (
+                                <MDBBtn
+                                  style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
                                   rounded
                                   block
                                   size="lg"
                                 >
-                                  Book
+                                  FULL
                                 </MDBBtn>
+                                )}
+                                </>)
+                                }
                                 </>
-                              ) :
-                              (
-                              <>
-                              <MDBBtn
-                                style={{ backgroundColor: '#48CFCB', color: 'white' }} 
-                                rounded
-                                block
-                                size="lg"
-                              >
-                                FULL
-                              </MDBBtn>
-                              </>
-                              )}
-                              </>)
-                              }
-                              </>
+                            )}
+                            </>
                         )}
                         <button 
                           onClick={handleCloseModal}
@@ -280,6 +316,41 @@ export default function Main_Page() {
                         </button>
                         </>
                         ) : (
+                        <>
+                        {userMail && type === 'client' && selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
+                          <>
+                          {userAccount.Gemas>0 ? (
+                          <MDBBtn
+                            style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                          >
+                            <DiamondIcon />
+                            Use gem
+                            <DiamondIcon />
+                          </MDBBtn>
+                          ) : (
+                            <MDBBtn
+                              style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                              rounded
+                              block
+                              size="lg"
+                            >
+                              No tenes gemas
+                            </MDBBtn>
+                          )}
+                          </>
+                        ) : (
+                          <MDBBtn
+                          style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                          rounded
+                          block
+                          size="lg"
+                        >
+                          Full
+                        </MDBBtn>
+                        )}
                           <button 
                             onClick={handleCloseModal}
                             className="custom-button-go-back-managing"
@@ -292,6 +363,7 @@ export default function Main_Page() {
                           >
                             <CloseIcon sx={{ color: '#F5F5F5' }} />
                           </button>
+                          </>
                         )}
                   </MDBCardBody>
                 </MDBCard>
