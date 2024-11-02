@@ -49,6 +49,7 @@ function CouchClasses() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editClass, setEditClass] = useState(false);
   const [userMail,setUserMail] = useState(null)
+  const [userAccount, setUser] = useState(null)
   const isSmallScreen400 = useMediaQuery('(max-width:400px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
@@ -161,6 +162,7 @@ function CouchClasses() {
     const formData4 = new FormData();
     formData4.append('selectedEvent',selectedEvent.id);
     formData4.append('fecha',formatDate(new Date(selectedEvent.start)))
+    formData4.append('uid',userAccount.uid)
     const response4 = await fetch('http://127.0.0.1:5000/add_assistance', {
         method: 'POST', 
         headers: {
@@ -617,10 +619,7 @@ function CouchClasses() {
       });
       console.log("asi se ven las clases",calendarEvents)
       const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        },
+        method: 'GET'
       });
       if (!response4.ok) {
         throw new Error('Error al obtener las salas: ' + response4.statusText);
@@ -755,6 +754,7 @@ function CouchClasses() {
         }
         const data = await response.json();
         setType(data.type);
+        setUser(data)
         if(data.type!='coach'){
           navigate('/');
         }

@@ -6,6 +6,7 @@ import NewLeftBar from '../real_components/NewLeftBar.jsx';
 import {jwtDecode} from "jwt-decode";
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import Slide from '@mui/material/Slide';
 import CheckIcon from '@mui/icons-material/Check';
 import Calendar from '../real_components/Calendar.jsx';
@@ -125,7 +126,7 @@ export default function Main_Page() {
   const month = String(currentDate.getMonth() + 1).padStart(2, '0');
   const day = String(currentDate.getDate()).padStart(2, '0');
   const formattedDate = `${year}-${month}-${day}`;
-
+  const [notifications,setCantidadNotifications] = useState(0)
   const handleChangeCalifyModal = () => {
     setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
@@ -498,6 +499,26 @@ export default function Main_Page() {
           });
         }
       });
+      const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
+        method: 'GET'
+      });
+      if (!response4.ok) {
+        throw new Error('Error al obtener las salas: ' + response4.statusText);
+      }
+      const assistance_references = await response4.json();
+      const assitance_buscadas = assistance_references.filter(asis=>asis.uid==userAccount.uid)
+      const clases_del_profesor = calendarEvents.filter(clas => clas.owner==userMail)
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const formattedToday = `${year}-${month}-${day}`;
+      const clases_hoy = clases_del_profesor.filter(clas => {
+        const classDate = new Date(clas.start);
+        const formattedClassDate = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}-${String(classDate.getDate()).padStart(2, '0')}`;
+        
+        return formattedClassDate === formattedToday;
+      });
+      setCantidadNotifications(clases_hoy.length-assitance_buscadas.length)
       setEvents(calendarEvents);
       setClasses(calendarEvents);
       setTotalClasses(calendarEvents);
@@ -828,6 +849,7 @@ export default function Main_Page() {
       const data = await response.json();
       setUserAccount(data)
       setType(data.type);
+      
       console.log("este es el usuario",data)
       const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
           method: 'GET', 
@@ -871,7 +893,7 @@ export default function Main_Page() {
       <WarningConnectionAlert warningConnection={warningConnection}/>
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
-      {type==='client' && (
+      {type==='client' ? (
         <>
         <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
@@ -918,7 +940,64 @@ export default function Main_Page() {
           </div>
         </div>
         </>
-      )}
+      ):(
+      <>
+      {type==='coach' ? (
+        <>
+        {notifications!=0 ? (
+        <>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container'>
+            <Button
+              style={{
+                  backgroundColor: '#48CFCB',
+                  position: 'absolute',
+                  borderRadius: '50%',
+                  width: '5vh',
+                  height: '5vh',
+                  minWidth: '0',
+                  minHeight: '0',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+              }}
+              >
+              <NotificationsActiveIcon sx={{ color: 'red' }} />
+              <p style={{color:'red'}}>{notifications}</p>
+            </Button>
+          </div>
+        </div>
+        </>
+        ) :
+        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container'>
+            <Button
+              style={{
+                  backgroundColor: '#48CFCB',
+                  position: 'absolute',
+                  borderRadius: '50%',
+                  width: '5vh',
+                  height: '5vh',
+                  minWidth: '0',
+                  minHeight: '0',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+              }}
+              >
+              <NotificationsActiveIcon sx={{ color: '#424242' }} />
+            </Button>
+          </div>
+        </div></>)
+        }
+        </>
+      ):
+      (<></>)
+      }
+      </>)
+      }
       {visibleDrawerAchievements && type==='client' && (
         <div className='modal-achievements' onClick={handleCloseAchievements}>
           <div className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`} onClick={(e)=>e.stopPropagation()}>
