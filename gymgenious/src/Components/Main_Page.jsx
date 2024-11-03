@@ -731,6 +731,9 @@ export default function Main_Page() {
         item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
       );
       setClasses(filteredClassesSearcher);
+      if(filteredClassesSearcher.length===0){
+        setClasses([-1])
+      }
     } else {
       setClasses(totalClasses);
     }
@@ -1016,7 +1019,7 @@ export default function Main_Page() {
         <>
         {notifications!=0 ? (
         <>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button
               style={{
@@ -1040,7 +1043,7 @@ export default function Main_Page() {
         </div>
         </>
         ) :
-        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button
               style={{

@@ -389,9 +389,6 @@ useEffect(() => {
           }
           const data = await response.json();
           setType(data.type);
-          if(data.type!='client'){
-            navigate('/');
-          }
       } catch (error) {
           console.error("Error fetching user:", error);
       }
