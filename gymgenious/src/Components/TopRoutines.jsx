@@ -392,7 +392,6 @@ useEffect(() => {
           if(data.type!='client'){
             navigate('/');
           }
-          setOpenCircularProgress(false);
       } catch (error) {
           console.error("Error fetching user:", error);
       }
