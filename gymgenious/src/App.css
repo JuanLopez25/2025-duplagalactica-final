@@ -1049,6 +1049,19 @@ iframe {
   overflow-y: auto;
 }
 
+.membership-choose-container {
+  background-color: #F5F5F5;
+  color:'#F5F5F5';
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  width: 70%;
+  left: 15%;
+  top: 16%;
+  height: auto;
+  text-align: center;
+  position:absolute;
+}
+
 @media screen and (max-width: 768px) {
   .class-creation-container {
     left: 10%;
@@ -1059,6 +1072,14 @@ iframe {
     left: 5%;
     width: 90%;
     top: 12%;
+  }
+  .membership-choose-container {
+    left: 10%;
+    width: 80%;
+    top: 6%;
+    overflow-y: auto;
+    height: 88%;
+    padding-top: 2%;
   }
 }
 
@@ -1921,4 +1942,182 @@ iframe {
 
 .MuiBarElement-root.MuiBarElement-series-auto-generated-id-0.css-1qdzy9k-MuiBarElement-root:nth-child(5) {
   fill: #2731C8;
+}
+
+.type-memberships {
+  display: inline-block;
+  width: 32%;
+  text-align: center;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.342);
+  text-align: left;
+  font-family: Arial, sans-serif;
+}
+
+@media (max-width: 700px) {
+  .type-memberships {
+      width: 100%;
+      display: block;
+      margin-bottom: 10px;
+      margin-right: 0px !important;
+  }
+}
+
+.plan-title {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.currency {
+  font-size: 1rem;
+}
+
+.price {
+  font-weight: bold;
+  margin: 0 5px;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.feature.available::before {
+  content: '✔';
+  color: #00a1e4;
+  margin-right: 10px;
+  font-size: 1rem;
+}
+
+.feature.unavailable {
+  color: #999;
+}
+
+.choose-plan-btn {
+  background-color: #00a1e4;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.choose-plan-btn:hover {
+  background-color: #008ac1;
+}
+.input-small-container2 {
+  flex: 1;
+  margin-bottom: 15px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.input-small-container2 input,
+.input-small-container2 select {
+  height: 2.5rem;
+  font-size: 14px;
+  width: 100%;
+}
+
+.input-small-container2 label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.input-small-container2 input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.membership-card {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #F5F5F5;
+  color:'#F5F5F5';
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  width: 70%;
+  left: 15%;
+  top: 16%;
+  height: auto;
+  text-align: center;
+  position:absolute;
+}
+
+.h2-membership {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.membership-info {
+  margin-bottom: 20px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.icon-membership {
+  color: #00a1e4;
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.progress-container-membership {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+
+.progress-bar-membership {
+  height: 100%;
+  background-color: #00a1e4;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.upgrade-btn-membership {
+  background-color: #00a1e4;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.upgrade-btn-membership:hover {
+  background-color: #008ac1;
 }
