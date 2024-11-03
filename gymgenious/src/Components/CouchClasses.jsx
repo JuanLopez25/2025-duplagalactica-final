@@ -34,7 +34,8 @@ import ListItemText from '@mui/material/ListItemText';
 import { FixedSizeList } from 'react-window';
 import Checkbox from '@mui/material/Checkbox';
 import { select } from 'framer-motion/client';
-
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
@@ -91,6 +92,47 @@ function CouchClasses() {
   const [openCheckList, setOpenCheckList] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState(['1']);
   const [checked, setChecked] = useState(false);
+  const [viewQualifications, setViewQualifications] = useState(false);
+
+  const kkkk = [
+    "la verdad que la pase como el reverendo orto hermano como vas a dar una clase tan pero tan mala boludo honomatopeya",
+    "Estrella",
+    "Mariposa",
+    "Río",
+    "Montaña",
+    "Viento",
+    "Niebla",
+    "Rocío",
+    "Ocaso",
+    "Bosque",
+    "Ola",
+    "Nube",
+    "Trueno",
+    "Brisa",
+    "Sol",
+    "Aurora",
+    "Cascada",
+    "Rayo",
+    "Arena",
+    "Cielo"
+];
+
+
+  const handleViewQualifications = () => {
+    setViewQualifications(!viewQualifications)
+  }
+
+  function HalfRatingCoach() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="read-only"
+          value={selectedEvent.averageCalification}
+          precision={0.5}
+          readOnly
+          />
+      </Stack>
+    );
+  }
 
   const toggleUserSelection = (userId) => {
     setChecked(!checked)
@@ -811,8 +853,13 @@ function CouchClasses() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
+                          {/* <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
+                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn> */}
+                          {userMail && type==='coach' && event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                          ) : (
+                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                          )}  
                         </div>
                       </div>
                     </div>
@@ -1243,25 +1290,45 @@ function CouchClasses() {
         </div>
         </>
         )}
-
-{selectedEvent && (
-                    // <div className="Modal" onClick={handleCloseModal}>
-                    //     <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
-                    //         <h2>Class details</h2>
-                    //         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Name:</strong> {selectedEvent.name}</p>
-                    //         <p><strong>Date:</strong> {formatDate(new Date(selectedEvent.dateInicio))}</p>
-                    //         <p><strong>Start time:</strong> {selectedEvent.hour}</p>
-                    //         <p><strong>End time:</strong> {selectedEvent.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                    //         <p><strong>Sala:</strong> {selectedEvent.salaInfo.nombre}</p>
-                    //         <p><strong>Recurrent:</strong> {selectedEvent.permanent==='Si' ? 'Yes' : 'No'}</p>
-                    //         <p><strong>Participants:</strong> {selectedEvent.BookedUsers.length}</p>
-                    //         <button style={{marginLeft:'10px'}} onClick={()=>handleEditClass(selectedEvent)}>Edit class</button>
-                    //         <button style={{marginLeft:'10px'}} onClick={handleCloseModal}>Close</button>
-                    //         <button style={{marginLeft:'10px'}} onClick={() => handleDeleteClass(selectedEvent.id)}>Delete class</button>
-                    //     </div>
-                    // </div>
-                    <ECommerce event={selectedEvent}/>
-                )}
+        {selectedEvent && (
+          <ECommerce event={selectedEvent}/>
+        )}
+        {viewQualifications && (
+        <div className="Modal" onClick={handleViewQualifications}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                {selectedEvent.name}
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 1,marginRight: '0px'}}>
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Average Qualification:</label>
+                    <HalfRatingCoach/>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                <label htmlFor="stars" style={{color:'#14213D'}}>Comments:</label>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.commentaries.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewQualifications}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
     
   );

@@ -857,6 +857,32 @@ iframe {
   z-index: 1001;
 }
 
+.Modal-Content-qualifications {
+  background-color: #F5F5F5;
+  padding: 20px;
+  border-radius: 8px;
+  color: #424242;
+  font-weight: bold;
+  width: auto;
+  max-width: 70%;
+  text-align: center;
+  position: relative;
+  z-index: 1001;
+}
+
+.Modal-Content-qualifications button {
+  background-color: #48CFCB;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.Modal-Content-qualifications button:hover {
+  background-color: #424242;
+}
+
 .Modal-Content-view-exercises {
   background-color: #F5F5F5;
   padding: 20px;
@@ -932,6 +958,9 @@ iframe {
     max-width: 300px;
   }
   .Modal-Content-class-creation {
+    width: 90%;
+  }
+  .Modal-Content-qualifications {
     width: 90%;
   }
 }

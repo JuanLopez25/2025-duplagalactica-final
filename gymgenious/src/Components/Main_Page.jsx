@@ -132,11 +132,16 @@ export default function Main_Page() {
   const month = String(currentDate.getMonth() + 1).padStart(2, '0');
   const day = String(currentDate.getDate()).padStart(2, '0');
   const formattedDate = `${year}-${month}-${day}`;
-  const [notifications,setCantidadNotifications] = useState(0)
+  const [notifications,setCantidadNotifications] = useState(0);
+  const [viewQualifications, setViewQualifications] = useState(false)
   
   const handleChangeCalifyModal = () => {
     setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
+  }
+
+  const handleViewQualifications = () => {
+    setViewQualifications(!viewQualifications)
   }
 
   const handleStarsChange = (e) => {
@@ -170,6 +175,18 @@ export default function Main_Page() {
           onChange={(event, newValue) => { setStars(newValue);}}
           defaultValue={stars}
           precision={0.5} />
+      </Stack>
+    );
+  }
+
+  function HalfRatingCoach() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="read-only"
+          value={selectedEvent.averageCalification}
+          precision={0.5}
+          readOnly
+          />
       </Stack>
     );
   }
@@ -231,12 +248,11 @@ export default function Main_Page() {
                           {userMail && type==='client' && selectedEvent.BookedUsers.includes(userMail) && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
                           )}    
-                          {userMail && type==='coach' && (
-                            <>
-                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
-                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
-                            </>
-                          )}       
+                          {userMail && type==='coach' && event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                          ) : (
+                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                          )}  
                         </div>
                       </div>
                     </div>
@@ -444,43 +460,62 @@ export default function Main_Page() {
   const fetchClasses = async () => {
     setOpenCircularProgress(true);
     try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          console.error('Token no disponible en localStorage');
+          return;
+        }
       const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
       if (!response.ok) {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
       const data = await response.json();
-      
+      const filteredClasses = data.filter(event => event.owner == userMail);
       const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
       const salas = await response2.json();
   
-      const dataWithSala = data.map(clase => {
+      const dataWithSala = filteredClasses.map(clase => {
         const salaInfo = salas.find(sala => sala.id === clase.sala);
         return {
           ...clase,
           salaInfo, 
         };
       });
-  
-      const calendarEvents = [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+
       const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
       const data3 = await response3.json();
-      const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
+    
+      const groupedComments = data3.reduce((acc, comment) => {
+        if (!acc[comment.cid]) {
+          acc[comment.cid] = { califications: [], commentaries: [] };
+        }
+        acc[comment.cid].califications.push(comment.calification);
+        acc[comment.cid].commentaries.push(comment.commentary);
+        return acc;
+      }, {});
+      
+      const aggregatedComments = Object.entries(groupedComments).map(([cid, details]) => ({
+        cid,
+        averageCalification: details.califications.reduce((sum, cal) => sum + cal, 0) / details.califications.length,
+        commentaries: details.commentaries
+      }));
+      
       const dataWithSalaAndComments = dataWithSala.map(clase => {
-        const comment = filteredComments.find(c => c.cid === clase.id);
+        const comments = aggregatedComments.find(comment => comment.cid === clase.id) || { averageCalification: 0, commentaries: [] };
         return {
           ...clase,
-          comentario: comment ? comment.commentary : null,
-          puntuacion: comment ? comment.calification : -1,
+          ...comments
         };
       });
+      const calendarEvents = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
       dataWithSalaAndComments.forEach(clase => {
         const startDate = new Date(clase.dateInicio);
@@ -524,6 +559,7 @@ export default function Main_Page() {
           });
         }
       });
+      console.log("asi se ven las clases",calendarEvents)
       const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
         method: 'GET'
       });
@@ -531,22 +567,20 @@ export default function Main_Page() {
         throw new Error('Error al obtener las salas: ' + response4.statusText);
       }
       const assistance_references = await response4.json();
-      const assitance_buscadas = assistance_references.filter(asis=>asis.uid==userAccount.uid)
-      const clases_del_profesor = calendarEvents.filter(clas => clas.owner==userMail)
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const formattedToday = `${year}-${month}-${day}`;
-      const clases_hoy = clases_del_profesor.filter(clas => {
-        const classDate = new Date(clas.start);
-        const formattedClassDate = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}-${String(classDate.getDate()).padStart(2, '0')}`;
-        
-        return formattedClassDate === formattedToday;
+      console.log("estas son las asistencias",assistance_references)
+      const dataMatches = calendarEvents.map(evento => {
+        const comment = assistance_references.find(c => 
+          (c.cid === evento.cid) && 
+          (new Date(evento.start).toISOString().split('T')[0] === new Date(c.date).toISOString().split('T')[0])
+        );
+        return {
+          ...evento,
+          fecha: comment ? comment.date : null,
+        };
       });
-      setCantidadNotifications(clases_hoy.length-assitance_buscadas.length)
-      setEvents(calendarEvents);
-      setClasses(calendarEvents);
-      setTotalClasses(calendarEvents);
+      
+      setClasses(dataMatches);
+      setTotalClasses(dataMatches);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -1259,6 +1293,42 @@ export default function Main_Page() {
             </div>
             <button onClick={handleChangeCalifyModal}>Cancel</button>
             <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
+          </div>
+        </div>
+      )}
+        {viewQualifications && (
+        <div className="Modal" onClick={handleViewQualifications}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                {selectedEvent.name}
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 1,marginRight: '0px'}}>
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Average Qualification:</label>
+                    <HalfRatingCoach/>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                <label htmlFor="stars" style={{color:'#14213D'}}>Comments:</label>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.commentaries.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewQualifications}>Close</button>
           </div>
         </div>
       )}
