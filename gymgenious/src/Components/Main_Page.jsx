@@ -873,12 +873,11 @@ export default function Main_Page() {
       <NewLeftBar/>
       {type==='client' && (
         <>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
+        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '186px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container-buttons' onClick={handleViewAchievements}>
             <Button onClick={handleViewAchievements}
               style={{
                   backgroundColor: '#48CFCB',
-                  position: 'absolute',
                   borderRadius: '50%',
                   width: '5vh',
                   height: '5vh',
@@ -894,18 +893,16 @@ export default function Main_Page() {
             </Button>
           </div>
         </div>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
+        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '114px' : openSearch ? '235px' : '168px' : showCalendar ? '96px' : openSearch ? '406px' :'142px', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container-buttons'>
             <Button
               style={{
                   backgroundColor: '#48CFCB',
-                  position: 'absolute',
                   borderRadius: '50%',
                   width: '5vh',
                   height: '5vh',
                   minWidth: '0',
                   minHeight: '0',
-                  left: '40px',
                   padding: '0',
                   display: 'flex',
                   alignItems: 'center',
@@ -1002,18 +999,19 @@ export default function Main_Page() {
         </div>
         ) : (
           <>
-            <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
-              <div className='input-small-container'>
+            <div className='input-container-buttons' style={{left: isSmallScreen700 ? '60px' : '50px', position: 'absolute', top: '0.5%', paddingRight: '0px'}}>
+              <div className='input-small-container-buttons'>
                 {openSearch ? (
                     <input
                     type="text"
                     className="search-input"
                     placeholder="Search..."
                     style={{
-                      position: 'absolute',
                       borderRadius: '10px',
                       padding: '0 10px',
                       transition: 'all 0.3s ease',
+                      height: '5vh',
+                      width: isSmallScreen700 ? '125px' : '300px'
                     }}
                     id={filterClasses}
                     onChange={(e) => setFilterClasses(e.target.value)} 
@@ -1022,7 +1020,6 @@ export default function Main_Page() {
                   <Button onClick={handleOpenSearch}
                   style={{
                     backgroundColor: '#48CFCB',
-                    position: 'absolute',
                     borderRadius: '50%',
                     width: '5vh',
                     height: '5vh',

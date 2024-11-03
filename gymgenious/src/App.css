@@ -422,6 +422,23 @@ iframe {
   box-sizing: border-box;
 }
 
+.input-container-buttons {
+  text-align: left;
+  font-size: 14px;
+}
+
+.input-container-buttons label {
+  display: block;
+  font-weight: bold;
+}
+
+.input-container-buttons input {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
 
 
 
@@ -505,6 +522,12 @@ iframe {
   width: 100%;
   height: 100%;
   background-color: red;
+}
+
+.input-small-container-buttons {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
 }
 
 .input-small-container {
