@@ -59,6 +59,9 @@ export default function CoachMemberships() {
         },
         body: JSON.stringify({tipo:type,precio:price})
       });
+      if (!response.ok) {
+        throw new Error('Error al obtener las salas: ' + response.statusText);
+      }
       await fetchMembership();
       setOpenCircularProgress(false);
     } catch (error) {
@@ -210,7 +213,7 @@ export default function CoachMemberships() {
                                 <ul className="plan-features">
                                 <li className="feature available">1 class</li>
                                 <li className="feature available">Instant use</li>
-                                <li className="feature unavailable"><s>No time restricctions</s></li>
+                                <li className="feature unavailable"><s>No time restrictions</s></li>
                                 </ul>
                             {editPrice1 ? (
                                 <button className="choose-plan-btn" onClick={handleEditPrice1}>Save</button>

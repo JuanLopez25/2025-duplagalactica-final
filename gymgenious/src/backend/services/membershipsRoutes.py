@@ -80,6 +80,23 @@ def unuse_membership_class(classId,membId):
     except Exception as e:
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
+
+def edit_memb_price(tipo,precio): 
+    try:
+        mem_ref = db.collection('membershipTemplate')
+        docs = mem_ref.where('type', '==', tipo).stream()
+        updated = False
+        for doc in docs:
+            doc_ref = mem_ref.document(doc.id)
+            doc = doc_ref.get()
+            doc_ref.update({
+                'price': precio
+            })
+            updated = True
+        return {"message": "Actualización realizada"} 
+    except Exception as e:
+        print(f"Error actualizando el usuario: {e}")
+        raise RuntimeError("No se pudo actualizar el usuario")
     
 
 
@@ -92,12 +109,14 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
             top_val = 12
         elif type_memb == 'yearly':
             top_val = 144
+        elif type_memb == 'never':
+            top_val = 1
         if doc: 
             current_data = doc.to_dict()
             membership = current_data.get('membershipId')
             inicio = current_data.get('ini')
             exp_date = current_data.get('exp') 
-            fecha_hoy = datetime.utcnow() 
+            fecha_hoy = datetime.utcnow()
             fecha_formateada = fecha_hoy.strftime('%Y-%m-%dT%H:%M:%S.') + '{:03d}Z'.format(fecha_hoy.microsecond // 1000)
             if exp_date <= fecha_formateada:
                 memberships_ref = db.collection('memberships')
@@ -112,7 +131,8 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
                 elif type_memb == 'monthly':
                     fechaFinUpd = fin_date + timedelta(days=30) 
                 else:
-                    fechaFinUpd = current_data.get('exp') 
+                    fechaFinUpd = fin_date
+
                 formatted_fechaFin = fechaFinUpd.strftime('%Y-%m-%dT%H:%M:%S.') + '{:03d}Z'.format(fechaFinUpd.microsecond // 1000)
                 doc.reference.update({
                     'exp': formatted_fechaFin
@@ -131,7 +151,7 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
                     'top': (top_actual_val + 1)
                 })
         else:
-            new_memb = {'BookedClasses': [], 'top': 12, 'type': type_memb}
+            new_memb = {'BookedClasses': [], 'top': top_val, 'type': type_memb}
             class_ref = db.collection('memberships').add(new_memb)
             document_id = class_ref[1].get().id
 
