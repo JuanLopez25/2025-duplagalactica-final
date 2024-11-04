@@ -22,6 +22,7 @@ import CloseIcon from '@mui/icons-material/Close';
 export default function CoachMemberships() {
   const [permanent, setPermanent] = useState('');
   const [name, setName] = useState('');
+  const [userAccount,setUserAccount] = useState()
   const [maxNum,setMaxNum] = useState(1);
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
@@ -29,7 +30,7 @@ export default function CoachMemberships() {
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
   const [type, setType] = useState(null);
-
+  const [memberships,setMemberships] = useState([])
   const [price1, setPrice1] = useState(0.00);
   const [price2, setPrice2] = useState(0.00);
   const [price3, setPrice3] = useState(0.00);
@@ -38,12 +39,69 @@ export default function CoachMemberships() {
   const [editPrice3, setEditPrice3] = useState(false);
 
   const handleEditPrice1 = () => {
+    savePrice(price1,'Class')
     setEditPrice1(!editPrice1);
   }
+
+  const savePrice = async (price,type) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response = await fetch('http://127.0.0.1:5000/edit_memb_price', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({tipo:type,precio:price})
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener las salas: ' + response.statusText);
+      }
+      await fetchMembership();
+      setOpenCircularProgress(false);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  }
+
+
+  const fetchMembership = async () => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response = await fetch('http://127.0.0.1:5000/get_membership_template', {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener las salas: ' + response.statusText);
+      }
+      const data = await response.json();
+      console.log("asi se ve",data)
+      setMemberships(data)
+      setOpenCircularProgress(false);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  }
+
   const handleEditPrice2 = () => {
+    savePrice(price2,'Monthly')
     setEditPrice2(!editPrice2);
   }
   const handleEditPrice3 = () => {
+    savePrice(price3,'Yearly')
     setEditPrice3(!editPrice3);
   }
 
@@ -71,6 +129,12 @@ export default function CoachMemberships() {
     }
   }, []);
 
+  useEffect ( () => {
+    if (userAccount) {
+      fetchMembership()
+    }
+  },[userAccount])
+
   useEffect(() => {
     if (userMail) {
       fetchUser();
@@ -97,6 +161,7 @@ export default function CoachMemberships() {
             throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
         }
         const data = await response.json();
+        setUserAccount(data)
         setType(data.type);
         if(data.type!='coach'){
           navigate('/');
@@ -142,13 +207,13 @@ export default function CoachMemberships() {
                                         }}
                                       />
                                     ) : (
-                                        <span className="price">0.99</span>
+                                        <span className="price">{memberships.find(membership => membership.type === 'Class')?.price}</span>
                                     )}
                                 </div>
                                 <ul className="plan-features">
                                 <li className="feature available">1 class</li>
                                 <li className="feature available">Instant use</li>
-                                <li className="feature unavailable"><s>No time</s></li>
+                                <li className="feature unavailable"><s>No time restrictions</s></li>
                                 </ul>
                             {editPrice1 ? (
                                 <button className="choose-plan-btn" onClick={handleEditPrice1}>Save</button>
@@ -173,13 +238,13 @@ export default function CoachMemberships() {
                                         }}
                                       />
                                     ) : (
-                                        <span className="price">9.99</span>
+                                        <span className="price">{memberships.find(membership => membership.type === 'Monthly')?.price}</span>
                                     )}
                                 </div>
                                 <ul className="plan-features">
                                 <li className="feature available">12 classes</li>
                                 <li className="feature available">1 month</li>
-                                <li className="feature available">Cumulative</li>
+                                <li className="feature available">Can be accumulated</li>
                                 </ul>
                                 {editPrice2 ? (
                                     <button className="choose-plan-btn" onClick={handleEditPrice2}>Save</button>
@@ -204,13 +269,13 @@ export default function CoachMemberships() {
                                         }}
                                       />
                                     ) : (
-                                        <span className="price">99.99</span>
+                                        <span className="price">{memberships.find(membership => membership.type === 'Yearly')?.price}</span>
                                     )}
                                     </div>
                                     <ul className="plan-features">
                                     <li className="feature available">144 classes</li>
                                     <li className="feature available">1 year</li>
-                                    <li className="feature available">Cumulative</li>
+                                    <li className="feature available">Can be accumulated</li>
                                     </ul>
                                     {editPrice3 ? (
                                         <button className="choose-plan-btn" onClick={handleEditPrice3}>Save</button>

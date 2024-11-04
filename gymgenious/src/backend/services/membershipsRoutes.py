@@ -17,6 +17,16 @@ def get_memb_user():
         print(f"Error al obtener las clases: {e}")
         raise RuntimeError("No se pudo obtener las clases")
 
+def get_membership_template():
+    try:
+        classes_ref = db.collection('membershipTemplate')
+        docs = classes_ref.stream()
+        classes = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return classes
+    except Exception as e:
+        print(f"Error al obtener las clases: {e}")
+        raise RuntimeError("No se pudo obtener las clases")
+
 
 def get_unique_user_membership():
     try:
@@ -70,6 +80,23 @@ def unuse_membership_class(classId,membId):
     except Exception as e:
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
+
+def edit_memb_price(tipo,precio): 
+    try:
+        mem_ref = db.collection('membershipTemplate')
+        docs = mem_ref.where('type', '==', tipo).stream()
+        updated = False
+        for doc in docs:
+            doc_ref = mem_ref.document(doc.id)
+            doc = doc_ref.get()
+            doc_ref.update({
+                'price': precio
+            })
+            updated = True
+        return {"message": "Actualización realizada"} 
+    except Exception as e:
+        print(f"Error actualizando el usuario: {e}")
+        raise RuntimeError("No se pudo actualizar el usuario")
     
 
 
@@ -81,28 +108,39 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
         if type_memb == 'monthly':
             top_val = 12
         elif type_memb == 'yearly':
-            top_val = 50
+            top_val = 144
+        elif type_memb == 'never':
+            top_val = 1
         if doc: 
             current_data = doc.to_dict()
             membership = current_data.get('membershipId')
             inicio = current_data.get('ini')
             exp_date = current_data.get('exp') 
-            fecha_hoy = datetime.utcnow() 
+            fecha_hoy = datetime.utcnow()
             fecha_formateada = fecha_hoy.strftime('%Y-%m-%dT%H:%M:%S.') + '{:03d}Z'.format(fecha_hoy.microsecond // 1000)
-            if exp_date <= fecha_formateada:
+            if exp_date!='never' and exp_date <= fecha_formateada:
                 memberships_ref = db.collection('memberships')
                 ref = memberships_ref.document(membership).delete()
                 users_ref.document(doc.id).delete() 
                 aquire_membership_month(fechaInicio,uid,fechaFin,type_memb)
             inicio_date = datetime.fromisoformat(inicio) if isinstance(inicio, str) else inicio
-            fin_date = datetime.fromisoformat(exp_date) if isinstance(exp_date,str) else exp_date
-            if type_memb!='extraClass':
+            if exp_date!='never':
+                fin_date = datetime.fromisoformat(exp_date) if isinstance(exp_date,str) else exp_date
+            else:
+                if type_memb=='never':
+                    fin_date='never'
+                elif type_memb=='monthly':
+                    fin_date=fecha_hoy
+                elif type_memb=='yearly':
+                    fin_date=fecha_hoy
+            if type_memb!='never':
                 if type_memb == 'yearly':
                     fechaFinUpd = fin_date + timedelta(days=365)
                 elif type_memb == 'monthly':
                     fechaFinUpd = fin_date + timedelta(days=30) 
                 else:
-                    fechaFinUpd = current_data.get('exp') 
+                    fechaFinUpd = fin_date
+
                 formatted_fechaFin = fechaFinUpd.strftime('%Y-%m-%dT%H:%M:%S.') + '{:03d}Z'.format(fechaFinUpd.microsecond // 1000)
                 doc.reference.update({
                     'exp': formatted_fechaFin
@@ -121,7 +159,7 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
                     'top': (top_actual_val + 1)
                 })
         else:
-            new_memb = {'BookedClasses': [], 'top': 12, 'type': type_memb}
+            new_memb = {'BookedClasses': [], 'top': top_val, 'type': type_memb}
             class_ref = db.collection('memberships').add(new_memb)
             document_id = class_ref[1].get().id
 

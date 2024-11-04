@@ -9,7 +9,7 @@ from Controllers.excersicesController import create_exersice_route,get_excersice
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
 from Controllers.salasController import get_salas_route
 from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
-from Controllers.membershipController import get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
+from Controllers.membershipController import edit_memb_price_route,get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 
 
 
@@ -94,6 +94,20 @@ def use_geme():
             return jsonify({'error':'Missing token'})
         mail = request.json.get('mail')
         return use_geme_route(mail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+        
+@app.route('/edit_memb_price', methods=['PUT'])
+def edit_memb_price():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        tipo = request.json.get('tipo')
+        precio = request.json.get('precio')
+        return edit_memb_price_route(tipo,precio)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -243,6 +257,18 @@ def get_user():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_membership_template', methods=['GET'])
+def get_membership_template():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_membership_template_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
 
 @app.route('/create_user', methods=['POST'])
 def create_user():

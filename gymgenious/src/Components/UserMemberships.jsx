@@ -36,9 +36,39 @@ export default function UserMemberships() {
   const [errorAquire, setErrorAquire] = useState(false);
   const [upgrade, setUpgrade] = useState(false);
 
+  
+  const [memberships,setMemberships] = useState([])
+
   const hanldeChangeUpgrade = () => {
     setUpgrade(!upgrade);
     setErrorAquire(false);
+  }
+
+
+  const fetchMembership = async () => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response = await fetch('http://127.0.0.1:5000/get_membership_template', {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener las salas: ' + response.statusText);
+      }
+      const data = await response.json();
+      console.log("asi se ve",data)
+      setMemberships(data)
+      setOpenCircularProgress(false);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
   }
 
   const ComponenteBotonCreateMembership = () => {
@@ -144,6 +174,12 @@ export default function UserMemberships() {
     }
   }, []);
 
+  useEffect ( () => {
+    if (user) {
+      fetchMembership()
+    }
+  },[user])
+
   useEffect(() => {
     if (userMail) {
       fetchUser();
@@ -227,12 +263,12 @@ export default function UserMemberships() {
                       <h3 className="plan-title">Class</h3>
                         <div className="plan-price">
                             <span className="currency">U$D</span>
-                            <span className="price">0.99</span>
+                            <span className="price">{memberships.find(membership => membership.type === 'Class')?.price}</span>
                         </div>
                         <ul className="plan-features">
                           <li className="feature available">1 class</li>
                           <li className="feature available">Instant use</li>
-                          <li className="feature unavailable"><s>No time</s></li>
+                          <li className="feature unavailable"><s>No time restrictions</s></li>
                         </ul>
                       <button className="choose-plan-btn" onClick={()=>setPlan('never')}>Choose plan</button>
                       </div>
@@ -240,12 +276,12 @@ export default function UserMemberships() {
                       <h3 className="plan-title">Monthly plan</h3>
                         <div className="plan-price">
                             <span className="currency">U$D</span>
-                            <span className="price">9.99</span>
+                            <span className="price">{memberships.find(membership => membership.type === 'Monthly')?.price}</span>
                         </div>
                         <ul className="plan-features">
                           <li className="feature available">12 classes</li>
                           <li className="feature available">1 month</li>
-                          <li className="feature available">Cumulative</li>
+                          <li className="feature available">Can be accumulated</li>
                         </ul>
                       <button className="choose-plan-btn" onClick={()=>setPlan('monthly')}>Choose plan</button>
                       </div>
@@ -253,12 +289,12 @@ export default function UserMemberships() {
                       <h3 className="plan-title">Yearly plan</h3>
                         <div className="plan-price">
                             <span className="currency">U$D</span>
-                            <span className="price">99.99</span>
+                            <span className="price">{memberships.find(membership => membership.type === 'Yearly')?.price}</span>
                         </div>
                         <ul className="plan-features">
                           <li className="feature available">144 classes</li>
                           <li className="feature available">1 year</li>
-                          <li className="feature available">Cumulative</li>
+                          <li className="feature available">Can be accumulated</li>
                         </ul>
                       <button className="choose-plan-btn" onClick={()=>setPlan('yearly')}>Choose plan</button>
                       </div>
