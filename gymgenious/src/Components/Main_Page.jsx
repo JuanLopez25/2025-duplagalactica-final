@@ -298,7 +298,7 @@ export default function Main_Page() {
                                     block
                                     size="lg"
                                   >
-                                    No tenes mas pase
+                                    Upgrade your plan
                                   </MDBBtn>
                                   )}
                                   </>
@@ -333,42 +333,70 @@ export default function Main_Page() {
                         </>
                         ) : (
                         <>
-                        {userMail && type === 'client' && selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
+                        {userMail && type === 'client' && selectedEvent.BookedUsers && selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
                           <>
-                          {userAccount.Gemas>0 ? (
-                          <MDBBtn
-                            style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
-                            rounded
-                            block
-                            size="lg"
-                            onClick={() => handleBookClassWithGem(event.id)}
-                          >
-                            <DiamondIcon />
-                            Use gem
-                            <DiamondIcon />
-                          </MDBBtn>
-                          ) : (
+                           {selectedEvent.BookedUsers.includes(userMail)  ? (
+                             <MDBBtn
+                             style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                             rounded
+                             block
+                             size="lg"
+                             onClick={() => handleUnbookClass(event.id)}
+                           >
+                             Unbook
+                           </MDBBtn>
+                           ) : (
+                            <>
+                            {userAccount.Gemas>0 ? (
                             <MDBBtn
-                              style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                              style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                               rounded
                               block
                               size="lg"
+                              onClick={() => handleBookClassWithGem(event.id)}
                             >
-                              No tenes gemas
+                              <DiamondIcon />
+                              Use gem
+                              <DiamondIcon />
                             </MDBBtn>
+                            ) : (
+                              <MDBBtn
+                                style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                                rounded
+                                block
+                                size="lg"
+                              >
+                                You dont have gems
+                              </MDBBtn>
+                            )}
+                            </>
                           )}
                           </>
                         ) : (
                           <>
                           {userMail && type === 'client' ? (
-                            <MDBBtn
-                          style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
-                          rounded
-                          block
-                          size="lg"
-                        >
-                          Full
-                        </MDBBtn>
+                            <>
+                              {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
+                                <MDBBtn
+                                style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                                rounded
+                                block
+                                size="lg"
+                                onClick={() => handleUnbookClass(event.id)}
+                              >
+                                Unbook
+                              </MDBBtn>
+                              ) : (
+                                <MDBBtn
+                                style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                                rounded
+                                block
+                                size="lg"
+                              >
+                                Full
+                              </MDBBtn>
+                              )}
+                              </>
                           ) : (
                             null
                           )}
