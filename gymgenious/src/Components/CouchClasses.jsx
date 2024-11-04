@@ -28,13 +28,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import { FixedSizeList } from 'react-window';
 import Checkbox from '@mui/material/Checkbox';
-import { select } from 'framer-motion/client';
-
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
@@ -49,6 +45,7 @@ function CouchClasses() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editClass, setEditClass] = useState(false);
   const [userMail,setUserMail] = useState(null)
+  const [userAccount, setUser] = useState(null)
   const isSmallScreen400 = useMediaQuery('(max-width:400px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
@@ -68,7 +65,7 @@ function CouchClasses() {
   const [errorSala, setErrorSala] = useState(false);
   const [errorHour, setErrorHour] = useState(false);
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
-
+  const [newRows, setNewRows] = useState([]);
 
   const [fetchId,setFetchId] = useState('');
   const [fetchDateFin,setFetchDateFin]= useState('');
@@ -88,14 +85,33 @@ function CouchClasses() {
   const [totalClasses, setTotalClasses] = useState([]);
   const [openCheckList, setOpenCheckList] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState(['1']);
+  const [checked, setChecked] = useState(false);
+  const [viewQualifications, setViewQualifications] = useState(false);
+
+  const handleViewQualifications = () => {
+    setViewQualifications(!viewQualifications)
+  }
+
+  function HalfRatingCoach() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="read-only"
+          value={selectedEvent.averageCalification}
+          precision={0.5}
+          readOnly
+          />
+      </Stack>
+    );
+  }
 
   const toggleUserSelection = (userId) => {
-    setSelectedUsers((prev) => 
-      prev.includes(userId) 
-      ? prev.filter(id => id !== userId) 
-      : [...prev, userId]
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
     );
   };
+
   const hanldeCheckList = () => {
     setOpenCheckList(true);
   };
@@ -125,10 +141,11 @@ function CouchClasses() {
       acc[user.Mail] = user.uid;
       return acc;
     }, {});
+    const allUsers = selectedEvent.BookedUsers.map(email => emailToUidMap[email] || email)
     const updatedSelectedUsers = selectedUsers.map(email => emailToUidMap[email] || email);
     if (selectedEvent.permanent=='Si') {
       const formData = new FormData();
-      formData.append('usuarios', updatedSelectedUsers);
+      formData.append('usuarios', allUsers);
       formData.append('selectedEvent',selectedEvent.id);
       const response2 = await fetch('http://127.0.0.1:5000/update_class_use', {
           method: 'PUT', 
@@ -153,6 +170,20 @@ function CouchClasses() {
     });
     if (!response3.ok) {
         throw new Error('Error al actualizar los datos de las misiones: ' + response3.statusText);
+    }
+    const formData4 = new FormData();
+    formData4.append('selectedEvent',selectedEvent.id);
+    formData4.append('fecha',formatDate(new Date(selectedEvent.start)))
+    formData4.append('uid',userAccount.uid)
+    const response4 = await fetch('http://127.0.0.1:5000/add_assistance', {
+        method: 'POST', 
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        },
+        body: formData4,
+    });
+    if (!response4.ok) {
+        throw new Error('Error al actualizar los datos de la asistencia: ' + response4.statusText);
     }
     setTimeout(() => {
       setOpenCircularProgress(false);
@@ -181,24 +212,6 @@ function CouchClasses() {
     const year = date.getFullYear();
     
     return `${year}-${month}-${day}`;
-  }
-
-  function renderRow(props) {
-    const { index, style } = props;
-    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
-  
-    return (
-      <>
-        {selectedEvent?.BookedUsers?.map((user) => (
-        <ListItem style={style} key={user} component="div" disablePadding>
-          <ListItemButton>
-            <ListItemText primary={user} />
-            <Checkbox {...label} defaultChecked onChange={() => toggleUserSelection(user)} />
-          </ListItemButton>
-        </ListItem>
-        ))}
-      </>
-    );
   }
 
   useEffect(() => {
@@ -525,7 +538,7 @@ function CouchClasses() {
         };
       });
 
-      const response3 = await fetch('http://127.0.0.1:5000/get_comments');
+      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
@@ -553,9 +566,72 @@ function CouchClasses() {
           ...comments
         };
       });
-
-      setClasses(dataWithSalaAndComments);
-      setTotalClasses(dataWithSalaAndComments);
+      const calendarEvents = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      dataWithSalaAndComments.forEach(clase => {
+        const startDate = new Date(clase.dateInicio);
+        const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
+        const endDate = new Date(clase.dateFin);
+        const CorrectEndDate = new Date(endDate.getTime() + 60 * 3 * 60 * 1000);
+  
+        if (clase.permanent === "Si") {
+          let nextStartDate = new Date(CorrectStarDate);
+          let nextEndDate = new Date(CorrectEndDate);
+  
+          if (nextStartDate < today) {
+            const dayOfWeek = CorrectStarDate.getDay();
+            let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
+            if (daysUntilNextClass === 0 && today > CorrectStarDate) {
+              daysUntilNextClass = 7;
+            }
+            nextStartDate.setDate(today.getDate() + daysUntilNextClass);
+            nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
+          }
+          
+          for (let i = 0; i < 4; i++) {
+            calendarEvents.push({
+              title: clase.name,
+              start: new Date(nextStartDate),
+              end: new Date(nextEndDate),
+              allDay: false,
+              ...clase,
+            });
+            nextStartDate.setDate(nextStartDate.getDate() + 7);
+            nextEndDate.setDate(nextEndDate.getDate() + 7);
+          }
+        } else {
+          if(startDate >= today)
+          calendarEvents.push({
+            title: clase.name,
+            start: new Date(CorrectStarDate),
+            end: new Date(CorrectEndDate),
+            allDay: false,
+            ...clase,
+          });
+        }
+      });
+      const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
+        method: 'GET'
+      });
+      if (!response4.ok) {
+        throw new Error('Error al obtener las salas: ' + response4.statusText);
+      }
+      const assistance_references = await response4.json();
+      const dataMatches = calendarEvents.map(evento => {
+        const comment = assistance_references.find(c => 
+          (c.cid === evento.cid) && 
+          (new Date(evento.start).toISOString().split('T')[0] === new Date(c.date).toISOString().split('T')[0])
+        );
+        return {
+          ...evento,
+          fecha: comment ? comment.date : null,
+        };
+      });
+      console.log("asi se ven las clases",dataMatches)
+      setClasses(dataMatches);
+      setTotalClasses(dataMatches);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -566,18 +642,6 @@ function CouchClasses() {
       }, 3000);
     }
   };
-
-  useEffect(() => {
-    if(filterClasses!=''){
-      const filteredClassesSearcher = totalClasses.filter(item => 
-        item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
-      );
-      setClasses(filteredClassesSearcher);
-    } else {
-      setClasses(totalClasses);
-    }
-
-  }, [filterClasses]);
 
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
@@ -595,6 +659,31 @@ function CouchClasses() {
         throw error;
     }
   };
+
+  useEffect(() => {
+    const newRowsList = [];
+  
+    const filteredClassesSearcher = filterClasses
+      ? totalClasses.filter(item =>
+          item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
+        )
+      : totalClasses;
+  
+    filteredClassesSearcher.forEach(row => {
+      if (
+        (row.permanent === 'No' &&
+          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+        (row.permanent === 'Si' &&
+          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+      ) {
+        newRowsList.push(row);
+      }
+    });
+  
+    setNewRows(newRowsList);
+  }, [filterClasses, totalClasses]);
   
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -651,6 +740,7 @@ function CouchClasses() {
         }
         const data = await response.json();
         setType(data.type);
+        setUser(data)
         if(data.type!='coach'){
           navigate('/');
         }
@@ -659,9 +749,22 @@ function CouchClasses() {
     }
   };
 
+  const compararfechaHoy = (fecha) => {
+    const fechaGuardada = new Date(fecha);
+    const fechaActual = new Date();
+    const diaGuardado = fechaGuardada.getDate();
+    const mesGuardado = fechaGuardada.getMonth(); 
+    const anioGuardado = fechaGuardada.getFullYear();
+    const diaActual = fechaActual.getDate();
+    const mesActual = fechaActual.getMonth();
+    const anioActual = fechaActual.getFullYear();
+    const coincide = (diaGuardado === diaActual) && (mesGuardado === mesActual) && (anioGuardado === anioActual);
+    return coincide
+  }
+
   const visibleRows = React.useMemo(
     () =>
-      [...classes]
+      [...newRows]
         .sort((a, b) =>
           order === 'asc'
             ? a[orderBy] < b[orderBy]
@@ -672,7 +775,7 @@ function CouchClasses() {
             : 1
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, classes]
+    [order, orderBy, page, rowsPerPage, newRows]
   );
 
   function ECommerce({event}) {
@@ -688,7 +791,7 @@ function CouchClasses() {
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
                       <div className="d-flex align-items-center justify-content-between mb-3">
                         <p className="small mb-0" style={{color: '#424242' }}><AccessAlarmsIcon sx={{ color: '#48CFCB'}} />{event.dateInicio.split('T')[1].split(':').slice(0, 2).join(':')} - {event.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.dateInicio))}</p>
+                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.start))}</p>
                       </div>
                     </div>
                     <div className="d-flex align-items-center mb-4">
@@ -707,8 +810,13 @@ function CouchClasses() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
+                          {/* <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
+                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn> */}
+                          {userMail && type==='coach' && event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                          ) : (
+                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                          )}  
                         </div>
                       </div>
                     </div>
@@ -736,6 +844,7 @@ function CouchClasses() {
                         >
                           Edit class
                         </MDBBtn>
+                        {event.fecha==null && new Date(event.start).getDate() == new Date().getDate() && event.BookedUsers.length>0? (
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -744,7 +853,8 @@ function CouchClasses() {
                           onClick={()=>hanldeCheckList(event)}
                         >
                           Check list
-                        </MDBBtn>
+                        </MDBBtn>):
+                        (<></>)}
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -902,12 +1012,12 @@ function CouchClasses() {
                                     {!isSmallScreen400 && (
                                     <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
                                         <TableSortLabel
-                                        active={orderBy === 'dateInicio'}
-                                        direction={orderBy === 'dateInicio' ? order : 'asc'}
-                                        onClick={(event) => handleRequestSort(event, 'dateInicio')}
+                                        active={orderBy === 'start'}
+                                        direction={orderBy === 'start' ? order : 'asc'}
+                                        onClick={(event) => handleRequestSort(event, 'start')}
                                         >
                                         Date
-                                        {orderBy === 'dateInicio' ? (
+                                        {orderBy === 'start' ? (
                                             <Box component="span" sx={visuallyHidden}>
                                             {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                                             </Box>
@@ -943,20 +1053,42 @@ function CouchClasses() {
                             ) : (
                               <>
                                 {visibleRows.map((row) => (
-                                    <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
-                                    <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                        {row.name}
-                                    </TableCell>
-                                    {!isSmallScreen500 && (
-                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
-                                    )}
-                                    {!isSmallScreen400 && (
-                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.dateInicio))}</TableCell>
-                                    )}
-                                    {!isSmallScreen600 && (
-                                        <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
-                                    )}
-                                    </TableRow>
+                                    <>
+                                    {row.fecha==null && compararfechaHoy(row.start) && row.BookedUsers.length>0 ? (
+                                      <>
+                                      <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
+                                      <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red',borderRight: '1px solid #424242', color:'black', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
+                                          {row.name}
+                                      </TableCell>
+                                      {!isSmallScreen500 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red', borderRight: '1px solid #424242', color: 'black' }}>{row.hour}</TableCell>
+                                      )}
+                                      {!isSmallScreen400 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red', borderRight: '1px solid #424242', color: 'black' }}>{formatDate(new Date(row.start))}</TableCell>
+                                      )}
+                                      {!isSmallScreen600 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red', color: 'black' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
+                                      )}
+                                      </TableRow>
+                                      </> ) : 
+                                      (<>
+                                      <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
+                                      <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
+                                          {row.name}
+                                      </TableCell>
+                                      {!isSmallScreen500 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
+                                      )}
+                                      {!isSmallScreen400 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
+                                      )}
+                                      {!isSmallScreen600 && (
+                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
+                                      )}
+                                      </TableRow>
+                                      </>)
+                                    }
+                                    </>
                                 ))}
                               </>
                             )}
@@ -969,7 +1101,7 @@ function CouchClasses() {
                         <TablePagination
                             rowsPerPageOptions={[10]}
                             component="div"
-                            count={classes.length}
+                            count={newRows.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
                             onPageChange={handleChangePage}
@@ -978,7 +1110,7 @@ function CouchClasses() {
                         <TablePagination
                             rowsPerPageOptions={[5, 10, 25]}
                             component="div"
-                            count={classes.length}
+                            count={newRows.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
                             onPageChange={handleChangePage}
@@ -993,20 +1125,25 @@ function CouchClasses() {
                 {openCheckList && (
                   <div className="Modal" style={{zIndex:'1001'}}>
                     <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
-                      <h2>Assist?</h2>
-                      <Box
-                      sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
-                    >
-                      <FixedSizeList
-                        height={400}
-                        width={'80%'}
-                        itemSize={46}
-                        itemCount={selectedEvent?.BookedUsers?.length}
-                        overscanCount={5}
-                      >
-                        {renderRow}
-                      </FixedSizeList>
-                    </Box>
+                      <h2>Check List</h2>
+                        {selectedEvent?.BookedUsers?.length!==0 ? (
+                          <>
+                          <div className="check-list-container">
+                            {selectedEvent?.BookedUsers?.map((user, index) => (
+                              <div key={index} className="check-list-item"  onClick={() => toggleUserSelection(user)}>
+                                {user}
+                                <Checkbox
+                                  checked={selectedUsers.includes(user)}
+                                  onChange={() => toggleUserSelection(user)}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          </>
+                        ) : (
+                          <li>There are not booked users</li>
+                        )}
+                      
                     <button onClick={closeCheckList} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
                     <button onClick={saveCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
                     </div>
@@ -1115,25 +1252,45 @@ function CouchClasses() {
         </div>
         </>
         )}
-
-{selectedEvent && (
-                    // <div className="Modal" onClick={handleCloseModal}>
-                    //     <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
-                    //         <h2>Class details</h2>
-                    //         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Name:</strong> {selectedEvent.name}</p>
-                    //         <p><strong>Date:</strong> {formatDate(new Date(selectedEvent.dateInicio))}</p>
-                    //         <p><strong>Start time:</strong> {selectedEvent.hour}</p>
-                    //         <p><strong>End time:</strong> {selectedEvent.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                    //         <p><strong>Sala:</strong> {selectedEvent.salaInfo.nombre}</p>
-                    //         <p><strong>Recurrent:</strong> {selectedEvent.permanent==='Si' ? 'Yes' : 'No'}</p>
-                    //         <p><strong>Participants:</strong> {selectedEvent.BookedUsers.length}</p>
-                    //         <button style={{marginLeft:'10px'}} onClick={()=>handleEditClass(selectedEvent)}>Edit class</button>
-                    //         <button style={{marginLeft:'10px'}} onClick={handleCloseModal}>Close</button>
-                    //         <button style={{marginLeft:'10px'}} onClick={() => handleDeleteClass(selectedEvent.id)}>Delete class</button>
-                    //     </div>
-                    // </div>
-                    <ECommerce event={selectedEvent}/>
-                )}
+        {selectedEvent && (
+          <ECommerce event={selectedEvent}/>
+        )}
+        {viewQualifications && (
+        <div className="Modal" onClick={handleViewQualifications}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                {selectedEvent.name}
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 1,marginRight: '0px'}}>
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Average Qualification:</label>
+                    <HalfRatingCoach/>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                <label htmlFor="stars" style={{color:'#14213D'}}>Comments:</label>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.commentaries.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewQualifications}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
     
   );

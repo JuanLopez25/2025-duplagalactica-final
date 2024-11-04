@@ -9,43 +9,37 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import Popper from '@mui/material/Popper';
 import {jwtDecode} from "jwt-decode";
 import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import CloseIcon from '@mui/icons-material/Close';
-
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import SchoolIcon from '@mui/icons-material/School';
+import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
 
 export default function UserMemberships() {
-  const [hour, setHour] = useState('');
-  const [hourFin, setHourFin] = useState('');
-  const [permanent, setPermanent] = useState('');
-  const [date, setDate] = useState('');
-  const [salas, setSalas] = useState([]);
-  const [showSalas, setShowSalas] = useState(false);
-  const [warningFetchingRoutines, setWarningFetchingRoutines] = useState(false);
-  const [salaAssigned, setSala] = useState(null); 
-  const [name, setName] = useState('');
-  const [maxNum,setMaxNum] = useState(1);
+  const [plan, setPlan] = useState('');
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
   const [failureErrors, setFailureErrors] = useState(false);
-  const [openCircularProgress, setOpenCircularProgress] = useState(false);
+  const [openCircularProgress, setOpenCircularProgress] = useState(true);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
   const [type, setType] = useState(null);
-  const [myMembership, setMyMembership] = useState(false);
-  const [user,setUser] = useState()
+  const [user,setUser] = useState();
+  const [membership, setMembership] = useState([]);
+  const [errorAquire, setErrorAquire] = useState(false);
+  const [upgrade, setUpgrade] = useState(false);
 
-  const handleChangeMyMembership = () => {
-    setMyMembership(!myMembership);
-  };
+  const hanldeChangeUpgrade = () => {
+    setUpgrade(!upgrade);
+    setErrorAquire(false);
+  }
 
   const ComponenteBotonCreateMembership = () => {
     return (
@@ -64,56 +58,46 @@ export default function UserMemberships() {
   };
 
   const handleAquireMembership = async () => {
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
+    if(plan!=''){
+      setErrorAquire(false);
+      setOpenCircularProgress(true)
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          console.error('Token no disponible en localStorage');
+          return;
+        }
+        const fechaHoy = new Date();
+        let fechaFin; 
+        if (plan === 'monthly') {
+            fechaFin = new Date(fechaHoy); 
+            fechaFin.setMonth(fechaFin.getMonth() + 1);
+        } else if (plan === 'yearly') {
+            fechaFin = new Date(fechaHoy); 
+            fechaFin.setFullYear(fechaFin.getFullYear() + 1);
+        } else {
+            fechaFin = 'never';
+        }
+        const response = await fetch('http://127.0.0.1:5000/aquire_membership_month', {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ inicio: fechaHoy,userId:user.uid,fin: fechaFin,type_memb:plan })
+        });
+        if (!response.ok) {
+          throw new Error('Error al actualizar la clase: ' + response.statusText);
+        }
+        window.location.reload()
+        setOpenCircularProgress(false)
+      } catch (error) {
+        console.error("Error fetching classes:", error);
       }
-      const fechaHoy = new Date();
-      let fechaFin; 
-      if (permanent === 'monthly') {
-          fechaFin = new Date(fechaHoy); 
-          fechaFin.setMonth(fechaFin.getMonth() + 1);
-      } else if (permanent === 'yearly') {
-          fechaFin = new Date(fechaHoy); 
-          fechaFin.setFullYear(fechaFin.getFullYear() + 1);
-      } else {
-          fechaFin = 'never';
-      }
-      const response = await fetch('http://127.0.0.1:5000/aquire_membership_month', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ inicio: fechaHoy,userId:user.uid,fin: fechaFin,type_memb:permanent })
-      });
-      if (!response.ok) {
-        throw new Error('Error al actualizar la clase: ' + response.statusText);
-      }
-      
-    } catch (error) {
-      console.error("Error fetching classes:", error);
+    } else {
+      setErrorAquire(true);
     }
     
-  };
-
-
-  const ComponenteBotonEditMembership = () => {
-    return (
-      <>
-      {isSmallScreen ? (
-          <div className="grid-container">
-            <button className="draw-outline-button-small">Edit Membership</button>
-          </div>
-      ) : (
-          <div className="grid-container">
-            <CreateClass>Edit Membership</CreateClass>
-          </div>
-      )}
-      </>
-    );
   };
   
   const CreateClass = ({ children, ...rest }) => {
@@ -135,10 +119,6 @@ export default function UserMemberships() {
       setErrors(errors);
       return errors.length === 0;
   }
-
-  const handleComeBack = (e) => {
-    setShowSalas(false);
-  };
 
   const verifyToken = async (token) => {
     try {
@@ -171,6 +151,7 @@ export default function UserMemberships() {
   }, [userMail]);
 
   const fetchUser = async () => {
+    setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
@@ -190,78 +171,178 @@ export default function UserMemberships() {
         const data = await response.json();
         setUser(data)
         setType(data.type);
+        const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
+            method: 'GET', 
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (!response3.ok) {
+            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+        }
+        const data3 = await response3.json();
+        const membershipsOfUser = data3.filter(memb => memb.userId == data.uid)
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
+        const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
+        const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memberships`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+        });
+        const membresia = await response2.json();
+        const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+        const membFinal = membresiaFiltered.map(memb => {
+          const membInfo = membresia.find(membresia => membresia.id === memb.membershipId);
+          return {
+            ...memb,
+            membInfo, 
+          };
+        });
+        console.log("membresia",membFinal)
+        setMembership(membFinal);
+        setOpenCircularProgress(false);
         if(data.type!='client'){
           navigate('/');
         }
     } catch (error) {
         console.error("Error fetching user:", error);
+        setOpenCircularProgress(false);
     }
   };
 
   const ComponentViewMemberships = () => {
     return (
-        <div className='class-creation-container'>
-            <div className='class-creation-content'>
+        <div className='membership-choose-container'>
+            <div className='class-creation-content' style={{paddingTop: '1%'}}>
             <h2 style={{color:'#424242'}}>Acquire Membership</h2>
                 <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                    <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                        <label htmlFor="permanent" style={{color:'#424242'}}>Type:</label>
+                    <div className="input-small-container2" style={{width:"100%", marginBottom: '0px', alignContent: 'center'}}>
+                      <div className='type-memberships' style={{marginRight: '2%', backgroundColor: plan==='never' ? '#f5ebe0' : ''}}>
+                      <h3 className="plan-title">Class</h3>
+                        <div className="plan-price">
+                            <span className="currency">U$D</span>
+                            <span className="price">0.99</span>
+                        </div>
+                        <ul className="plan-features">
+                          <li className="feature available">1 class</li>
+                          <li className="feature available">Instant use</li>
+                          <li className="feature unavailable"><s>No time</s></li>
+                        </ul>
+                      <button className="choose-plan-btn" onClick={()=>setPlan('never')}>Choose plan</button>
+                      </div>
+                      <div className='type-memberships' style={{marginRight: '2%', backgroundColor: plan==='monthly' ? '#f5ebe0' : ''}}>
+                      <h3 className="plan-title">Monthly plan</h3>
+                        <div className="plan-price">
+                            <span className="currency">U$D</span>
+                            <span className="price">9.99</span>
+                        </div>
+                        <ul className="plan-features">
+                          <li className="feature available">12 classes</li>
+                          <li className="feature available">1 month</li>
+                          <li className="feature available">Cumulative</li>
+                        </ul>
+                      <button className="choose-plan-btn" onClick={()=>setPlan('monthly')}>Choose plan</button>
+                      </div>
+                      <div className='type-memberships' style={{backgroundColor: plan==='yearly' ? '#f5ebe0' : ''}}>
+                      <h3 className="plan-title">Yearly plan</h3>
+                        <div className="plan-price">
+                            <span className="currency">U$D</span>
+                            <span className="price">99.99</span>
+                        </div>
+                        <ul className="plan-features">
+                          <li className="feature available">144 classes</li>
+                          <li className="feature available">1 year</li>
+                          <li className="feature available">Cumulative</li>
+                        </ul>
+                      <button className="choose-plan-btn" onClick={()=>setPlan('yearly')}>Choose plan</button>
+                      </div>
+                        {/* <label htmlFor="plan" style={{color:'#424242'}}>Type:</label>
                         <select
-                            id="permanent" 
-                            name="permanent" 
-                            value={permanent} 
-                            onChange={(e) => setPermanent(e.target.value)} 
+                            id="plan" 
+                            name="plan" 
+                            value={plan} 
+                            onChange={(e) => setplan(e.target.value)} 
                         >
                             <option value="" >Select</option>
                             <option value="extraClass">Extra class</option>
                             <option value="monthly">Monthly</option>
                             <option value="yearly">Yearly</option>
-                        </select>
+                        </select> */}
                     </div>
                 </div>
                 <ComponenteBotonCreateMembership/>
-                <button onClick={handleChangeMyMembership}>view my membership</button>
+                {errorAquire && (<p style={{color: 'red', margin: '0px'}}>Select a plan</p>)}
+                <button 
+                onClick={hanldeChangeUpgrade} 
+                className="custom-button-go-back-managing"
+              >
+                <KeyboardBackspaceIcon sx={{ color: '#F5F5F5' }} />
+              </button>
             </div>
         </div>
     )
   }
 
   const ComponentMyMembership = () => {
+    console.log(membership[0])
     return (
-        <div className='class-creation-container'>
-            <div className='class-creation-content'>
-            <h2 style={{color:'#424242'}}>My Membership</h2>
-                <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                    <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                        <p>my membership</p>
-                        <p>months remaining</p>
-                    </div>   
-                </div>
-                <button>cancel my membership</button>
-                <button onClick={handleChangeMyMembership}>upgrade</button>
-            </div>
+      <div className="membership-card">
+      <h2 className='h2-membership'>My Membership</h2>
+      <div className="membership-info">
+          <div className="info-item">
+              <CalendarTodayIcon className="icon-membership" />
+              <span>Expiration: {membership[0].exp.split('T')[0]}</span>
+          </div>
+          <div className="info-item">
+              <SchoolIcon className="icon-membership" />
+              <span>Remaining classes to annotate: {membership[0].membInfo.top-membership[0].membInfo.BookedClasses.length}</span>
+          </div>
+          <div className="info-item">
+            <SignalCellularAltIcon className="icon-membership"/>
+          <span>Progress: {membership[0].membInfo.BookedClasses.length}/{membership[0].membInfo.top}</span>
+          </div>
+          <div className="progress-container-membership">
+              <div
+                  className="progress-bar-membership"
+                  style={{ width: `${(membership[0].membInfo.BookedClasses.length / membership[0].membInfo.top)*100}%` }}
+              ></div>
+          </div>
+      </div>
+      {!upgrade ? (
+        <button className="upgrade-btn-membership" onClick={hanldeChangeUpgrade}>Upgrade</button>
+      ) : (
+        <div className='Modal'>
+          <ComponentViewMemberships/>
         </div>
+      )}
+      
+  </div>
     )
   }
 
   return (
     <div className='full-screen-image-2'>
-      {type!='client' ? (
+      {type!='client' || openCircularProgress ? (
             <Backdrop
             sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
             open={true}
             >
-                <CircularProgress color="inherit" />
+            <Loader></Loader>
             </Backdrop>
         ) : (
           <>
             <LeftBar/>
-            {!myMembership ? (
-                <ComponentViewMemberships/>
-            ) : (
+            {membership.length!=0 ? (
                 <ComponentMyMembership/>
+            ) : (
+                <ComponentViewMemberships/>
             )}
-           
           </>
       )}
       {openCircularProgress ? (

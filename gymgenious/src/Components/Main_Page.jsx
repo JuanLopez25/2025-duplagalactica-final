@@ -6,6 +6,8 @@ import NewLeftBar from '../real_components/NewLeftBar.jsx';
 import {jwtDecode} from "jwt-decode";
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import Slide from '@mui/material/Slide';
 import CheckIcon from '@mui/icons-material/Check';
 import Calendar from '../real_components/Calendar.jsx';
@@ -26,56 +28,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import DiamondIcon from '@mui/icons-material/Diamond';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
-
-const Carousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const cardCount = 10;
-  const visibleCards = 5;
-
-  const maxIndex = Math.ceil(cardCount / visibleCards) - 1;
-
-  const nextGroup = () => {
-    setCurrentIndex(currentIndex < maxIndex ? currentIndex + 1 : 1);
-  };
-
-  const prevGroup = () => {
-    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : 0);
-  };
-
-  return (
-    <div style={{ width: '100%', height: '40%', overflow: 'hidden', position: 'relative'}}>
-      <div
-        style={{
-          display: 'flex',
-          transition: 'transform 0.3s ease-in-out',
-          transform: `translateX(-${currentIndex * 100}%)`
-        }}
-      >
-        {Array.from({ length: cardCount }, (_, index) => (
-          <div
-            key={index}
-            style={{
-              minWidth: `${100 / visibleCards}%`,
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <div className="card">achievement {index + 1}</div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={prevGroup} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)' }}>
-        {'<'}
-      </button>
-      <button onClick={nextGroup} style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)' }}>
-        {'>'}
-      </button>
-    </div>
-  );
-};
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 export default function Main_Page() {
   const [classes, setClasses] = useState([]);
@@ -100,6 +54,11 @@ export default function Main_Page() {
   const [totalClasses, setTotalClasses] = useState([]);
   const [openAchievements, setOpenAchievements] = useState(false);
   const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
+  const [progress,setProgress] = useState();
+  const [newRows, setNewRows] = useState([]);
+  const [errorStars, setErrorStars] = useState(false);
+  const [errorComment, setErrorComment] = useState(false);
+
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -123,10 +82,17 @@ export default function Main_Page() {
   const month = String(currentDate.getMonth() + 1).padStart(2, '0');
   const day = String(currentDate.getDate()).padStart(2, '0');
   const formattedDate = `${year}-${month}-${day}`;
-
+  const [notifications,setCantidadNotifications] = useState(0);
+  const [viewQualifications, setViewQualifications] = useState(false)
+  
   const handleChangeCalifyModal = () => {
+    setComment(selectedEvent.comentario)
     setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
+  }
+
+  const handleViewQualifications = () => {
+    setViewQualifications(!viewQualifications)
   }
 
   const handleStarsChange = (e) => {
@@ -151,6 +117,54 @@ export default function Main_Page() {
     
     return `${year}-${month}-${day}`;
   }
+
+  function HalfRating() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="half-rating"
+          value={stars}
+          onChange={handleStarsChange}
+          defaultValue={stars} />
+      </Stack>
+    );
+  }
+
+  function HalfRatingCoach() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="read-only"
+          value={selectedEvent.averageCalification}
+          precision={0.5}
+          readOnly
+          />
+      </Stack>
+    );
+  }
+
+  useEffect(() => {
+    const newRowsList = [];
+  
+    const filteredClassesSearcher = filterClasses
+      ? totalClasses.filter(item =>
+          item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
+        )
+      : totalClasses;
+  
+    filteredClassesSearcher.forEach(row => {
+      if (
+        (row.permanent === 'No' &&
+          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+        (row.permanent === 'Si' &&
+          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+      ) {
+        newRowsList.push(row);
+      }
+    });
+  
+    setNewRows(newRowsList);
+  }, [filterClasses, totalClasses]);
 
   function ECommerce({event}) {
     
@@ -185,15 +199,18 @@ export default function Main_Page() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          {userMail && type==='client' && (
+                          {userMail && type==='client' && selectedEvent.BookedUsers.includes(userMail) && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
-                          )}    
-                          {userMail && type==='coach' && (
+                          )}
+                          {userMail && type==='coach' && event.owner===userMail && (
                             <>
-                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
-                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
+                            {event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                            ) : (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                            )}
                             </>
-                          )}       
+                          )}
                         </div>
                       </div>
                     </div>
@@ -214,56 +231,92 @@ export default function Main_Page() {
                       ? (
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
-                              <MDBBtn
-                              style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
-                              rounded
-                              block
-                              size="lg"
-                              onClick={() => handleUnbookClass(event.id)}
-                            >
-                              Unbook
-                            </MDBBtn>
+                          <>
+                          {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                            <MDBBtn
+                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                          >
+                            Class is today
+                          </MDBBtn>
+                          ) : (
+                          <MDBBtn
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                          rounded
+                          block
+                          size="lg"
+                          onClick={() => handleUnbookClass(event.id)}
+                        >
+                          Unbook
+                        </MDBBtn>
+                          )}
+                            </>
                             ) : (
                               <>
-                              {selectedEvent.BookedUsers.length<selectedEvent.capacity  && membership[0].BookedClasses.length<membership[0].top? (
+                              {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                              
                               <MDBBtn
-                                style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
-                                rounded
-                                block
-                                size="lg"
-                                onClick={() => handleBookClass(event.id)}
-                              >
-                                Book
-                              </MDBBtn>
-                              ) : (
+                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                          >
+                            Class is today
+                          </MDBBtn>
+                            ) : (
                               <>
-                              {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
-                                <>
+                              {!membership[0] ? (
                                 <MDBBtn
-                                  style={{ backgroundColor: 'RED', color: 'white', width: '70%', left: '15%' }} 
+                                  style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                                  rounded
+                                  block
+                                  size="lg"
+                                  
+                                >
+                                  You dont have an active membership
+                                </MDBBtn>
+                                ) : (
+                                <>
+                                {selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
+                                  <>
+                                  {membership[0].BookedClasses.length<membership[0].top ? (
+                                    <MDBBtn
+                                    style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                                    rounded
+                                    block
+                                    size="lg"
+                                    onClick={() => handleBookClass(event.id)}
+                                  >
+                                    Book
+                                  </MDBBtn>
+                                  ) : (
+                                    <MDBBtn
+                                    style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                                    rounded
+                                    block
+                                    size="lg"
+                                  >
+                                    No tenes mas pase
+                                  </MDBBtn>
+                                  )}
+                                  </>
+                                ) : (
+                                <MDBBtn
+                                  style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
                                   rounded
                                   block
                                   size="lg"
                                 >
-                                  Book
+                                  FULL
                                 </MDBBtn>
+                                )}
+                                </>)
+                                }
                                 </>
-                              ) :
-                              (
-                              <>
-                              <MDBBtn
-                                style={{ backgroundColor: '#48CFCB', color: 'white' }} 
-                                rounded
-                                block
-                                size="lg"
-                              >
-                                FULL
-                              </MDBBtn>
-                              </>
-                              )}
-                              </>)
-                              }
-                              </>
+                            )}
+                            </>
                         )}
                         <button 
                           onClick={handleCloseModal}
@@ -279,6 +332,48 @@ export default function Main_Page() {
                         </button>
                         </>
                         ) : (
+                        <>
+                        {userMail && type === 'client' && selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
+                          <>
+                          {userAccount.Gemas>0 ? (
+                          <MDBBtn
+                            style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                            onClick={() => handleBookClassWithGem(event.id)}
+                          >
+                            <DiamondIcon />
+                            Use gem
+                            <DiamondIcon />
+                          </MDBBtn>
+                          ) : (
+                            <MDBBtn
+                              style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                              rounded
+                              block
+                              size="lg"
+                            >
+                              No tenes gemas
+                            </MDBBtn>
+                          )}
+                          </>
+                        ) : (
+                          <>
+                          {userMail && type === 'client' ? (
+                            <MDBBtn
+                          style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                          rounded
+                          block
+                          size="lg"
+                        >
+                          Full
+                        </MDBBtn>
+                          ) : (
+                            null
+                          )}
+                        </>
+                        )}
                           <button 
                             onClick={handleCloseModal}
                             className="custom-button-go-back-managing"
@@ -291,6 +386,7 @@ export default function Main_Page() {
                           >
                             <CloseIcon sx={{ color: '#F5F5F5' }} />
                           </button>
+                          </>
                         )}
                   </MDBCardBody>
                 </MDBCard>
@@ -321,7 +417,7 @@ export default function Main_Page() {
   };
 
   const fetchClasses = async () => {
-    setOpenCircularProgress(true);
+    setOpenCircularProgress(true)
     try {
       const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
       if (!response.ok) {
@@ -346,12 +442,13 @@ export default function Main_Page() {
       const calendarEvents = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const response3 = await fetch('http://127.0.0.1:5000/get_comments');
+      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
       const data3 = await response3.json();
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
+      console.log('comentarios: ', filteredComments)
       const dataWithSalaAndComments = dataWithSala.map(clase => {
         const comment = filteredComments.find(c => c.cid === clase.id);
         return {
@@ -403,11 +500,91 @@ export default function Main_Page() {
           });
         }
       });
-      setOpenCircularProgress(false);
-      console.log(calendarEvents)
+      const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
+        method: 'GET'
+      });
+      if (!response4.ok) {
+        throw new Error('Error al obtener las salas: ' + response4.statusText);
+      }
+      const assistance_references = await response4.json();
+      const assitance_buscadas = assistance_references.filter(asis=>asis.uid==userAccount.uid)
+      const clases_del_profesor = calendarEvents.filter(clas => clas.owner==userMail)
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const formattedToday = `${year}-${month}-${day}`;
+      const clases_hoy = clases_del_profesor.filter(clas => {
+        const classDate = new Date(clas.start);
+        const formattedClassDate = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}-${String(classDate.getDate()).padStart(2, '0')}`;
+        
+        return formattedClassDate === formattedToday;
+      });
+      const clases_que_se_toma_asistencia = clases_hoy.filter(clas=> clas.BookedUsers.length>0)
+      setCantidadNotifications(clases_que_se_toma_asistencia.length-assitance_buscadas.length)
       setEvents(calendarEvents);
-      setClasses(dataWithSalaAndComments);
-      setTotalClasses(dataWithSala);
+      setOpenCircularProgress(false)
+      setClasses(calendarEvents);
+      setTotalClasses(calendarEvents);
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+      setWarningConnection(true);
+      setOpenCircularProgress(false)
+      setTimeout(() => {
+        setWarningConnection(false);
+      }, 3000);
+    }
+  };
+
+  const handleBookClassWithGem = async (event) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/book_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ event: event,mail:userMail })
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      }
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_membership_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ id: event,membId:membership[0].id })
+      });
+      if (!response2.ok) {
+        throw new Error('Error al actualizar la clase: ' + response2.statusText);
+      }
+
+      const response3 = await fetch('http://127.0.0.1:5000/use_geme', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({mail:userMail})
+      });
+      if (!response3.ok) {
+        throw new Error('Error al actualizar la clase: ' + response3.statusText);
+      }
+
+
+      await fetchClasses();
+      window.location.reload();
+      handleCloseModal();
+      setTimeout(() => {
+        setSuccessBook(false);
+      }, 3000);
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
@@ -416,8 +593,8 @@ export default function Main_Page() {
         setWarningConnection(false);
       }, 3000);
     }
+    
   };
-  
 
   const handleBookClass = async (event) => {
     setOpenCircularProgress(true);
@@ -438,7 +615,7 @@ export default function Main_Page() {
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
-      const response2 = await fetch('http://127.0.0.1:5000/use_membership_class', {
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_membership_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -450,9 +627,10 @@ export default function Main_Page() {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
       await fetchClasses();
+      window.location.reload();
       setOpenCircularProgress(false);
       handleCloseModal();
-      setSuccessBook(true)
+      //setSucceshandleClosesBook(true)
       setTimeout(() => {
         setSuccessBook(false);
       }, 3000);
@@ -483,7 +661,7 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ event: event,mail:userMail })
       });
-      const response2 = await fetch('http://127.0.0.1:5000/unuse_membership_class', {
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/unuse_membership_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -495,7 +673,7 @@ export default function Main_Page() {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
       await fetchClasses();
-      setOpenCircularProgress(false);
+      window.location.reload();
       handleCloseModal();
       setSuccessUnbook(true);
       setTimeout(() => {
@@ -512,14 +690,11 @@ export default function Main_Page() {
   };
 
   const verifyToken = async (token) => {
-    setOpenCircularProgress(true);
     try {
         const decodedToken = jwtDecode(token);
         setUserMail(decodedToken.email);
-        setOpenCircularProgress(false);
     } catch (error) {
         console.error('Error al verificar el token:', error);
-        setOpenCircularProgress(false);
         setErrorToken(true);
         setTimeout(() => {
           setErrorToken(false);
@@ -535,11 +710,16 @@ export default function Main_Page() {
     } else {
         console.error('No token found');
     }
+    
+  }, [userAccount]);
+
+  useEffect(()=> {
     if (userAccount) {
       fetchClasses();
-      fetchMissions()
+      fetchMissions();
+      fetchMissionsProgress();
     }
-  }, [userAccount]);
+  },[userAccount])
 
   useEffect(() => {
     if (userMail) {
@@ -547,20 +727,7 @@ export default function Main_Page() {
     }
   }, [userMail, showCalendar]);
 
-  useEffect(() => {
-    if(filterClasses!=''){
-      const filteredClassesSearcher = totalClasses.filter(item => 
-        item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
-      );
-      setClasses(filteredClassesSearcher);
-    } else {
-      setClasses(totalClasses);
-    }
-
-  }, [filterClasses]);
-
-
-  const saveCalification = async (event) => {
+  const handleClaimMission = async (missionProgressId) => {
     setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
@@ -568,25 +735,67 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      let starsValue = changingStars ? stars : event.puntuacion;
-      let commentValue = changingComment ? comment : event.comentario;
-      const response = await fetch('http://127.0.0.1:5000/add_calification', {
-        method: 'PUT', 
+      const formData = new FormData();
+      formData.append('misiones', missionProgressId);
+      const response5 = await fetch('http://127.0.0.1:5000/delete_missions', {
+        method: 'DELETE', 
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
+        body: formData
       });
-      setChangingStars(false)
-      setChangingComment(false)
-      setOpenCircularProgress(false);
-      await fetchClasses();
-      setOpenCircularProgress(false);
-      handleChangeCalifyModal()
-      handleCloseModal();
+      if (!response5.ok) {
+        throw new Error('Error al actualizar la clase: ' + response5.statusText);
+      }
+      window.location.reload();
     } catch (error) {
         console.error("Error fetching user:", error);
+    }
+  }
+
+  const validateCalification = () => {
+    let res=true;
+    setErrorStars(false);
+    setErrorComment(false);
+    if(stars===-1 || stars===null) {
+      res=false;
+      setErrorStars(true);
+    }
+    if(comment==='') {
+      res=false;
+      setErrorComment(true);
+    }
+    return res;
+  }
+
+  const saveCalification = async (event) => {
+    if(validateCalification()) {
+      setOpenCircularProgress(true);
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          console.error('Token no disponible en localStorage');
+          return;
+        }
+        let starsValue = changingStars ? stars : event.puntuacion;
+        let commentValue = changingComment ? comment : event.comentario;
+        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
+        });
+        setChangingStars(false)
+        setChangingComment(false)
+        await fetchClasses();
+        setOpenCircularProgress(false);
+        handleChangeCalifyModal()
+        handleCloseModal();
+      } catch (error) {
+          console.error("Error fetching user:", error);
+      }
     }
   }
 
@@ -598,7 +807,7 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response4 = await fetch(`http://127.0.0.1:5000/get_missions`, {
+      const response4 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_missions`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -610,7 +819,7 @@ export default function Main_Page() {
       const formData = new FormData();
       formData.append('misiones', missionsIds);
       if (missionsIds.length!=0) {
-        const response5 = await fetch('http://127.0.0.1:5000/delete_missions', {
+        const response5 = await fetch('http://127.0.0.1:5000/add_mission_progress', {
           method: 'DELETE', 
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -620,12 +829,80 @@ export default function Main_Page() {
         if (!response5.ok) {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
-      }
+      } 
     } catch (e) {
 
     }
   }
 
+  const traducirDia = (diaEspañol) => {
+    if (diaEspañol=='Lunes') {
+      return 'Monday'
+    } else if (diaEspañol=='Martes') {
+      return 'Tuesday'
+    } else if (diaEspañol=='Miercoles') {
+      return 'Wednesday'
+    } else if (diaEspañol=='Jueves'){
+      return 'Thursday'
+    } else if (diaEspañol=='Vienres') {
+      return 'Friday'
+    } else if (diaEspañol=='Sabado') {
+      return 'Saturday'
+    } else if (diaEspañol=='Domingo') {
+      return 'Sunday'
+    }
+  }
+
+  const fetchMissionsProgress = async () =>{
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response4 = await fetch(`http://127.0.0.1:5000/get_missions_progress`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const missions = await response4.json();
+      const progress = missions.filter(mis => mis.uid === userAccount.uid)
+      if (progress.length<3 && (userAccount.length!=0)) {
+        const formData = new FormData();
+        formData.append('cant', (3-progress.length));
+        formData.append('uid', userAccount.uid);
+        const response = await fetch('http://127.0.0.1:5000/assign_mission', {
+              method: 'POST',
+              headers: {
+                  'Authorization': `Bearer ${authToken}`
+              },
+              body: formData,
+        });
+        if (!response.ok) {
+          throw new Error('Error al actualizar la clase: ' + response5.statusText);
+        }
+        window.location.reload();
+      }
+      const response5 = await fetch(`http://127.0.0.1:5000/get_missions_template`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      if (!response5.ok) {
+        throw new Error('Error al actualizar la clase: ' + response5.statusText);
+      } 
+      const templates = await response5.json();
+      const enrichedProgress = progress.map(mission => {
+        const template = templates.find(temp => temp.id === mission.mid);
+        return template ? { ...mission, ...template } : mission;
+      });
+      setProgress(enrichedProgress)
+      console.log("progresos",enrichedProgress)
+    } catch (e) {
+    }
+  }
 
   const fetchUser = async () => {
     setOpenCircularProgress(true);
@@ -648,9 +925,9 @@ export default function Main_Page() {
       const data = await response.json();
       setUserAccount(data)
       setType(data.type);
+      
       console.log("este es el usuario",data)
-      setOpenCircularProgress(false);
-      const response3 = await fetch(`http://127.0.0.1:5000/get_memb_user`, {
+      const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
           method: 'GET', 
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -668,7 +945,7 @@ export default function Main_Page() {
       const formattedDate = `${year}-${month}-${day}`;
       const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
       const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
-      const response2 = await fetch(`http://127.0.0.1:5000/get_memberships`, {
+      const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memberships`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -691,14 +968,13 @@ export default function Main_Page() {
       <WarningConnectionAlert warningConnection={warningConnection}/>
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
-      {type==='client' && (
+      {type==='client' ? (
         <>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
+        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '186px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container-buttons' onClick={handleViewAchievements}>
             <Button onClick={handleViewAchievements}
               style={{
                   backgroundColor: '#48CFCB',
-                  position: 'absolute',
                   borderRadius: '50%',
                   width: '5vh',
                   height: '5vh',
@@ -714,18 +990,16 @@ export default function Main_Page() {
             </Button>
           </div>
         </div>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
+        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '114px' : openSearch ? '235px' : '168px' : showCalendar ? '96px' : openSearch ? '406px' :'142px', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container-buttons'>
             <Button
               style={{
                   backgroundColor: '#48CFCB',
-                  position: 'absolute',
                   borderRadius: '50%',
                   width: '5vh',
                   height: '5vh',
                   minWidth: '0',
                   minHeight: '0',
-                  left: '40px',
                   padding: '0',
                   display: 'flex',
                   alignItems: 'center',
@@ -738,20 +1012,118 @@ export default function Main_Page() {
           </div>
         </div>
         </>
-      )}
-      {visibleDrawerAchievements && type==='client' && (
-        <div className='modal-achievements' onClick={handleCloseAchievements}>
-          <div className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`} onClick={(e)=>e.stopPropagation()}>
-            <Carousel/>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ width: '75%', mr: 1 }}>
-                <LinearProgress variant="determinate" value={25} />
-              </Box>
-              <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                  25%
-                </Typography>
-              </Box>
+      ):(
+      <>
+      {type==='coach' ? (
+        <>
+        {notifications!=0 ? (
+        <>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container'>
+            <Button
+              style={{
+                  backgroundColor: '#48CFCB',
+                  position: 'absolute',
+                  borderRadius: '50%',
+                  width: '5vh',
+                  height: '5vh',
+                  minWidth: '0',
+                  minHeight: '0',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+              }}
+              >
+              <NotificationsActiveIcon sx={{ color: 'red' }} />
+              <p style={{color:'red'}}>{notifications}</p>
+            </Button>
+          </div>
+        </div>
+        </>
+        ) :
+        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+          <div className='input-small-container'>
+            <Button
+              style={{
+                  backgroundColor: '#48CFCB',
+                  position: 'absolute',
+                  borderRadius: '50%',
+                  width: '5vh',
+                  height: '5vh',
+                  minWidth: '0',
+                  minHeight: '0',
+                  padding: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+              }}
+              >
+              <NotificationsIcon sx={{ color: '#424242' }} />
+            </Button>
+          </div>
+        </div></>)
+        }
+        </>
+      ):
+      (<></>)
+      }
+      </>)
+      }
+      {visibleDrawerAchievements && type === 'client' && (
+        <div className="modal-achievements" onClick={handleCloseAchievements}>
+          <div
+            className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Box sx={{ display: 'grid', gridTemplateColumns: isSmallScreen700 ? '1fr' : 'repeat(3, 1fr)', gap: 2 }}>
+              {progress.slice(0, 3).map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    padding: 2,
+                    backgroundColor: '#1e1e1e',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    color: 'white',
+                  }}
+                >
+                  <Typography variant="h6" color="#adb5bd">
+                    Attend {item.Objective} class on {traducirDia(item.Day)}
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginY: 1 }}>
+                    <Box sx={{ width: '75%', mr: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={(item.progress * 100) / item.Objective}
+                        color="primary"
+                      />
+                    </Box>
+                    <Typography variant="body2" sx={{ minWidth: 35 }}>
+                      {Math.min((item.progress * 100) / item.Objective, 100)}%
+                    </Typography>
+                  </Box>
+
+                  {item.progress >= item.Objective ? (
+                    <button
+                      className="claim-button"
+                      onClick={() => handleClaimMission(item.idMission)}
+                      style={{ padding: '8px', marginTop: '10px', cursor: 'pointer', backgroundColor: '#386641', borderRadius: '8px' }}
+                    >
+                      CLAIM REWARD
+                    </button>
+                  ) : (
+                    <button
+                      className="not-claimable-button"
+                      disabled
+                      style={{ padding: '8px', marginTop: '10px', cursor: 'not-allowed', opacity: 0.6, borderRadius: '8px' }}
+                    >
+                      CLAIM REWARD
+                    </button>
+                  )}
+                </Box>
+              ))}
             </Box>
           </div>
         </div>
@@ -784,18 +1156,19 @@ export default function Main_Page() {
         </div>
         ) : (
           <>
-            <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
-              <div className='input-small-container'>
+            <div className='input-container-buttons' style={{left: isSmallScreen700 ? '60px' : '50px', position: 'absolute', top: '0.5%', paddingRight: '0px'}}>
+              <div className='input-small-container-buttons'>
                 {openSearch ? (
                     <input
                     type="text"
                     className="search-input"
                     placeholder="Search..."
                     style={{
-                      position: 'absolute',
                       borderRadius: '10px',
                       padding: '0 10px',
                       transition: 'all 0.3s ease',
+                      height: '5vh',
+                      width: isSmallScreen700 ? '125px' : '300px'
                     }}
                     id={filterClasses}
                     onChange={(e) => setFilterClasses(e.target.value)} 
@@ -804,7 +1177,6 @@ export default function Main_Page() {
                   <Button onClick={handleOpenSearch}
                   style={{
                     backgroundColor: '#48CFCB',
-                    position: 'absolute',
                     borderRadius: '50%',
                     width: '5vh',
                     height: '5vh',
@@ -822,7 +1194,7 @@ export default function Main_Page() {
                 </div>
           </div>
           <div className="Table-Container">
-            <EnhancedTable rows={events} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
+            <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
         </>
       )}
@@ -871,7 +1243,7 @@ export default function Main_Page() {
       )}
   </div>
   <div className="Table-Container">
-    <EnhancedTable rows={events} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
+    <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
   </div>
 </>
   )}
@@ -896,8 +1268,8 @@ export default function Main_Page() {
             </p>
             <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                 <div className="input-small-container">
-                    <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
-                    <input 
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
+                    {/*<input 
                     type="number" 
                     id="stars" 
                     name="stars"
@@ -906,22 +1278,62 @@ export default function Main_Page() {
                     step='1'
                     max="5"
                     onChange={handleStarsChange}
-                    />
+                    /> */}
+                    <HalfRating/>
+                    {errorStars && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Select stars</p>)}
                 </div>
                 <div className="input-small-container">
                     <label htmlFor="comment" style={{color:'#14213D'}}>Comment:</label>
-                    <input 
-                    type="text" 
-                    id="comment" 
-                    name="comment" 
-                    placeholder={selectedEvent.comentario}
-                    value={comment}
-                    onChange={(e) => handleCommentChange(e.target.value)}
+                    <textarea 
+                      value={comment}
+                      onChange={(e) => handleCommentChange(e.target.value)}
+                      id="comment" 
+                      name="comment"
+                      rows={4}
+                      maxLength={300}
+                      style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}}
                     />
+                    {errorComment && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a comment</p>)}
                 </div>
             </div>
             <button onClick={handleChangeCalifyModal}>Cancel</button>
             <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
+          </div>
+        </div>
+      )}
+        {viewQualifications && (
+        <div className="Modal" onClick={handleViewQualifications}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                {selectedEvent.name}
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 1,marginRight: '0px'}}>
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Average Qualification:</label>
+                    <HalfRatingCoach/>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                <label htmlFor="stars" style={{color:'#14213D'}}>Comments:</label>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.commentaries.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewQualifications}>Close</button>
           </div>
         </div>
       )}

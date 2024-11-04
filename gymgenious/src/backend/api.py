@@ -3,13 +3,13 @@ from flask_cors import CORS
 import logging
 import firebase_admin
 from firebase_admin import credentials, firestore
-from Controllers.classesController import add_calification_route,get_comments_route,get_classes_route, create_class_route,book_class_route,unbook_class_route,delete_class_route,update_class_info_route
-from Controllers.usersController import get_unique_user_by_email_route ,get_user_route, send_email_route, create_user_route,get_users_route,get_coach_users_route,get_clients_users_route,get_client_users_no_match_routine_route,update_users_info_route
+from Controllers.classesController import get_assistance_route,add_assistance_route,add_calification_route,get_comments_route,get_classes_route, create_class_route,book_class_route,unbook_class_route,delete_class_route,update_class_info_route
+from Controllers.usersController import use_geme_route,get_unique_user_by_email_route ,get_user_route, send_email_route, create_user_route,get_users_route,get_coach_users_route,get_clients_users_route,get_client_users_no_match_routine_route,update_users_info_route
 from Controllers.excersicesController import create_exersice_route,get_excersice_by_owner_route,get_excersices_route,update_exer_info_route
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
 from Controllers.salasController import get_salas_route
-from Controllers.missionsController import add_missions_route,get_missions_route,delete_missions_route
-from Controllers.membershipController import get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
+from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
+from Controllers.membershipController import get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 
 
 
@@ -81,6 +81,19 @@ def update_class_info():
         }
         print(newUser)
         return update_class_info_route(newUser)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+
+@app.route('/use_geme', methods=['PUT'])
+def use_geme():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        mail = request.json.get('mail')
+        return use_geme_route(mail)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -168,6 +181,20 @@ def delete_missions():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+    
+
+@app.route('/add_mission_progress', methods=['DELETE'])
+def add_mission_progress():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        misiones = request.form.get('misiones')
+        
+        return add_mission_progress_route(misiones)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 
 @app.route('/delete_class', methods=['DELETE'])
@@ -217,10 +244,42 @@ def get_user():
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
+@app.route('/get_membership_template', methods=['GET'])
+def get_membership_template():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_membership_template_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+
 @app.route('/create_user', methods=['POST'])
 def create_user():
     user = request.json
     return create_user_route(user)
+
+@app.route('/add_assistance', methods=['POST'])
+def add_assistance():
+    clase = request.form.get('selectedEvent')
+    uid = request.form.get('uid')
+    fecha = request.form.get('fecha')
+    return add_assistance_route(clase,fecha,uid)
+
+@app.route('/assign_mission', methods=['POST'])
+def assign_mission():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        cantidad = request.form.get('cant')
+        usuario = request.form.get('uid')
+        return assign_mission_route(cantidad,usuario)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/add_missions', methods=['POST'])
 def add_missions():
@@ -325,6 +384,14 @@ def get_users():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+    
+@app.route('/get_assistance', methods=['GET'])
+def get_assistance():
+    try:
+        return get_assistance_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/get_client_users', methods=['GET'])
 def get_client_users():
@@ -388,6 +455,29 @@ def get_excersices():
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
+
+@app.route('/get_missions_progress', methods=['GET'])
+def get_missions_progress():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_missions_progress_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+
+@app.route('/get_missions_template', methods=['GET'])
+def get_missions_template():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_missions_template_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/create_exersice', methods=['POST'])
 def create_exersice():

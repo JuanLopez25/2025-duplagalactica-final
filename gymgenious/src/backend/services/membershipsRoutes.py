@@ -17,6 +17,16 @@ def get_memb_user():
         print(f"Error al obtener las clases: {e}")
         raise RuntimeError("No se pudo obtener las clases")
 
+def get_membership_template():
+    try:
+        classes_ref = db.collection('membershipTemplate')
+        docs = classes_ref.stream()
+        classes = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return classes
+    except Exception as e:
+        print(f"Error al obtener las clases: {e}")
+        raise RuntimeError("No se pudo obtener las clases")
+
 
 def get_unique_user_membership():
     try:
@@ -81,7 +91,7 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
         if type_memb == 'monthly':
             top_val = 12
         elif type_memb == 'yearly':
-            top_val = 50
+            top_val = 144
         if doc: 
             current_data = doc.to_dict()
             membership = current_data.get('membershipId')
@@ -95,11 +105,12 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
                 users_ref.document(doc.id).delete() 
                 aquire_membership_month(fechaInicio,uid,fechaFin,type_memb)
             inicio_date = datetime.fromisoformat(inicio) if isinstance(inicio, str) else inicio
+            fin_date = datetime.fromisoformat(exp_date) if isinstance(exp_date,str) else exp_date
             if type_memb!='extraClass':
                 if type_memb == 'yearly':
-                    fechaFinUpd = inicio_date + timedelta(days=365)
+                    fechaFinUpd = fin_date + timedelta(days=365)
                 elif type_memb == 'monthly':
-                    fechaFinUpd = inicio_date + timedelta(days=30) 
+                    fechaFinUpd = fin_date + timedelta(days=30) 
                 else:
                     fechaFinUpd = current_data.get('exp') 
                 formatted_fechaFin = fechaFinUpd.strftime('%Y-%m-%dT%H:%M:%S.') + '{:03d}Z'.format(fechaFinUpd.microsecond // 1000)
@@ -113,7 +124,7 @@ def aquire_membership_month(fechaInicio, uid, fechaFin, type_memb):
             top_actual_val = datos_memb.get('top')
             if type_memb=='yearly' or type_memb=='monthly':
                 ref.update({
-                    'top': top_val
+                    'top': top_actual_val+top_val
                 })
             else:
                 ref.update({

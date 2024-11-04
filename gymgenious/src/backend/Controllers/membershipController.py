@@ -1,11 +1,21 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from services.membershipsRoutes import get_unique_user_membership,update_class_use,use_membership_class,get_memb_user,unuse_membership_class,aquire_membership_month
+from services.membershipsRoutes import get_membership_template,get_unique_user_membership,update_class_use,use_membership_class,get_memb_user,unuse_membership_class,aquire_membership_month
 
 
 def get_unique_user_membership_route():
     try:
         user = get_unique_user_membership()
+        return jsonify(user), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except RuntimeError as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def get_membership_template_route():
+    try:
+        user = get_membership_template()
         return jsonify(user), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
