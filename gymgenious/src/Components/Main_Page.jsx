@@ -417,7 +417,7 @@ export default function Main_Page() {
   };
 
   const fetchClasses = async () => {
-    setOpenCircularProgress(true);
+    setOpenCircularProgress(true)
     try {
       const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
       if (!response.ok) {
@@ -522,11 +522,13 @@ export default function Main_Page() {
       const clases_que_se_toma_asistencia = clases_hoy.filter(clas=> clas.BookedUsers.length>0)
       setCantidadNotifications(clases_que_se_toma_asistencia.length-assitance_buscadas.length)
       setEvents(calendarEvents);
+      setOpenCircularProgress(false)
       setClasses(calendarEvents);
       setTotalClasses(calendarEvents);
     } catch (error) {
       console.error("Error fetching classes:", error);
       setWarningConnection(true);
+      setOpenCircularProgress(false)
       setTimeout(() => {
         setWarningConnection(false);
       }, 3000);
@@ -799,7 +801,6 @@ export default function Main_Page() {
 
 
   const fetchMissions = async () =>{
-    setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
@@ -853,7 +854,6 @@ export default function Main_Page() {
   }
 
   const fetchMissionsProgress = async () =>{
-    setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
@@ -900,9 +900,7 @@ export default function Main_Page() {
       });
       setProgress(enrichedProgress)
       console.log("progresos",enrichedProgress)
-      setOpenCircularProgress(false);
     } catch (e) {
-      setOpenCircularProgress(false);
     }
   }
 
