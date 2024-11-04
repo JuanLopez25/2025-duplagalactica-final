@@ -524,10 +524,8 @@ export default function Main_Page() {
       setEvents(calendarEvents);
       setClasses(calendarEvents);
       setTotalClasses(calendarEvents);
-      setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
-      setOpenCircularProgress(false);
       setWarningConnection(true);
       setTimeout(() => {
         setWarningConnection(false);
@@ -581,7 +579,6 @@ export default function Main_Page() {
 
       await fetchClasses();
       window.location.reload();
-      setOpenCircularProgress(false);
       handleCloseModal();
       setTimeout(() => {
         setSuccessBook(false);
@@ -905,7 +902,7 @@ export default function Main_Page() {
       console.log("progresos",enrichedProgress)
       setOpenCircularProgress(false);
     } catch (e) {
-
+      setOpenCircularProgress(false);
     }
   }
 
