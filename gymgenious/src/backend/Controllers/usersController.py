@@ -1,5 +1,12 @@
 from flask import Flask, request, jsonify
-from services.usersRoutes import get_unique_user_by_email,get_coach_users, get_user, create_user, send_email,get_users,get_clients_users,get_client_users_no_match_routine,update_client_user
+from services.usersRoutes import use_geme,get_unique_user_by_email,get_coach_users, get_user, create_user, send_email,get_users,get_clients_users,get_client_users_no_match_routine,update_client_user
+
+def use_geme_route(mail):
+    try:
+        booked_class = use_geme(mail)
+        return jsonify({"message": "Usuario actualizado exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 def get_unique_user_by_email_route(mail):

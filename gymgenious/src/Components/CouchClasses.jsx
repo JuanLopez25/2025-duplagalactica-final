@@ -612,7 +612,6 @@ function CouchClasses() {
           });
         }
       });
-      console.log("asi se ven las clases",calendarEvents)
       const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
         method: 'GET'
       });
@@ -620,7 +619,6 @@ function CouchClasses() {
         throw new Error('Error al obtener las salas: ' + response4.statusText);
       }
       const assistance_references = await response4.json();
-      console.log("estas son las asistencias",assistance_references)
       const dataMatches = calendarEvents.map(evento => {
         const comment = assistance_references.find(c => 
           (c.cid === evento.cid) && 
@@ -631,7 +629,7 @@ function CouchClasses() {
           fecha: comment ? comment.date : null,
         };
       });
-      
+      console.log("asi se ven las clases",dataMatches)
       setClasses(dataMatches);
       setTotalClasses(dataMatches);
       setOpenCircularProgress(false);
@@ -751,6 +749,19 @@ function CouchClasses() {
     }
   };
 
+  const compararfechaHoy = (fecha) => {
+    const fechaGuardada = new Date(fecha);
+    const fechaActual = new Date();
+    const diaGuardado = fechaGuardada.getDate();
+    const mesGuardado = fechaGuardada.getMonth(); 
+    const anioGuardado = fechaGuardada.getFullYear();
+    const diaActual = fechaActual.getDate();
+    const mesActual = fechaActual.getMonth();
+    const anioActual = fechaActual.getFullYear();
+    const coincide = (diaGuardado === diaActual) && (mesGuardado === mesActual) && (anioGuardado === anioActual);
+    return coincide
+  }
+
   const visibleRows = React.useMemo(
     () =>
       [...newRows]
@@ -833,7 +844,7 @@ function CouchClasses() {
                         >
                           Edit class
                         </MDBBtn>
-                        {event.fecha==null && new Date(event.start).getDate() == new Date().getDate()? (
+                        {event.fecha==null && new Date(event.start).getDate() == new Date().getDate() && event.BookedUsers.length>0? (
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -1043,7 +1054,7 @@ function CouchClasses() {
                               <>
                                 {visibleRows.map((row) => (
                                     <>
-                                    {row.fecha==null ? (
+                                    {row.fecha==null && compararfechaHoy(row.start) && row.BookedUsers.length>0 ? (
                                       <>
                                       <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
                                       <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',backgroundColor:'red',borderRight: '1px solid #424242', color:'black', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>

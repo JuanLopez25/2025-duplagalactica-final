@@ -275,7 +275,7 @@ export default function Main_Page() {
                                   size="lg"
                                   
                                 >
-                                  no tenes pase
+                                  You dont have an active membership
                                 </MDBBtn>
                                 ) : (
                                 <>
@@ -341,6 +341,7 @@ export default function Main_Page() {
                             rounded
                             block
                             size="lg"
+                            onClick={() => handleBookClassWithGem(event.id)}
                           >
                             <DiamondIcon />
                             Use gem
@@ -518,11 +519,70 @@ export default function Main_Page() {
         
         return formattedClassDate === formattedToday;
       });
-      setCantidadNotifications(clases_hoy.length-assitance_buscadas.length)
+      const clases_que_se_toma_asistencia = clases_hoy.filter(clas=> clas.BookedUsers.length>0)
+      setCantidadNotifications(clases_que_se_toma_asistencia.length-assitance_buscadas.length)
       setEvents(calendarEvents);
       setClasses(calendarEvents);
       setTotalClasses(calendarEvents);
-      setOpenCircularProgress(false);
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+      setWarningConnection(true);
+      setTimeout(() => {
+        setWarningConnection(false);
+      }, 3000);
+    }
+  };
+
+  const handleBookClassWithGem = async (event) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/book_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ event: event,mail:userMail })
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      }
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_membership_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ id: event,membId:membership[0].id })
+      });
+      if (!response2.ok) {
+        throw new Error('Error al actualizar la clase: ' + response2.statusText);
+      }
+
+      const response3 = await fetch('http://127.0.0.1:5000/use_geme', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({mail:userMail})
+      });
+      if (!response3.ok) {
+        throw new Error('Error al actualizar la clase: ' + response3.statusText);
+      }
+
+
+      await fetchClasses();
+      window.location.reload();
+      handleCloseModal();
+      setTimeout(() => {
+        setSuccessBook(false);
+      }, 3000);
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
@@ -531,8 +591,8 @@ export default function Main_Page() {
         setWarningConnection(false);
       }, 3000);
     }
+    
   };
-  
 
   const handleBookClass = async (event) => {
     setOpenCircularProgress(true);
@@ -612,7 +672,6 @@ export default function Main_Page() {
       }
       await fetchClasses();
       window.location.reload();
-      setOpenCircularProgress(false);
       handleCloseModal();
       setSuccessUnbook(true);
       setTimeout(() => {
@@ -775,6 +834,24 @@ export default function Main_Page() {
     }
   }
 
+  const traducirDia = (diaEspañol) => {
+    if (diaEspañol=='Lunes') {
+      return 'Monday'
+    } else if (diaEspañol=='Martes') {
+      return 'Tuesday'
+    } else if (diaEspañol=='Miercoles') {
+      return 'Wednesday'
+    } else if (diaEspañol=='Jueves'){
+      return 'Thursday'
+    } else if (diaEspañol=='Vienres') {
+      return 'Friday'
+    } else if (diaEspañol=='Sabado') {
+      return 'Saturday'
+    } else if (diaEspañol=='Domingo') {
+      return 'Sunday'
+    }
+  }
+
   const fetchMissionsProgress = async () =>{
     setOpenCircularProgress(true);
     try {
@@ -825,7 +902,7 @@ export default function Main_Page() {
       console.log("progresos",enrichedProgress)
       setOpenCircularProgress(false);
     } catch (e) {
-
+      setOpenCircularProgress(false);
     }
   }
 
@@ -880,7 +957,6 @@ export default function Main_Page() {
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
       console.log("membresia",firstFiler)
       setMembership(firstFiler)
-      setOpenCircularProgress(false);
     } catch (error) {
         console.error("Error fetching user:", error);
     }
@@ -1015,7 +1091,7 @@ export default function Main_Page() {
                   }}
                 >
                   <Typography variant="h6" color="#adb5bd">
-                    Attend {item.Objective} class on {item.Day}
+                    Attend {item.Objective} class on {traducirDia(item.Day)}
                   </Typography>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginY: 1 }}>
