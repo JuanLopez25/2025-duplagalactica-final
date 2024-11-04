@@ -122,9 +122,8 @@ export default function Main_Page() {
       <Stack spacing={1}>
         <Rating name="half-rating"
           value={stars}
-          onChange={(event, newValue) => { setStars(newValue);}}
-          defaultValue={stars}
-          precision={0.5} />
+          onChange={handleStarsChange}
+          defaultValue={stars} />
       </Stack>
     );
   }
@@ -443,6 +442,7 @@ export default function Main_Page() {
       }
       const data3 = await response3.json();
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
+      console.log('comentarios: ', filteredComments)
       const dataWithSalaAndComments = dataWithSala.map(clase => {
         const comment = filteredComments.find(c => c.cid === clase.id);
         return {

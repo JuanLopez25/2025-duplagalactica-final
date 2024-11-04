@@ -77,7 +77,7 @@ function UsserClasses() {
       <Stack spacing={1}>
         <Rating name="half-rating"
           value={stars}
-          onChange={(event, newValue) => { setStars(newValue);}}
+          onChange={handleStarsChange}
           defaultValue={stars}
           precision={0.5} />
       </Stack>
@@ -94,6 +94,7 @@ function UsserClasses() {
   };
 
   const handleChangeCalifyModal = () => {
+    setComment(selectedEvent.comentario)
     setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
   }
@@ -206,6 +207,7 @@ function UsserClasses() {
       }
       const data3 = await response3.json();
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
+      console.log(filteredComments)
       const dataWithSalaAndComments = dataWithSala.map(clase => {
         const comment = filteredComments.find(c => c.cid === clase.id);
         return {
