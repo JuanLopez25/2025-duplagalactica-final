@@ -247,12 +247,16 @@ export default function Main_Page() {
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
                           {userMail && type==='client' && selectedEvent.BookedUsers.includes(userMail) && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
-                          )}    
-                          {userMail && type==='coach' && event.averageCalification!==0 && event.commentaries?.length!==0 ? (
-                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
-                          ) : (
-                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
-                          )}  
+                          )}
+                          {userMail && type==='coach' && (
+                            <>
+                            {event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                            ) : (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                            )}
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -460,62 +464,43 @@ export default function Main_Page() {
   const fetchClasses = async () => {
     setOpenCircularProgress(true);
     try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
-        }
       const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
       if (!response.ok) {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
       const data = await response.json();
-      const filteredClasses = data.filter(event => event.owner == userMail);
+      
       const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
       const salas = await response2.json();
   
-      const dataWithSala = filteredClasses.map(clase => {
+      const dataWithSala = data.map(clase => {
         const salaInfo = salas.find(sala => sala.id === clase.sala);
         return {
           ...clase,
           salaInfo, 
         };
       });
-
+  
+      const calendarEvents = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
       const data3 = await response3.json();
-    
-      const groupedComments = data3.reduce((acc, comment) => {
-        if (!acc[comment.cid]) {
-          acc[comment.cid] = { califications: [], commentaries: [] };
-        }
-        acc[comment.cid].califications.push(comment.calification);
-        acc[comment.cid].commentaries.push(comment.commentary);
-        return acc;
-      }, {});
-      
-      const aggregatedComments = Object.entries(groupedComments).map(([cid, details]) => ({
-        cid,
-        averageCalification: details.califications.reduce((sum, cal) => sum + cal, 0) / details.califications.length,
-        commentaries: details.commentaries
-      }));
-      
+      const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
       const dataWithSalaAndComments = dataWithSala.map(clase => {
-        const comments = aggregatedComments.find(comment => comment.cid === clase.id) || { averageCalification: 0, commentaries: [] };
+        const comment = filteredComments.find(c => c.cid === clase.id);
         return {
           ...clase,
-          ...comments
+          comentario: comment ? comment.commentary : null,
+          puntuacion: comment ? comment.calification : -1,
         };
       });
-      const calendarEvents = [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
       
       dataWithSalaAndComments.forEach(clase => {
         const startDate = new Date(clase.dateInicio);
@@ -559,7 +544,6 @@ export default function Main_Page() {
           });
         }
       });
-      console.log("asi se ven las clases",calendarEvents)
       const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
         method: 'GET'
       });
@@ -567,20 +551,22 @@ export default function Main_Page() {
         throw new Error('Error al obtener las salas: ' + response4.statusText);
       }
       const assistance_references = await response4.json();
-      console.log("estas son las asistencias",assistance_references)
-      const dataMatches = calendarEvents.map(evento => {
-        const comment = assistance_references.find(c => 
-          (c.cid === evento.cid) && 
-          (new Date(evento.start).toISOString().split('T')[0] === new Date(c.date).toISOString().split('T')[0])
-        );
-        return {
-          ...evento,
-          fecha: comment ? comment.date : null,
-        };
+      const assitance_buscadas = assistance_references.filter(asis=>asis.uid==userAccount.uid)
+      const clases_del_profesor = calendarEvents.filter(clas => clas.owner==userMail)
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const formattedToday = `${year}-${month}-${day}`;
+      const clases_hoy = clases_del_profesor.filter(clas => {
+        const classDate = new Date(clas.start);
+        const formattedClassDate = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}-${String(classDate.getDate()).padStart(2, '0')}`;
+        
+        return formattedClassDate === formattedToday;
       });
-      
-      setClasses(dataMatches);
-      setTotalClasses(dataMatches);
+      setCantidadNotifications(clases_hoy.length-assitance_buscadas.length)
+      setEvents(calendarEvents);
+      setClasses(calendarEvents);
+      setTotalClasses(calendarEvents);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
