@@ -675,7 +675,6 @@ export default function Main_Page() {
       }
       await fetchClasses();
       window.location.reload();
-      setOpenCircularProgress(false);
       handleCloseModal();
       setSuccessUnbook(true);
       setTimeout(() => {
@@ -961,7 +960,6 @@ export default function Main_Page() {
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
       console.log("membresia",firstFiler)
       setMembership(firstFiler)
-      setOpenCircularProgress(false);
     } catch (error) {
         console.error("Error fetching user:", error);
     }
