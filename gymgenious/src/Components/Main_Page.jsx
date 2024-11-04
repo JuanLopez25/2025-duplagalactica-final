@@ -275,7 +275,7 @@ export default function Main_Page() {
                                   size="lg"
                                   
                                 >
-                                  no tenes pase
+                                  You dont have an active membership
                                 </MDBBtn>
                                 ) : (
                                 <>
@@ -341,6 +341,7 @@ export default function Main_Page() {
                             rounded
                             block
                             size="lg"
+                            onClick={() => handleBookClassWithGem(event.id)}
                           >
                             <DiamondIcon />
                             Use gem
@@ -533,7 +534,68 @@ export default function Main_Page() {
       }, 3000);
     }
   };
-  
+
+  const handleBookClassWithGem = async (event) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/book_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ event: event,mail:userMail })
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      }
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_membership_class', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ id: event,membId:membership[0].id })
+      });
+      if (!response2.ok) {
+        throw new Error('Error al actualizar la clase: ' + response2.statusText);
+      }
+
+      const response3 = await fetch('http://127.0.0.1:5000/use_geme', {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({mail:userMail})
+      });
+      if (!response3.ok) {
+        throw new Error('Error al actualizar la clase: ' + response3.statusText);
+      }
+
+
+      await fetchClasses();
+      window.location.reload();
+      setOpenCircularProgress(false);
+      handleCloseModal();
+      setTimeout(() => {
+        setSuccessBook(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+      setOpenCircularProgress(false);
+      setWarningConnection(true);
+      setTimeout(() => {
+        setWarningConnection(false);
+      }, 3000);
+    }
+    
+  };
 
   const handleBookClass = async (event) => {
     setOpenCircularProgress(true);
@@ -773,6 +835,24 @@ export default function Main_Page() {
       } 
     } catch (e) {
 
+    }
+  }
+
+  const traducirDia = (diaEspañol) => {
+    if (diaEspañol=='Lunes') {
+      return 'Monday'
+    } else if (diaEspañol=='Martes') {
+      return 'Tuesday'
+    } else if (diaEspañol=='Miercoles') {
+      return 'Wednesday'
+    } else if (diaEspañol=='Jueves'){
+      return 'Thursday'
+    } else if (diaEspañol=='Vienres') {
+      return 'Friday'
+    } else if (diaEspañol=='Sabado') {
+      return 'Saturday'
+    } else if (diaEspañol=='Domingo') {
+      return 'Sunday'
     }
   }
 
@@ -1016,7 +1096,7 @@ export default function Main_Page() {
                   }}
                 >
                   <Typography variant="h6" color="#adb5bd">
-                    Attend {item.Objective} class on {item.Day}
+                    Attend {item.Objective} class on {traducirDia(item.Day)}
                   </Typography>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginY: 1 }}>

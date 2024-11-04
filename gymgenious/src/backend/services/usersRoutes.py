@@ -137,3 +137,23 @@ def update_client_user(newUser):
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
 
+def use_geme(mail):
+    try:
+        users_ref = db.collection('users')
+        docs = users_ref.where('Mail', '==', mail).stream()
+        updated = False
+        for doc in docs:
+            doc_ref = users_ref.document(doc.id)
+            doc = doc_ref.get()
+            cant_gemas = doc.to_dict().get('Gemas',' ')
+            doc_ref.update({
+                'Gemas': cant_gemas-1
+            })
+            updated = True
+
+        if not updated:
+            print(f"No se encontró un usuario con el correo: {newUser.Mail}")
+        return {"message": "Actualización realizada"} 
+    except Exception as e:
+        print(f"Error actualizando el usuario: {e}")
+        raise RuntimeError("No se pudo actualizar el usuario")
