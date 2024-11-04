@@ -518,7 +518,8 @@ export default function Main_Page() {
         
         return formattedClassDate === formattedToday;
       });
-      setCantidadNotifications(clases_hoy.length-assitance_buscadas.length)
+      const clases_que_se_toma_asistencia = clases_hoy.filter(clas=> clas.BookedUsers.length>0)
+      setCantidadNotifications(clases_que_se_toma_asistencia.length-assitance_buscadas.length)
       setEvents(calendarEvents);
       setClasses(calendarEvents);
       setTotalClasses(calendarEvents);
