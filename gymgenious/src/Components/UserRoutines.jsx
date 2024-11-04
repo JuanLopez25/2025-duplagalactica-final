@@ -71,6 +71,7 @@ export default function StickyHeadTable() {
 
     const handleViewExercises = () => {
         setViewExercises(!viewExercises);
+        console.log(routine.excercises)
     };
 
     const fetchRoutines = async () => {
@@ -427,7 +428,7 @@ export default function StickyHeadTable() {
                         <h2>Routine details</h2>
                         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Name:</strong> {routine.name}</p>
                         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Description:</strong> {routine.description}</p>
-                        <p><strong>Day:</strong> {routine.day}</p>
+                        <p><strong>Day:</strong> {selectedEvent.day}</p>
                         <p><strong>Exercises:</strong> {routine.excercises ? routine.excercises.length : 0}</p>
                         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Owner:</strong> {routine.owner}</p>
                         <button onClick={handleViewExercises} style={{width: isSmallScreen ? '70%' : '40%'}}>View exercises</button>
