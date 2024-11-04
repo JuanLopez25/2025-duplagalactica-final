@@ -287,9 +287,7 @@ function UsserClasses() {
   
     filteredClassesSearcher.forEach(row => {
       if (
-        (row.permanent === 'No' &&
-          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+        (row.permanent === 'No') ||
         (row.permanent === 'Si' &&
           new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
           new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
