@@ -86,6 +86,7 @@ export default function Main_Page() {
   const [viewQualifications, setViewQualifications] = useState(false)
   
   const handleChangeCalifyModal = () => {
+    setComment(selectedEvent.comentario)
     setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
   }

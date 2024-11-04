@@ -499,15 +499,26 @@ useEffect(() => {
                       >
                         <CloseIcon sx={{ color: '#F5F5F5' }} />
                       </button>
-                      <MDBBtn
-                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%'}}
+                      {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                            <MDBBtn
+                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                          >
+                            Class is today
+                          </MDBBtn>
+                          ) : (
+                          <MDBBtn
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
                           block
                           size="lg"
-                          onClick={()=>handleUnbookClass(event.id)}
+                          onClick={() => handleUnbookClass(event.id)}
                         >
                           Unbook
                         </MDBBtn>
+                          )}
                       {/* <button style={{marginLeft:'10px'}} onClick={()=>handleEditClass(selectedEvent)}>Edit class</button>
                       <button style={{marginLeft:'10px'}} onClick={() => handleDeleteClass(selectedEvent.id)}>Delete class</button> */}
                   </MDBCardBody>
