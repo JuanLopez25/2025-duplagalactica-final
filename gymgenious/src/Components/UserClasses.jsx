@@ -32,60 +32,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
-
-const Carousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const cardCount = 10;
-  const visibleCards = 5;
-
-  const maxIndex = Math.ceil(cardCount / visibleCards) - 1;
-
-  const nextGroup = () => {
-    setCurrentIndex(currentIndex < maxIndex ? currentIndex + 1 : 1);
-  };
-
-  const prevGroup = () => {
-    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : 0);
-  };
-
-  return (
-    <div style={{ width: '100%', height: '40%', overflow: 'hidden', position: 'relative'}}>
-      <div
-        style={{
-          display: 'flex',
-          transition: 'transform 0.3s ease-in-out',
-          transform: `translateX(-${currentIndex * 100}%)`
-        }}
-      >
-        {Array.from({ length: cardCount }, (_, index) => (
-          <div
-            key={index}
-            style={{
-              minWidth: `${100 / visibleCards}%`,
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <div className="card">achievement {index + 1}</div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={prevGroup} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)' }}>
-        {'<'}
-      </button>
-      <button onClick={nextGroup} style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)' }}>
-        {'>'}
-      </button>
-    </div>
-  );
-};
-
 function UsserClasses() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
@@ -118,26 +64,12 @@ function UsserClasses() {
   const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
-  const [openAchievements, setOpenAchievements] = useState(false);
-  const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
   const [errorStars, setErrorStars] = useState(false);
   const [errorComment, setErrorComment] = useState(false);
 
   const handleCommentChange = (event) => {
     setComment(event)
     setChangingComment(true)
-  }
-
-  const handleViewAchievements = () => {
-    setOpenAchievements(true);
-    setVisibleDrawerAchievements(true);
-  }
-
-  const handleCloseAchievements = () => {
-    setOpenAchievements(false);
-      setTimeout(() => {
-        setVisibleDrawerAchievements(false);
-      }, 500);
   }
 
   function HalfRating() {
@@ -536,44 +468,6 @@ useEffect(() => {
         ) : (
           <>
       <NewLeftBar />
-      <div className='input-container' style={{marginLeft: isSmallScreen700 ? openSearch ? '220px' : '114px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
-            <Button onClick={handleViewAchievements}
-              style={{
-                  backgroundColor: '#48CFCB',
-                  position: 'absolute',
-                  borderRadius: '50%',
-                  width: '5vh',
-                  height: '5vh',
-                  minWidth: '0',
-                  minHeight: '0',
-                  padding: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-              }}
-              >
-              <EmojiEventsIcon sx={{ color: '#424242' }} />
-            </Button>
-          </div>
-        </div>
-        {visibleDrawerAchievements && type==='client' && (
-        <div className='modal-achievements' onClick={handleCloseAchievements}>
-          <div className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`} onClick={(e)=>e.stopPropagation()}>
-            <Carousel/>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ width: '75%', mr: 1 }}>
-                <LinearProgress variant="determinate" value={25} />
-              </Box>
-              <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                  25%
-                </Typography>
-              </Box>
-            </Box>
-          </div>
-        </div>
-      )}
       <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
               <div className='input-small-container'>
                 {openSearch ? (
