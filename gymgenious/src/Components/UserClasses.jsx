@@ -277,36 +277,30 @@ function UsserClasses() {
   };
 
   useEffect(() => {
-    const newRowsList=[];
-    classes?.forEach(row => {
-      if(
-        (row.permanent === 'No' &&
-          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
-          )
-          ||
-        (row.permanent === 'Si' && 
-          (new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+    const newRowsList = [];
+  
+    const filteredClassesSearcher = filterClasses
+      ? totalClasses.filter(item =>
+          item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
         )
+      : totalClasses;
+  
+    filteredClassesSearcher.forEach(row => {
+      if (
+        (row.permanent === 'No' &&
+          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+        (row.permanent === 'Si' &&
+          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
       ) {
         newRowsList.push(row);
       }
-      setNewRows(newRowsList);
     });
-  }, [classes])
-
-  useEffect(() => {
-    if(filterClasses!=''){
-      const filteredClassesSearcher = totalClasses.filter(item => 
-        item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
-      );
-      setClasses(filteredClassesSearcher);
-    } else {
-      setClasses(totalClasses);
-    }
-
-  }, [filterClasses]);
+  
+    setNewRows(newRowsList);
+  }, [filterClasses, totalClasses]);
+  
 
   const validateCalification = () => {
     let res=true;

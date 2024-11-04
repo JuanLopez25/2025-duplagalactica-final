@@ -141,25 +141,29 @@ export default function Main_Page() {
   }
 
   useEffect(() => {
-    console.log(new Date().getTime())
-    const newRowsList=[];
-    classes?.forEach(row => {
-      if(
-        (row.permanent === 'No' &&
-          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.dateInicio).getTime() >= new Date().getTime())
-          )
-          ||
-        (row.permanent === 'Si' && 
-          (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.start).getTime() >= new Date().getTime())
+    const newRowsList = [];
+  
+    const filteredClassesSearcher = filterClasses
+      ? totalClasses.filter(item =>
+          item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
         )
+      : totalClasses;
+  
+    filteredClassesSearcher.forEach(row => {
+      if (
+        (row.permanent === 'No' &&
+          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+        (row.permanent === 'Si' &&
+          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
       ) {
         newRowsList.push(row);
       }
-      setNewRows(newRowsList);
     });
-  }, [classes])
+  
+    setNewRows(newRowsList);
+  }, [filterClasses, totalClasses]);
 
   function ECommerce({event}) {
     
@@ -660,22 +664,6 @@ export default function Main_Page() {
       fetchUser();
     }
   }, [userMail, showCalendar]);
-
-  useEffect(() => {
-    if(filterClasses!=''){
-      const filteredClassesSearcher = totalClasses.filter(item => 
-        item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
-      );
-      setClasses(filteredClassesSearcher);
-      if(filteredClassesSearcher.length===0){
-        setClasses([-1])
-      }
-    } else {
-      setClasses(totalClasses);
-    }
-
-  }, [filterClasses]);
-
 
   const handleClaimMission = async (missionProgressId) => {
     setOpenCircularProgress(true);
