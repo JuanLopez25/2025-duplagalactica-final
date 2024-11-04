@@ -67,10 +67,6 @@ function CouchClasses() {
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [newRows, setNewRows] = useState([]);
 
-  const kkkk = [
-    
-  ]
-
   const [fetchId,setFetchId] = useState('');
   const [fetchDateFin,setFetchDateFin]= useState('');
   const [fetchDateInicio,setFetchDateInicio]=useState('');
@@ -1126,18 +1122,15 @@ function CouchClasses() {
                   <div className="Modal" style={{zIndex:'1001'}}>
                     <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
                       <h2>Check List</h2>
-                      
-                        {/* {selectedEvent?.BookedUsers?.length!==0 ? ( */}
-                        {kkkk.length!==0 ? (
+                        {selectedEvent?.BookedUsers?.length!==0 ? (
                           <>
-                          {/* {selectedEvent?.BookedUsers?.map((user) => ( */}
                           <div className="check-list-container">
-                            {kkkk.map((element, index) => (
-                              <div key={index} className="check-list-item"  onClick={() => toggleUserSelection(element)}>
-                                {element}
+                            {selectedEvent?.BookedUsers?.map((user, index) => (
+                              <div key={index} className="check-list-item"  onClick={() => toggleUserSelection(user)}>
+                                {user}
                                 <Checkbox
-                                  checked={selectedUsers.includes(element)}
-                                  onChange={() => toggleUserSelection(element)}
+                                  checked={selectedUsers.includes(user)}
+                                  onChange={() => toggleUserSelection(user)}
                                 />
                               </div>
                             ))}
