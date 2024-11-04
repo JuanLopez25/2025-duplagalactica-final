@@ -519,8 +519,6 @@ useEffect(() => {
                           Unbook
                         </MDBBtn>
                           )}
-                      {/* <button style={{marginLeft:'10px'}} onClick={()=>handleEditClass(selectedEvent)}>Edit class</button>
-                      <button style={{marginLeft:'10px'}} onClick={() => handleDeleteClass(selectedEvent.id)}>Delete class</button> */}
                   </MDBCardBody>
                 </MDBCard>
               </MDBCol>

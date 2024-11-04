@@ -202,7 +202,7 @@ export default function Main_Page() {
                           {userMail && type==='client' && selectedEvent.BookedUsers.includes(userMail) && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
                           )}
-                          {userMail && type==='coach' && (
+                          {userMail && type==='coach' && event.owner===userMail && (
                             <>
                             {event.averageCalification!==0 && event.commentaries?.length!==0 ? (
                               <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
