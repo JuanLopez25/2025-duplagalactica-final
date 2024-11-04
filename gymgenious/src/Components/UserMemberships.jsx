@@ -278,12 +278,14 @@ export default function UserMemberships() {
                 </div>
                 <ComponenteBotonCreateMembership/>
                 {errorAquire && (<p style={{color: 'red', margin: '0px'}}>Select a plan</p>)}
-                <button 
-                onClick={hanldeChangeUpgrade} 
-                className="custom-button-go-back-managing"
-              >
-                <KeyboardBackspaceIcon sx={{ color: '#F5F5F5' }} />
-              </button>
+                {membership?.length!==0 && (
+                  <button 
+                  onClick={hanldeChangeUpgrade} 
+                  className="custom-button-go-back-managing"
+                >
+                  <KeyboardBackspaceIcon sx={{ color: '#F5F5F5' }} />
+                </button>
+                )}
             </div>
         </div>
     )

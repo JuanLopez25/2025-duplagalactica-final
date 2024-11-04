@@ -232,7 +232,7 @@ export default function Main_Page() {
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
                           <>
-                          {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                          {(new Date(event.start).getTime() - new Date().getTime() <= 0) ? (
                             <MDBBtn
                             style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
                             rounded
@@ -255,7 +255,7 @@ export default function Main_Page() {
                             </>
                             ) : (
                               <>
-                              {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                              {(new Date(event.start).getTime() - new Date().getTime() <= 0) ? (
                               
                               <MDBBtn
                             style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 

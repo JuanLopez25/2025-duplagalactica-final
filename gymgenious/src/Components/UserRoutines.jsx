@@ -71,7 +71,6 @@ export default function StickyHeadTable() {
 
     const handleViewExercises = () => {
         setViewExercises(!viewExercises);
-        console.log(routine.excercises)
     };
 
     const fetchRoutines = async () => {
