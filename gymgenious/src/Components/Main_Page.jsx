@@ -31,56 +31,6 @@ import Typography from '@mui/material/Typography';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
-const Carousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const cardCount = 10;
-  const visibleCards = 5;
-
-  const maxIndex = Math.ceil(cardCount / visibleCards) - 1;
-
-  const nextGroup = () => {
-    setCurrentIndex(currentIndex < maxIndex ? currentIndex + 1 : 1);
-  };
-
-  const prevGroup = () => {
-    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : 0);
-  };
-
-  return (
-    <div style={{ width: '100%', height: '40%', overflow: 'hidden', position: 'relative'}}>
-      <div
-        style={{
-          display: 'flex',
-          transition: 'transform 0.3s ease-in-out',
-          transform: `translateX(-${currentIndex * 100}%)`
-        }}
-      >
-        {Array.from({ length: cardCount }, (_, index) => (
-          <div
-            key={index}
-            style={{
-              minWidth: `${100 / visibleCards}%`,
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <div className="card">achievement {index + 1}</div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={prevGroup} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)' }}>
-        {'<'}
-      </button>
-      <button onClick={nextGroup} style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)' }}>
-        {'>'}
-      </button>
-    </div>
-  );
-};
-
 export default function Main_Page() {
   const [classes, setClasses] = useState([]);
   const [events, setEvents] = useState([]);
@@ -1057,58 +1007,61 @@ export default function Main_Page() {
       }
       </>)
       }
-      {visibleDrawerAchievements && type==='client' && (
-        <div className='modal-achievements' onClick={handleCloseAchievements}>
-          <div className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`} onClick={(e)=>e.stopPropagation()}>
-            {/* <Carousel/> */}
-            {progress.length >=1 ? (
-            <>
-            <>Asistir a {progress[0].Objective} clase los {progress[0].Day}</>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ width: '75%', mr: 1 }}>
-                <LinearProgress variant="determinate" value={(progress[0].progress*100)/progress[0].Objective} />
-              </Box>
-              <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                {(progress[0].progress*100)/progress[0].Objective>=100 ? (<>100%</>):(<>{(progress[0].progress*100)/progress[0].Objective}%</>)}
-                </Typography>
-              </Box>
-              {(progress[0].progress*100)/progress[0].Objective>=100 ? (<button onClick={()=>handleClaimMission(progress[0].idMission)}>CLAIM MISSION</button>):(<button>NOT  MISSION</button>)}
+      {visibleDrawerAchievements && type === 'client' && (
+        <div className="modal-achievements" onClick={handleCloseAchievements}>
+          <div
+            className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Box sx={{ display: 'grid', gridTemplateColumns: isSmallScreen700 ? '1fr' : 'repeat(3, 1fr)', gap: 2 }}>
+              {progress.slice(0, 3).map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    padding: 2,
+                    backgroundColor: '#1e1e1e',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    color: 'white',
+                  }}
+                >
+                  <Typography variant="h6" color="#adb5bd">
+                    Attend {item.Objective} class on {item.Day}
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginY: 1 }}>
+                    <Box sx={{ width: '75%', mr: 1 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={(item.progress * 100) / item.Objective}
+                        color="primary"
+                      />
+                    </Box>
+                    <Typography variant="body2" sx={{ minWidth: 35 }}>
+                      {Math.min((item.progress * 100) / item.Objective, 100)}%
+                    </Typography>
+                  </Box>
+
+                  {item.progress >= item.Objective ? (
+                    <button
+                      className="claim-button"
+                      onClick={() => handleClaimMission(item.idMission)}
+                      style={{ padding: '8px', marginTop: '10px', cursor: 'pointer', backgroundColor: '#386641', borderRadius: '8px' }}
+                    >
+                      CLAIM REWARD
+                    </button>
+                  ) : (
+                    <button
+                      className="not-claimable-button"
+                      disabled
+                      style={{ padding: '8px', marginTop: '10px', cursor: 'not-allowed', opacity: 0.6, borderRadius: '8px' }}
+                    >
+                      CLAIM REWARD
+                    </button>
+                  )}
+                </Box>
+              ))}
             </Box>
-            </>
-            ):(<></>)}
-            {progress.length >= 2 ? (
-            <>
-            <>Asistir a {progress[1].Objective} clase los {progress[1].Day}</>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ width: '75%', mr: 1 }}>
-                <LinearProgress variant="determinate" value={(progress[1].progress*100)/progress[1].Objective} />
-              </Box>
-              <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                  {(progress[1].progress*100)/progress[1].Objective>=100 ? (<>100%</>):(<>{(progress[1].progress*100)/progress[1].Objective}%</>)}
-                </Typography>
-              </Box>
-              {(progress[1].progress*100)/progress[1].Objective>=100 ? (<button onClick={()=>handleClaimMission(progress[1].idMission)}>CLAIM MISSION</button>):(<button>NOT  MISSION</button>)}
-            </Box>
-            </>
-            ) :(<></>)}
-            {progress.length>=3 ? (
-            <>
-            <>Asistir a {progress[2].Objective} clase los {progress[2].Day}</>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ width: '75%', mr: 1 }}>
-                <LinearProgress variant="determinate" value={(progress[2].progress*100)/progress[2].Objective} />
-              </Box>
-              <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                {(progress[2].progress*100)/progress[2].Objective>=100 ? (<>100%</>):(<>{(progress[2].progress*100)/progress[2].Objective}%</>)}
-                </Typography>
-              </Box>
-              {(progress[2].progress*100)/progress[2].Objective>=100 ? (<button onClick={()=>handleClaimMission(progress[2].idMission)}>CLAIM MISSION</button>):(<button>NOT  MISSION</button>)}
-            </Box>
-            </>):(<></>)
-            }
           </div>
         </div>
       )}
