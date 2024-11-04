@@ -28,12 +28,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import { FixedSizeList } from 'react-window';
 import Checkbox from '@mui/material/Checkbox';
-import { select } from 'framer-motion/client';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
@@ -72,6 +67,9 @@ function CouchClasses() {
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [newRows, setNewRows] = useState([]);
 
+  const kkkk = [
+    
+  ]
 
   const [fetchId,setFetchId] = useState('');
   const [fetchDateFin,setFetchDateFin]= useState('');
@@ -94,30 +92,6 @@ function CouchClasses() {
   const [checked, setChecked] = useState(false);
   const [viewQualifications, setViewQualifications] = useState(false);
 
-  const kkkk = [
-    "la verdad que la pase como el reverendo orto hermano como vas a dar una clase tan pero tan mala boludo honomatopeya",
-    "Estrella",
-    "Mariposa",
-    "Río",
-    "Montaña",
-    "Viento",
-    "Niebla",
-    "Rocío",
-    "Ocaso",
-    "Bosque",
-    "Ola",
-    "Nube",
-    "Trueno",
-    "Brisa",
-    "Sol",
-    "Aurora",
-    "Cascada",
-    "Rayo",
-    "Arena",
-    "Cielo"
-];
-
-
   const handleViewQualifications = () => {
     setViewQualifications(!viewQualifications)
   }
@@ -135,13 +109,13 @@ function CouchClasses() {
   }
 
   const toggleUserSelection = (userId) => {
-    setChecked(!checked)
-    setSelectedUsers((prev) => 
-      prev.includes(userId) 
-      ? prev.filter(id => id !== userId) 
-      : [...prev, userId]
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
     );
   };
+
   const hanldeCheckList = () => {
     setOpenCheckList(true);
   };
@@ -242,23 +216,6 @@ function CouchClasses() {
     const year = date.getFullYear();
     
     return `${year}-${month}-${day}`;
-  }
-
-  function renderRow(props) {
-    const { index, style } = props;
-  
-    return (
-      <>
-        {selectedEvent?.BookedUsers?.map((user) => (
-        <ListItem style={style} key={user} component="div" disablePadding>
-          <ListItemButton>
-            <ListItemText primary={user} />
-            <Checkbox checked={checked} onChange={() => toggleUserSelection(user)} inputProps={{ 'aria-label': 'controlled' }}/>
-          </ListItemButton>
-        </ListItem>
-        ))}
-      </>
-    );
   }
 
   useEffect(() => {
@@ -1168,20 +1125,28 @@ function CouchClasses() {
                 {openCheckList && (
                   <div className="Modal" style={{zIndex:'1001'}}>
                     <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
-                      <h2>Assist?</h2>
-                      <Box
-                      sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
-                    >
-                      <FixedSizeList
-                        height={400}
-                        width={'80%'}
-                        itemSize={46}
-                        itemCount={selectedEvent?.BookedUsers?.length}
-                        overscanCount={5}
-                      >
-                        {renderRow}
-                      </FixedSizeList>
-                    </Box>
+                      <h2>Check List</h2>
+                      
+                        {/* {selectedEvent?.BookedUsers?.length!==0 ? ( */}
+                        {kkkk.length!==0 ? (
+                          <>
+                          {/* {selectedEvent?.BookedUsers?.map((user) => ( */}
+                          <div className="check-list-container">
+                            {kkkk.map((element, index) => (
+                              <div key={index} className="check-list-item"  onClick={() => toggleUserSelection(element)}>
+                                {element}
+                                <Checkbox
+                                  checked={selectedUsers.includes(element)}
+                                  onChange={() => toggleUserSelection(element)}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          </>
+                        ) : (
+                          <li>There are not booked users</li>
+                        )}
+                      
                     <button onClick={closeCheckList} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
                     <button onClick={saveCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
                     </div>

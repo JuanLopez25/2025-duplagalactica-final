@@ -2173,3 +2173,29 @@ iframe {
 .upgrade-btn-membership:hover {
   background-color: #008ac1;
 }
+
+.check-list-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.check-list-item {
+  flex: 1 1 calc(33.33% - 16px);
+  box-sizing: border-box;
+  border: 1px solid #d8c2c2;
+  padding: 1px;
+}
+
+@media (max-width: 700px) {
+  .check-list-item {
+    flex: 1 1 calc(48% - 16px);
+  }
+}
+
+.check-list-item:hover{
+  background-color:#424242 !important;
+  color: white !important;
+}
