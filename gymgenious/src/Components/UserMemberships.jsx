@@ -9,8 +9,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import Popper from '@mui/material/Popper';
 import {jwtDecode} from "jwt-decode";
 import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
@@ -29,7 +27,7 @@ export default function UserMemberships() {
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
   const [failureErrors, setFailureErrors] = useState(false);
-  const [openCircularProgress, setOpenCircularProgress] = useState(false);
+  const [openCircularProgress, setOpenCircularProgress] = useState(true);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
   const [type, setType] = useState(null);
@@ -37,7 +35,6 @@ export default function UserMemberships() {
   const [membership, setMembership] = useState([]);
   const [errorAquire, setErrorAquire] = useState(false);
   const [upgrade, setUpgrade] = useState(false);
-  const [fetchedMembership, setFetchedMembership] = useState(false);
 
   const hanldeChangeUpgrade = () => {
     setUpgrade(!upgrade);
@@ -101,23 +98,6 @@ export default function UserMemberships() {
       setErrorAquire(true);
     }
     
-  };
-
-
-  const ComponenteBotonEditMembership = () => {
-    return (
-      <>
-      {isSmallScreen ? (
-          <div className="grid-container">
-            <button className="draw-outline-button-small">Edit Membership</button>
-          </div>
-      ) : (
-          <div className="grid-container">
-            <CreateClass>Edit Membership</CreateClass>
-          </div>
-      )}
-      </>
-    );
   };
   
   const CreateClass = ({ children, ...rest }) => {
@@ -226,7 +206,6 @@ export default function UserMemberships() {
         });
         console.log("membresia",membFinal)
         setMembership(membFinal);
-        setFetchedMembership(true);
         setOpenCircularProgress(false);
         if(data.type!='client'){
           navigate('/');
@@ -234,7 +213,6 @@ export default function UserMemberships() {
     } catch (error) {
         console.error("Error fetching user:", error);
         setOpenCircularProgress(false);
-        setFetchedMembership(true);
     }
   };
 
@@ -350,12 +328,12 @@ export default function UserMemberships() {
 
   return (
     <div className='full-screen-image-2'>
-      {type!='client' && !fetchedMembership ? (
+      {type!='client' || openCircularProgress ? (
             <Backdrop
             sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
             open={true}
             >
-                <CircularProgress color="inherit" />
+            <Loader></Loader>
             </Backdrop>
         ) : (
           <>

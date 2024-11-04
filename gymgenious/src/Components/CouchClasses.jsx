@@ -67,10 +67,6 @@ function CouchClasses() {
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [newRows, setNewRows] = useState([]);
 
-  const kkkk = [
-    
-  ]
-
   const [fetchId,setFetchId] = useState('');
   const [fetchDateFin,setFetchDateFin]= useState('');
   const [fetchDateInicio,setFetchDateInicio]=useState('');
@@ -649,18 +645,6 @@ function CouchClasses() {
     }
   };
 
-  useEffect(() => {
-    if(filterClasses!=''){
-      const filteredClassesSearcher = totalClasses.filter(item => 
-        item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
-      );
-      setClasses(filteredClassesSearcher);
-    } else {
-      setClasses(totalClasses);
-    }
-
-  }, [filterClasses]);
-
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
     try {
@@ -679,24 +663,29 @@ function CouchClasses() {
   };
 
   useEffect(() => {
-    const newRowsList=[];
-    classes?.forEach(row => {
-      if(
-        (row.permanent === 'No' &&
-          (new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
-          )
-          ||
-        (row.permanent === 'Si' && 
-          (new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000) &&
-          (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+    const newRowsList = [];
+  
+    const filteredClassesSearcher = filterClasses
+      ? totalClasses.filter(item =>
+          item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
         )
+      : totalClasses;
+  
+    filteredClassesSearcher.forEach(row => {
+      if (
+        (row.permanent === 'No' &&
+          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+        (row.permanent === 'Si' &&
+          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
       ) {
         newRowsList.push(row);
       }
-      setNewRows(newRowsList);
     });
-  }, [classes])
+  
+    setNewRows(newRowsList);
+  }, [filterClasses, totalClasses]);
   
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -1126,18 +1115,15 @@ function CouchClasses() {
                   <div className="Modal" style={{zIndex:'1001'}}>
                     <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
                       <h2>Check List</h2>
-                      
-                        {/* {selectedEvent?.BookedUsers?.length!==0 ? ( */}
-                        {kkkk.length!==0 ? (
+                        {selectedEvent?.BookedUsers?.length!==0 ? (
                           <>
-                          {/* {selectedEvent?.BookedUsers?.map((user) => ( */}
                           <div className="check-list-container">
-                            {kkkk.map((element, index) => (
-                              <div key={index} className="check-list-item"  onClick={() => toggleUserSelection(element)}>
-                                {element}
+                            {selectedEvent?.BookedUsers?.map((user, index) => (
+                              <div key={index} className="check-list-item"  onClick={() => toggleUserSelection(user)}>
+                                {user}
                                 <Checkbox
-                                  checked={selectedUsers.includes(element)}
-                                  onChange={() => toggleUserSelection(element)}
+                                  checked={selectedUsers.includes(user)}
+                                  onChange={() => toggleUserSelection(user)}
                                 />
                               </div>
                             ))}

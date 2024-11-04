@@ -32,60 +32,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
-
-const Carousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const cardCount = 10;
-  const visibleCards = 5;
-
-  const maxIndex = Math.ceil(cardCount / visibleCards) - 1;
-
-  const nextGroup = () => {
-    setCurrentIndex(currentIndex < maxIndex ? currentIndex + 1 : 1);
-  };
-
-  const prevGroup = () => {
-    setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : 0);
-  };
-
-  return (
-    <div style={{ width: '100%', height: '40%', overflow: 'hidden', position: 'relative'}}>
-      <div
-        style={{
-          display: 'flex',
-          transition: 'transform 0.3s ease-in-out',
-          transform: `translateX(-${currentIndex * 100}%)`
-        }}
-      >
-        {Array.from({ length: cardCount }, (_, index) => (
-          <div
-            key={index}
-            style={{
-              minWidth: `${100 / visibleCards}%`,
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <div className="card">achievement {index + 1}</div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={prevGroup} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)' }}>
-        {'<'}
-      </button>
-      <button onClick={nextGroup} style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)' }}>
-        {'>'}
-      </button>
-    </div>
-  );
-};
-
 function UsserClasses() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
@@ -118,26 +64,13 @@ function UsserClasses() {
   const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
-  const [openAchievements, setOpenAchievements] = useState(false);
-  const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
   const [errorStars, setErrorStars] = useState(false);
   const [errorComment, setErrorComment] = useState(false);
+  const [newRows, setNewRows] = useState([]);
 
   const handleCommentChange = (event) => {
     setComment(event)
     setChangingComment(true)
-  }
-
-  const handleViewAchievements = () => {
-    setOpenAchievements(true);
-    setVisibleDrawerAchievements(true);
-  }
-
-  const handleCloseAchievements = () => {
-    setOpenAchievements(false);
-      setTimeout(() => {
-        setVisibleDrawerAchievements(false);
-      }, 500);
   }
 
   function HalfRating() {
@@ -145,7 +78,7 @@ function UsserClasses() {
       <Stack spacing={1}>
         <Rating name="half-rating"
           value={stars}
-          onChange={(event, newValue) => { setStars(newValue);}}
+          onChange={handleStarsChange}
           defaultValue={stars}
           precision={0.5} />
       </Stack>
@@ -162,6 +95,7 @@ function UsserClasses() {
   };
 
   const handleChangeCalifyModal = () => {
+    setComment(selectedEvent.comentario)
     setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
   }
@@ -274,6 +208,7 @@ function UsserClasses() {
       }
       const data3 = await response3.json();
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
+      console.log(filteredComments)
       const dataWithSalaAndComments = dataWithSala.map(clase => {
         const comment = filteredComments.find(c => c.cid === clase.id);
         return {
@@ -282,8 +217,54 @@ function UsserClasses() {
           puntuacion: comment ? comment.calification : -1,
         };
       });
-      setClasses(dataWithSalaAndComments);
-      setTotalClasses(dataWithSalaAndComments);
+      const calendarEvents = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      dataWithSalaAndComments.forEach(clase => {
+        const startDate = new Date(clase.dateInicio);
+        const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
+        const endDate = new Date(clase.dateFin);
+        const CorrectEndDate = new Date(endDate.getTime() + 60 * 3 * 60 * 1000);
+  
+        if (clase.permanent === "Si") {
+          let nextStartDate = new Date(CorrectStarDate);
+          let nextEndDate = new Date(CorrectEndDate);
+  
+          if (nextStartDate < today) {
+            const dayOfWeek = CorrectStarDate.getDay();
+            let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
+            if (daysUntilNextClass === 0 && today > CorrectStarDate) {
+              daysUntilNextClass = 7;
+            }
+            nextStartDate.setDate(today.getDate() + daysUntilNextClass);
+            nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
+          }
+          
+          for (let i = 0; i < 4; i++) {
+            calendarEvents.push({
+              title: clase.name,
+              start: new Date(nextStartDate),
+              end: new Date(nextEndDate),
+              allDay: false,
+              ...clase,
+            });
+            nextStartDate.setDate(nextStartDate.getDate() + 7);
+            nextEndDate.setDate(nextEndDate.getDate() + 7);
+          }
+        } else {
+          if(startDate >= today)
+          calendarEvents.push({
+            title: clase.name,
+            start: new Date(CorrectStarDate),
+            end: new Date(CorrectEndDate),
+            allDay: false,
+            ...clase,
+          });
+        }
+      });
+      setClasses(calendarEvents);
+      setTotalClasses(calendarEvents);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -296,16 +277,30 @@ function UsserClasses() {
   };
 
   useEffect(() => {
-    if(filterClasses!=''){
-      const filteredClassesSearcher = totalClasses.filter(item => 
-        item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
-      );
-      setClasses(filteredClassesSearcher);
-    } else {
-      setClasses(totalClasses);
-    }
-
-  }, [filterClasses]);
+    const newRowsList = [];
+  
+    const filteredClassesSearcher = filterClasses
+      ? totalClasses.filter(item =>
+          item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
+        )
+      : totalClasses;
+  
+    filteredClassesSearcher.forEach(row => {
+      if (
+        (row.permanent === 'No' &&
+          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+        (row.permanent === 'Si' &&
+          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
+          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+      ) {
+        newRowsList.push(row);
+      }
+    });
+  
+    setNewRows(newRowsList);
+  }, [filterClasses, totalClasses]);
+  
 
   const validateCalification = () => {
     let res=true;
@@ -439,7 +434,7 @@ useEffect(() => {
 
   const visibleRows = React.useMemo(
     () =>
-      [...classes]
+      [...newRows]
         .sort((a, b) =>
           order === 'asc'
             ? a[orderBy] < b[orderBy]
@@ -450,7 +445,7 @@ useEffect(() => {
             : 1
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, classes]
+    [order, orderBy, page, rowsPerPage, newRows]
   );
 
   function ECommerce({event}) {
@@ -466,7 +461,7 @@ useEffect(() => {
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
                       <div className="d-flex align-items-center justify-content-between mb-3">
                         <p className="small mb-0" style={{color: '#424242' }}><AccessAlarmsIcon sx={{ color: '#48CFCB'}} />{event.dateInicio.split('T')[1].split(':').slice(0, 2).join(':')} - {event.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.dateInicio))}</p>
+                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.start))}</p>
                       </div>
                     </div>
                     <div className="d-flex align-items-center mb-4">
@@ -504,17 +499,26 @@ useEffect(() => {
                       >
                         <CloseIcon sx={{ color: '#F5F5F5' }} />
                       </button>
-                      <MDBBtn
-                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%'}}
+                      {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                            <MDBBtn
+                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
+                            rounded
+                            block
+                            size="lg"
+                          >
+                            Class is today
+                          </MDBBtn>
+                          ) : (
+                          <MDBBtn
+                          style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
                           block
                           size="lg"
-                          onClick={()=>handleUnbookClass(event.id)}
+                          onClick={() => handleUnbookClass(event.id)}
                         >
                           Unbook
                         </MDBBtn>
-                      {/* <button style={{marginLeft:'10px'}} onClick={()=>handleEditClass(selectedEvent)}>Edit class</button>
-                      <button style={{marginLeft:'10px'}} onClick={() => handleDeleteClass(selectedEvent.id)}>Delete class</button> */}
+                          )}
                   </MDBCardBody>
                 </MDBCard>
               </MDBCol>
@@ -536,44 +540,6 @@ useEffect(() => {
         ) : (
           <>
       <NewLeftBar />
-      <div className='input-container' style={{marginLeft: isSmallScreen700 ? openSearch ? '220px' : '114px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
-            <Button onClick={handleViewAchievements}
-              style={{
-                  backgroundColor: '#48CFCB',
-                  position: 'absolute',
-                  borderRadius: '50%',
-                  width: '5vh',
-                  height: '5vh',
-                  minWidth: '0',
-                  minHeight: '0',
-                  padding: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-              }}
-              >
-              <EmojiEventsIcon sx={{ color: '#424242' }} />
-            </Button>
-          </div>
-        </div>
-        {visibleDrawerAchievements && type==='client' && (
-        <div className='modal-achievements' onClick={handleCloseAchievements}>
-          <div className={`modal-achievements-content ${!openAchievements ? 'hide' : ''}`} onClick={(e)=>e.stopPropagation()}>
-            <Carousel/>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ width: '75%', mr: 1 }}>
-                <LinearProgress variant="determinate" value={25} />
-              </Box>
-              <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                  25%
-                </Typography>
-              </Box>
-            </Box>
-          </div>
-        </div>
-      )}
       <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
               <div className='input-small-container'>
                 {openSearch ? (
@@ -664,12 +630,12 @@ useEffect(() => {
                     {!isSmallScreen400 && (
                       <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
                         <TableSortLabel
-                          active={orderBy === 'dateInicio'}
-                          direction={orderBy === 'dateInicio' ? order : 'asc'}
-                          onClick={(event) => handleRequestSort(event, 'dateInicio')}
+                          active={orderBy === 'start'}
+                          direction={orderBy === 'start' ? order : 'asc'}
+                          onClick={(event) => handleRequestSort(event, 'start')}
                         >
                           Date
-                          {orderBy === 'dateInicio' && (
+                          {orderBy === 'start' && (
                             <Box component="span" sx={visuallyHidden}>
                               {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                             </Box>
@@ -713,7 +679,7 @@ useEffect(() => {
                               <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
                           )}
                           {!isSmallScreen400 && (
-                              <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.dateInicio))}</TableCell>
+                              <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
                           )}
                           {!isSmallScreen600 && (
                               <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
@@ -731,7 +697,7 @@ useEffect(() => {
                   <TablePagination
                       rowsPerPageOptions={[10]}
                       component="div"
-                      count={classes.length}
+                      count={newRows.length}
                       rowsPerPage={rowsPerPage}
                       page={page}
                       onPageChange={handleChangePage}
@@ -740,7 +706,7 @@ useEffect(() => {
                   <TablePagination
                       rowsPerPageOptions={[5, 10, 25]}
                       component="div"
-                      count={classes.length}
+                      count={newRows.length}
                       rowsPerPage={rowsPerPage}
                       page={page}
                       onPageChange={handleChangePage}
