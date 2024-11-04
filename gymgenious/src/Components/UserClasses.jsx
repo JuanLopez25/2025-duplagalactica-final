@@ -29,6 +29,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -118,6 +120,13 @@ function UsserClasses() {
   const [totalClasses, setTotalClasses] = useState([]);
   const [openAchievements, setOpenAchievements] = useState(false);
   const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
+  const [errorStars, setErrorStars] = useState(false);
+  const [errorComment, setErrorComment] = useState(false);
+
+  const handleCommentChange = (event) => {
+    setComment(event)
+    setChangingComment(true)
+  }
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -129,6 +138,18 @@ function UsserClasses() {
       setTimeout(() => {
         setVisibleDrawerAchievements(false);
       }, 500);
+  }
+
+  function HalfRating() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="half-rating"
+          value={stars}
+          onChange={(event, newValue) => { setStars(newValue);}}
+          defaultValue={stars}
+          precision={0.5} />
+      </Stack>
+    );
   }
 
   const handleOpenSearch = () => {
@@ -286,34 +307,51 @@ function UsserClasses() {
 
   }, [filterClasses]);
 
+  const validateCalification = () => {
+    let res=true;
+    setErrorStars(false);
+    setErrorComment(false);
+    if(stars===-1 || stars===null) {
+      res=false;
+      setErrorStars(true);
+    }
+    if(comment==='') {
+      res=false;
+      setErrorComment(true);
+    }
+    return res;
+  }
+
   const saveCalification = async (event) => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
+    if(validateCalification()) {
+      setOpenCircularProgress(true);
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          console.error('Token no disponible en localStorage');
+          return;
+        }
+        console.log("evento",event)
+        let starsValue = changingStars ? stars : event.puntuacion;
+        let commentValue = changingComment ? comment : event.comentario;
+        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
+        });
+        setChangingStars(false)
+        setChangingComment(false)
+        setOpenCircularProgress(false);
+        await fetchClasses();
+        setOpenCircularProgress(false);
+        handleChangeCalifyModal()
+        handleCloseModal();
+      } catch (error) {
+          console.error("Error fetching user:", error);
       }
-      console.log("evento",event)
-      let starsValue = changingStars ? stars : event.puntuacion;
-      let commentValue = changingComment ? comment : event.comentario;
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
-      });
-      setChangingStars(false)
-      setChangingComment(false)
-      setOpenCircularProgress(false);
-      await fetchClasses();
-      setOpenCircularProgress(false);
-      handleChangeCalifyModal()
-      handleCloseModal();
-    } catch (error) {
-        console.error("Error fetching user:", error);
     }
   }
   
@@ -780,50 +818,44 @@ useEffect(() => {
       )}
       {califyModal && (
         <div className="Modal" onClick={handleChangeCalifyModal}>
-          <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{marginBottom: '0px'}}>Class</h2>
-            <p style={{
-                marginTop: '5px',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%',
-                textAlign: 'center',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}>
-                {selectedEvent.name}
-            </p>
-            <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                <div className="input-small-container">
-                    <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
-                    <input 
-                    type="number" 
-                    id="stars" 
-                    name="stars" 
-                    value={stars}
-                    min="1"
-                    step='1'
-                    max="5"
-                    onChange={handleStarsChange}
-                    />
-                </div>
-                <div className="input-small-container">
-                    <label htmlFor="comment" style={{color:'#14213D'}}>Comment:</label>
-                    <input 
-                    type="text" 
-                    id="comment" 
-                    name="comment" 
+        <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
+          <h2 style={{marginBottom: '0px'}}>Class</h2>
+          <p style={{
+              marginTop: '5px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+              textAlign: 'center',
+              justifyContent: 'center',
+              alignItems: 'center',
+          }}>
+              {selectedEvent.name}
+          </p>
+          <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+              <div className="input-small-container">
+                   <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
+                  <HalfRating/>
+                  {errorStars && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Select stars</p>)}
+              </div>
+              <div className="input-small-container">
+                  <label htmlFor="comment" style={{color:'#14213D'}}>Comment:</label>
+                  <textarea 
                     value={comment}
-                    placeholder={selectedEvent.comentario}
-                    onChange={(e) => setComment(e.target.value)}
-                    />
-                </div>
-            </div>
-            <button onClick={handleChangeCalifyModal}>Cancel</button>
-            <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
+                    onChange={(e) => handleCommentChange(e.target.value)}
+                    id="comment" 
+                    name="comment"
+                    rows={4}
+                    maxLength={300}
+                    style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}}
+                  />
+                  {errorComment && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a comment</p>)}
+              </div>
           </div>
+          <button onClick={handleChangeCalifyModal}>Cancel</button>
+          <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
         </div>
+      </div>
       )}
     </div>
   );

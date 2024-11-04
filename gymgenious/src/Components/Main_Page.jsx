@@ -28,6 +28,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import DiamondIcon from '@mui/icons-material/Diamond';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 const Carousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -104,6 +106,9 @@ export default function Main_Page() {
   const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
   const [progress,setProgress] = useState();
   const [newRows, setNewRows] = useState([]);
+  const [errorStars, setErrorStars] = useState(false);
+  const [errorComment, setErrorComment] = useState(false);
+
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -127,10 +132,16 @@ export default function Main_Page() {
   const month = String(currentDate.getMonth() + 1).padStart(2, '0');
   const day = String(currentDate.getDate()).padStart(2, '0');
   const formattedDate = `${year}-${month}-${day}`;
-  const [notifications,setCantidadNotifications] = useState(0)
+  const [notifications,setCantidadNotifications] = useState(0);
+  const [viewQualifications, setViewQualifications] = useState(false)
+  
   const handleChangeCalifyModal = () => {
     setStars(selectedEvent.puntuacion)
     setCalifyModal(!califyModal);
+  }
+
+  const handleViewQualifications = () => {
+    setViewQualifications(!viewQualifications)
   }
 
   const handleStarsChange = (e) => {
@@ -154,6 +165,30 @@ export default function Main_Page() {
     const year = date.getFullYear();
     
     return `${year}-${month}-${day}`;
+  }
+
+  function HalfRating() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="half-rating"
+          value={stars}
+          onChange={(event, newValue) => { setStars(newValue);}}
+          defaultValue={stars}
+          precision={0.5} />
+      </Stack>
+    );
+  }
+
+  function HalfRatingCoach() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="read-only"
+          value={selectedEvent.averageCalification}
+          precision={0.5}
+          readOnly
+          />
+      </Stack>
+    );
   }
 
   useEffect(() => {
@@ -210,15 +245,18 @@ export default function Main_Page() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          {userMail && type==='client' && (
+                          {userMail && type==='client' && selectedEvent.BookedUsers.includes(userMail) && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
-                          )}    
+                          )}
                           {userMail && type==='coach' && (
                             <>
-                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
-                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
+                            {event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                            ) : (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                            )}
                             </>
-                          )}       
+                          )}
                         </div>
                       </div>
                     </div>
@@ -366,7 +404,9 @@ export default function Main_Page() {
                           )}
                           </>
                         ) : (
-                          <MDBBtn
+                          <>
+                          {userMail && type === 'client' ? (
+                            <MDBBtn
                           style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
                           rounded
                           block
@@ -374,6 +414,10 @@ export default function Main_Page() {
                         >
                           Full
                         </MDBBtn>
+                          ) : (
+                            null
+                          )}
+                        </>
                         )}
                           <button 
                             onClick={handleCloseModal}
@@ -569,7 +613,7 @@ export default function Main_Page() {
       window.location.reload();
       setOpenCircularProgress(false);
       handleCloseModal();
-      setSuccessBook(true)
+      //setSucceshandleClosesBook(true)
       setTimeout(() => {
         setSuccessBook(false);
       }, 3000);
@@ -673,6 +717,9 @@ export default function Main_Page() {
         item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
       );
       setClasses(filteredClassesSearcher);
+      if(filteredClassesSearcher.length===0){
+        setClasses([-1])
+      }
     } else {
       setClasses(totalClasses);
     }
@@ -706,35 +753,49 @@ export default function Main_Page() {
     }
   }
 
-
-
+  const validateCalification = () => {
+    let res=true;
+    setErrorStars(false);
+    setErrorComment(false);
+    if(stars===-1 || stars===null) {
+      res=false;
+      setErrorStars(true);
+    }
+    if(comment==='') {
+      res=false;
+      setErrorComment(true);
+    }
+    return res;
+  }
 
   const saveCalification = async (event) => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
+    if(validateCalification()) {
+      setOpenCircularProgress(true);
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          console.error('Token no disponible en localStorage');
+          return;
+        }
+        let starsValue = changingStars ? stars : event.puntuacion;
+        let commentValue = changingComment ? comment : event.comentario;
+        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
+        });
+        setChangingStars(false)
+        setChangingComment(false)
+        await fetchClasses();
+        setOpenCircularProgress(false);
+        handleChangeCalifyModal()
+        handleCloseModal();
+      } catch (error) {
+          console.error("Error fetching user:", error);
       }
-      let starsValue = changingStars ? stars : event.puntuacion;
-      let commentValue = changingComment ? comment : event.comentario;
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ event: event.id,calification: starsValue,commentary: commentValue, user: userAccount.uid})
-      });
-      setChangingStars(false)
-      setChangingComment(false)
-      await fetchClasses();
-      setOpenCircularProgress(false);
-      handleChangeCalifyModal()
-      handleCloseModal();
-    } catch (error) {
-        console.error("Error fetching user:", error);
     }
   }
 
@@ -944,7 +1005,7 @@ export default function Main_Page() {
         <>
         {notifications!=0 ? (
         <>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button
               style={{
@@ -968,7 +1029,7 @@ export default function Main_Page() {
         </div>
         </>
         ) :
-        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '220px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>
             <Button
               style={{
@@ -1191,8 +1252,8 @@ export default function Main_Page() {
             </p>
             <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                 <div className="input-small-container">
-                    <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
-                    <input 
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
+                    {/*<input 
                     type="number" 
                     id="stars" 
                     name="stars"
@@ -1201,22 +1262,62 @@ export default function Main_Page() {
                     step='1'
                     max="5"
                     onChange={handleStarsChange}
-                    />
+                    /> */}
+                    <HalfRating/>
+                    {errorStars && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Select stars</p>)}
                 </div>
                 <div className="input-small-container">
                     <label htmlFor="comment" style={{color:'#14213D'}}>Comment:</label>
-                    <input 
-                    type="text" 
-                    id="comment" 
-                    name="comment" 
-                    placeholder={selectedEvent.comentario}
-                    value={comment}
-                    onChange={(e) => handleCommentChange(e.target.value)}
+                    <textarea 
+                      value={comment}
+                      onChange={(e) => handleCommentChange(e.target.value)}
+                      id="comment" 
+                      name="comment"
+                      rows={4}
+                      maxLength={300}
+                      style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}}
                     />
+                    {errorComment && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a comment</p>)}
                 </div>
             </div>
             <button onClick={handleChangeCalifyModal}>Cancel</button>
             <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
+          </div>
+        </div>
+      )}
+        {viewQualifications && (
+        <div className="Modal" onClick={handleViewQualifications}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                {selectedEvent.name}
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 1,marginRight: '0px'}}>
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Average Qualification:</label>
+                    <HalfRatingCoach/>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                <label htmlFor="stars" style={{color:'#14213D'}}>Comments:</label>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.commentaries.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewQualifications}>Close</button>
           </div>
         </div>
       )}

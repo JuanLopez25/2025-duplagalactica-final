@@ -28,13 +28,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import { FixedSizeList } from 'react-window';
 import Checkbox from '@mui/material/Checkbox';
-import { select } from 'framer-motion/client';
-
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
@@ -71,6 +67,9 @@ function CouchClasses() {
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [newRows, setNewRows] = useState([]);
 
+  const kkkk = [
+    
+  ]
 
   const [fetchId,setFetchId] = useState('');
   const [fetchDateFin,setFetchDateFin]= useState('');
@@ -91,15 +90,32 @@ function CouchClasses() {
   const [openCheckList, setOpenCheckList] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState(['1']);
   const [checked, setChecked] = useState(false);
+  const [viewQualifications, setViewQualifications] = useState(false);
+
+  const handleViewQualifications = () => {
+    setViewQualifications(!viewQualifications)
+  }
+
+  function HalfRatingCoach() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="read-only"
+          value={selectedEvent.averageCalification}
+          precision={0.5}
+          readOnly
+          />
+      </Stack>
+    );
+  }
 
   const toggleUserSelection = (userId) => {
-    setChecked(!checked)
-    setSelectedUsers((prev) => 
-      prev.includes(userId) 
-      ? prev.filter(id => id !== userId) 
-      : [...prev, userId]
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
     );
   };
+
   const hanldeCheckList = () => {
     setOpenCheckList(true);
   };
@@ -200,23 +216,6 @@ function CouchClasses() {
     const year = date.getFullYear();
     
     return `${year}-${month}-${day}`;
-  }
-
-  function renderRow(props) {
-    const { index, style } = props;
-  
-    return (
-      <>
-        {selectedEvent?.BookedUsers?.map((user) => (
-        <ListItem style={style} key={user} component="div" disablePadding>
-          <ListItemButton>
-            <ListItemText primary={user} />
-            <Checkbox checked={checked} onChange={() => toggleUserSelection(user)} inputProps={{ 'aria-label': 'controlled' }}/>
-          </ListItemButton>
-        </ListItem>
-        ))}
-      </>
-    );
   }
 
   useEffect(() => {
@@ -811,8 +810,13 @@ function CouchClasses() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn>
+                          {/* <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
+                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn> */}
+                          {userMail && type==='coach' && event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                          ) : (
+                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                          )}  
                         </div>
                       </div>
                     </div>
@@ -1121,20 +1125,28 @@ function CouchClasses() {
                 {openCheckList && (
                   <div className="Modal" style={{zIndex:'1001'}}>
                     <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
-                      <h2>Assist?</h2>
-                      <Box
-                      sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
-                    >
-                      <FixedSizeList
-                        height={400}
-                        width={'80%'}
-                        itemSize={46}
-                        itemCount={selectedEvent?.BookedUsers?.length}
-                        overscanCount={5}
-                      >
-                        {renderRow}
-                      </FixedSizeList>
-                    </Box>
+                      <h2>Check List</h2>
+                      
+                        {/* {selectedEvent?.BookedUsers?.length!==0 ? ( */}
+                        {kkkk.length!==0 ? (
+                          <>
+                          {/* {selectedEvent?.BookedUsers?.map((user) => ( */}
+                          <div className="check-list-container">
+                            {kkkk.map((element, index) => (
+                              <div key={index} className="check-list-item"  onClick={() => toggleUserSelection(element)}>
+                                {element}
+                                <Checkbox
+                                  checked={selectedUsers.includes(element)}
+                                  onChange={() => toggleUserSelection(element)}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          </>
+                        ) : (
+                          <li>There are not booked users</li>
+                        )}
+                      
                     <button onClick={closeCheckList} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
                     <button onClick={saveCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
                     </div>
@@ -1243,25 +1255,45 @@ function CouchClasses() {
         </div>
         </>
         )}
-
-{selectedEvent && (
-                    // <div className="Modal" onClick={handleCloseModal}>
-                    //     <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
-                    //         <h2>Class details</h2>
-                    //         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Name:</strong> {selectedEvent.name}</p>
-                    //         <p><strong>Date:</strong> {formatDate(new Date(selectedEvent.dateInicio))}</p>
-                    //         <p><strong>Start time:</strong> {selectedEvent.hour}</p>
-                    //         <p><strong>End time:</strong> {selectedEvent.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                    //         <p><strong>Sala:</strong> {selectedEvent.salaInfo.nombre}</p>
-                    //         <p><strong>Recurrent:</strong> {selectedEvent.permanent==='Si' ? 'Yes' : 'No'}</p>
-                    //         <p><strong>Participants:</strong> {selectedEvent.BookedUsers.length}</p>
-                    //         <button style={{marginLeft:'10px'}} onClick={()=>handleEditClass(selectedEvent)}>Edit class</button>
-                    //         <button style={{marginLeft:'10px'}} onClick={handleCloseModal}>Close</button>
-                    //         <button style={{marginLeft:'10px'}} onClick={() => handleDeleteClass(selectedEvent.id)}>Delete class</button>
-                    //     </div>
-                    // </div>
-                    <ECommerce event={selectedEvent}/>
-                )}
+        {selectedEvent && (
+          <ECommerce event={selectedEvent}/>
+        )}
+        {viewQualifications && (
+        <div className="Modal" onClick={handleViewQualifications}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                {selectedEvent.name}
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 1,marginRight: '0px'}}>
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Average Qualification:</label>
+                    <HalfRatingCoach/>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                <label htmlFor="stars" style={{color:'#14213D'}}>Comments:</label>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.commentaries.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewQualifications}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
     
   );

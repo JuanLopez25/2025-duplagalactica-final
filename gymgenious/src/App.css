@@ -857,6 +857,32 @@ iframe {
   z-index: 1001;
 }
 
+.Modal-Content-qualifications {
+  background-color: #F5F5F5;
+  padding: 20px;
+  border-radius: 8px;
+  color: #424242;
+  font-weight: bold;
+  width: auto;
+  max-width: 70%;
+  text-align: center;
+  position: relative;
+  z-index: 1001;
+}
+
+.Modal-Content-qualifications button {
+  background-color: #48CFCB;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.Modal-Content-qualifications button:hover {
+  background-color: #424242;
+}
+
 .Modal-Content-view-exercises {
   background-color: #F5F5F5;
   padding: 20px;
@@ -932,6 +958,9 @@ iframe {
     max-width: 300px;
   }
   .Modal-Content-class-creation {
+    width: 90%;
+  }
+  .Modal-Content-qualifications {
     width: 90%;
   }
 }
@@ -2143,4 +2172,30 @@ iframe {
 
 .upgrade-btn-membership:hover {
   background-color: #008ac1;
+}
+
+.check-list-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.check-list-item {
+  flex: 1 1 calc(33.33% - 16px);
+  box-sizing: border-box;
+  border: 1px solid #d8c2c2;
+  padding: 1px;
+}
+
+@media (max-width: 700px) {
+  .check-list-item {
+    flex: 1 1 calc(48% - 16px);
+  }
+}
+
+.check-list-item:hover{
+  background-color:#424242 !important;
+  color: white !important;
 }
