@@ -2203,8 +2203,3 @@ iframe {
     flex: 1 1 calc(48% - 16px);
   }
 }
-
-.check-list-item:hover{
-  background-color:#424242 !important;
-  color: white !important;
-}

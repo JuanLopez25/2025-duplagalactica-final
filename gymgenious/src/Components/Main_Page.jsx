@@ -905,7 +905,7 @@ export default function Main_Page() {
         const formData = new FormData();
         formData.append('cant', (3-progress.length));
         formData.append('uid', userAccount.uid);
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com0/assign_mission', {
+        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/assign_mission', {
               method: 'POST',
               headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -1057,7 +1057,7 @@ export default function Main_Page() {
               style={{
                   backgroundColor: '#48CFCB',
                   position: 'absolute',
-                  borderRadius: '50%',
+                  borderRadius: '25%',
                   width: '5vh',
                   height: '5vh',
                   minWidth: '0',
