@@ -528,7 +528,7 @@ export default function Main_Page() {
           });
         }
       });
-      const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
+      const response4 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assistance', {
         method: 'GET'
       });
       if (!response4.ok) {
@@ -594,7 +594,7 @@ export default function Main_Page() {
         throw new Error('Error al actualizar la clase: ' + response2.statusText);
       }
 
-      const response3 = await fetch('http://127.0.0.1:5000/use_geme', {
+      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_geme', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -765,7 +765,7 @@ export default function Main_Page() {
       }
       const formData = new FormData();
       formData.append('misiones', missionProgressId);
-      const response5 = await fetch('http://127.0.0.1:5000/delete_missions', {
+      const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_missions', {
         method: 'DELETE', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -847,7 +847,7 @@ export default function Main_Page() {
       const formData = new FormData();
       formData.append('misiones', missionsIds);
       if (missionsIds.length!=0) {
-        const response5 = await fetch('http://127.0.0.1:5000/add_mission_progress', {
+        const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_mission_progress', {
           method: 'DELETE', 
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -888,7 +888,7 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response4 = await fetch(`http://127.0.0.1:5000/get_missions_progress`, {
+      const response4 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_missions_progress`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -900,7 +900,7 @@ export default function Main_Page() {
         const formData = new FormData();
         formData.append('cant', (3-progress.length));
         formData.append('uid', userAccount.uid);
-        const response = await fetch('http://127.0.0.1:5000/assign_mission', {
+        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com0/assign_mission', {
               method: 'POST',
               headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -912,7 +912,7 @@ export default function Main_Page() {
         }
         window.location.reload();
       }
-      const response5 = await fetch(`http://127.0.0.1:5000/get_missions_template`, {
+      const response5 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_missions_template`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`

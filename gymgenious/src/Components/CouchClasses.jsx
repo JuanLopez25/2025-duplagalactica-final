@@ -147,7 +147,7 @@ function CouchClasses() {
       const formData = new FormData();
       formData.append('usuarios', allUsers);
       formData.append('selectedEvent',selectedEvent.id);
-      const response2 = await fetch('http://127.0.0.1:5000/update_class_use', {
+      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_class_use', {
           method: 'PUT', 
           headers: {
               'Authorization': `Bearer ${authToken}`
@@ -161,7 +161,7 @@ function CouchClasses() {
     const formData3 = new FormData();
     formData3.append('usuarios', updatedSelectedUsers);
     formData3.append('selectedEvent',selectedEvent.id);
-    const response3 = await fetch('http://127.0.0.1:5000/add_missions', {
+    const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_missions', {
         method: 'POST', 
         headers: {
             'Authorization': `Bearer ${authToken}`
@@ -175,7 +175,7 @@ function CouchClasses() {
     formData4.append('selectedEvent',selectedEvent.id);
     formData4.append('fecha',formatDate(new Date(selectedEvent.start)))
     formData4.append('uid',userAccount.uid)
-    const response4 = await fetch('http://127.0.0.1:5000/add_assistance', {
+    const response4 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_assistance', {
         method: 'POST', 
         headers: {
             'Authorization': `Bearer ${authToken}`
@@ -612,7 +612,7 @@ function CouchClasses() {
           });
         }
       });
-      const response4 = await fetch('http://127.0.0.1:5000/get_assistance', {
+      const response4 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assistance', {
         method: 'GET'
       });
       if (!response4.ok) {

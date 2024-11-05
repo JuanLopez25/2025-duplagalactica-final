@@ -51,7 +51,7 @@ export default function CoachMemberships() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('http://127.0.0.1:5000/edit_memb_price', {
+      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/edit_memb_price', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export default function CoachMemberships() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('http://127.0.0.1:5000/get_membership_template', {
+      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_membership_template', {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
