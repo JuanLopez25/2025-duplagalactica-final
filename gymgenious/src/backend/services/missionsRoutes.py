@@ -71,7 +71,9 @@ def delete_missions(misiones):
             documento = user_ref.where('uid', '==', uid).get() 
             for doc in documento: 
                 gemas = doc.to_dict().get('Gemas', 0)  
+                mc = doc.to_dict().get('MissionsComplete', 0)  
                 user_ref.document(doc.id).update({'Gemas': gemas + len(misiones)}) 
+                user_ref.document(doc.id).update({'MissionsComplete': mc + len(misiones)})
     except Exception as e:
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
