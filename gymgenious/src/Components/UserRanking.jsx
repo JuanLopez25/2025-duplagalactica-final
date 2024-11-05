@@ -97,7 +97,7 @@ export default function StickyHeadTable() {
             console.error('Token no disponible en localStorage');
             return;
             }
-            const response = await fetch('http://127.0.0.1:5000/get_rankings', {
+            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_rankings', {
             method: 'GET', 
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -167,7 +167,7 @@ export default function StickyHeadTable() {
                 console.error('Token no disponible en localStorage');
                 return;
             }
-            const response = await fetch('http://127.0.0.1:5000/create_ranking', {
+            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/create_ranking', {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
@@ -195,7 +195,7 @@ export default function StickyHeadTable() {
                 console.error('Token no disponible en localStorage');
                 return;
             }
-            const response = await fetch('http://127.0.0.1:5000/get_rankings', {
+            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_rankings', {
                 method: 'GET', 
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -210,7 +210,7 @@ export default function StickyHeadTable() {
             if (userRankings.length==0) {
                 throw new Error('No existe ningun ranking asi');
             }
-            const response2 = await fetch('http://127.0.0.1:5000/join_ranking', {
+            const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/join_ranking', {
                 method: 'PUT', 
                 headers: {
                   'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ export default function StickyHeadTable() {
                 console.error('Token no disponible en localStorage');
                 return;
             }
-            const response2 = await fetch('http://127.0.0.1:5000/leave_ranking', {
+            const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/leave_ranking', {
                 method: 'PUT', 
                 headers: {
                   'Content-Type': 'application/json',
