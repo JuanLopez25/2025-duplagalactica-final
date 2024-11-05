@@ -27,6 +27,7 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PaidIcon from '@mui/icons-material/Paid';
+import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = React.useState(false);
@@ -49,6 +50,7 @@ export default function TemporaryDrawer() {
   const goToCoachGraphics = () => navigate('/coach-graphics');
   const goToCoachMemberships = () => navigate('/coach-memberships');
   const goToUserMemberships = () => navigate('/user-memberships');
+  const goToRankings = () => navigate('/user-rankings');
 
   const navigateTo = (index) => {
     const routes = [
@@ -73,6 +75,7 @@ export default function TemporaryDrawer() {
       goToMainPage,
       goToUserProfile,
       goToBookedClasses,
+      goToRankings,
       goToUserRoutines,
       goToTopRoutines,
       goToUserMemberships,
@@ -138,17 +141,18 @@ export default function TemporaryDrawer() {
   const DrawerListClient = (
     <Box sx={{ width: 250, background: '#424242' }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        {['Home', 'Profile', 'Booked classes', 'My routines', 'Top routines', 'Memberships', 'Logout'].map((text, index) => (
+        {['Home', 'Profile', 'Booked classes', 'Rankings', 'My routines', 'Top routines', 'Memberships', 'Logout'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton onClick={() => navigateFromUserTo(index)}>
               <ListItemIcon>
                 {index === 0 && <HomeIcon sx={{ color: '#48CFCB' }} />}
                 {index === 1 && <PersonIcon sx={{ color: '#48CFCB' }} />}
                 {index === 2 && <CheckIcon sx={{ color: '#48CFCB' }} />}
-                {index === 3 && <SportsIcon sx={{ color: '#48CFCB' }} />}
-                {index === 4 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
-                {index === 5 && <ShoppingCartIcon sx={{ color: '#48CFCB' }} />}
-                {index === 6 && <ExitToApp sx={{ color: '#48CFCB' }} />}
+                {index === 3 && <MilitaryTechIcon sx={{ color: '#48CFCB' }} />}
+                {index === 4 && <SportsIcon sx={{ color: '#48CFCB' }} />}
+                {index === 5 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
+                {index === 6 && <ShoppingCartIcon sx={{ color: '#48CFCB' }} />}
+                {index === 7 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />
             </ListItemButton>
