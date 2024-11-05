@@ -65,7 +65,9 @@ export default function UserMemberships() {
       const data = await response.json();
       console.log("asi se ve",data)
       setMemberships(data)
-      setOpenCircularProgress(false);
+      setTimeout(() => {
+        setOpenCircularProgress(false);
+      }, 3000);
     } catch (error) {
         console.error("Error fetching user:", error);
     }
@@ -120,6 +122,7 @@ export default function UserMemberships() {
           throw new Error('Error al actualizar la clase: ' + response.statusText);
         }
         window.location.reload()
+        
         setOpenCircularProgress(false)
       } catch (error) {
         console.error("Error fetching classes:", error);
@@ -242,13 +245,11 @@ export default function UserMemberships() {
         });
         console.log("membresia",membFinal)
         setMembership(membFinal);
-        setOpenCircularProgress(false);
         if(data.type!='client'){
           navigate('/');
         }
     } catch (error) {
         console.error("Error fetching user:", error);
-        setOpenCircularProgress(false);
     }
   };
 
