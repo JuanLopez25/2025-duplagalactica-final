@@ -893,7 +893,7 @@ iframe {
   background-color: #F5F5F5;
   padding: 20px;
   border-radius: 8px;
-  width: 98%;
+  width: 96%;
   color: #424242;
   font-weight: bold;
   max-width: 500px;
@@ -2202,9 +2202,4 @@ iframe {
   .check-list-item {
     flex: 1 1 calc(48% - 16px);
   }
-}
-
-.check-list-item:hover{
-  background-color:#424242 !important;
-  color: white !important;
 }
