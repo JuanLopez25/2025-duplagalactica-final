@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from services.usersRoutes import use_geme,get_unique_user_by_email,get_coach_users, get_user, create_user, send_email,get_users,get_clients_users,get_client_users_no_match_routine,update_client_user
+from services.usersRoutes import leave_ranking,join_ranking,get_rankings,create_ranking,use_geme,get_unique_user_by_email,get_coach_users, get_user, create_user, send_email,get_users,get_clients_users,get_client_users_no_match_routine,update_client_user
 
 def use_geme_route(mail):
     try:
@@ -8,6 +8,20 @@ def use_geme_route(mail):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def join_ranking_route(rankingID,userMail):
+    try:
+        ranking = join_ranking(rankingID,userMail)
+        return jsonify({"message": "Ranking actualizado exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    
+def leave_ranking_route(rankingID,userMail):
+    try:
+        ranking = leave_ranking(rankingID,userMail)
+        return jsonify({"message": "Ranking actualizado exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def get_unique_user_by_email_route(mail):
     try:
@@ -19,6 +33,17 @@ def get_unique_user_by_email_route(mail):
         return jsonify({"error": str(e)}), 404
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
+
+
+def get_rankings_route():
+    try:
+        user = get_rankings()
+        return jsonify(user), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except RuntimeError as e:
+        return jsonify({"error": str(e)}), 500
+
 
 def get_user_route(password,mail):
     try:
@@ -81,4 +106,14 @@ def update_users_info_route(newUser):
         update_client_user(newUser)
         return jsonify({"message": "Usuario actualizado exitosamente"}), 200
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def create_ranking_route(newRanking):
+    try:
+        exce = create_ranking(newRanking)
+        return jsonify(exce), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except RuntimeError as e:
         return jsonify({"error": str(e)}), 500

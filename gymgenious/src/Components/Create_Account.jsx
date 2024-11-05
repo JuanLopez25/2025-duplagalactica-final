@@ -105,6 +105,7 @@ export default function CreateAccount() {
                     Mail: email,
                     Birthday: date,
                     Gemas: 0,
+                    MissionsComplete:0,
                     type: typeAccount
                 };
                 await fetch('https://two024-duplagalactica-li8t.onrender.com/create_user', {
