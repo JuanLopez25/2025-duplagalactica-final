@@ -332,6 +332,8 @@ export default function Main_Page() {
                         </button>
                         </>
                         ) : (
+                          <>
+                        {selectedEvent.permanent==='No' && (
                         <>
                         {userMail && type === 'client' && selectedEvent.BookedUsers && selectedEvent.BookedUsers.length<selectedEvent.capacity ? (
                           <>
@@ -402,6 +404,9 @@ export default function Main_Page() {
                           )}
                         </>
                         )}
+                        </>
+                        )}
+                        
                           <button 
                             onClick={handleCloseModal}
                             className="custom-button-go-back-managing"
