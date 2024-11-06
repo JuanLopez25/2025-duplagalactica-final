@@ -1058,7 +1058,7 @@ export default function Main_Page() {
       <>
       {type==='coach' ? (
         <>
-        {notifications!=0 ? (
+        {notifications>0 ? (
         <>
         <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container'>

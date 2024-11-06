@@ -78,7 +78,7 @@ export default function UserMemberships() {
       <>
       {isSmallScreen ? (
           <div className="grid-container">
-            <button className="draw-outline-button-small">Acquire</button>
+            <button onClick={() => handleAquireMembership()} className="draw-outline-button-small">Acquire</button>
           </div>
       ) : (
           <div className="grid-container">
@@ -255,7 +255,7 @@ export default function UserMemberships() {
 
   const ComponentViewMemberships = () => {
     return (
-        <div className='membership-choose-container'>
+        <div className='membership-choose-container' style={{width: isSmallScreen && membership?.length!==0 ? '90%' : '', left: isSmallScreen && membership?.length!==0 ? '5%' : ''}}>
             <div className='class-creation-content' style={{paddingTop: '1%'}}>
             <h2 style={{color:'#424242'}}>Acquire Membership</h2>
                 <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>

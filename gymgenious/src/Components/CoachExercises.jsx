@@ -580,7 +580,7 @@ export default function CoachExercises() {
                                                 name="desc"
                                                 id="desc"
                                                 rows={4}
-                                                value={desc}
+                                                value={desc || selectedEvent.description}
                                                 maxLength={300}
                                                 style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}} />
                                         </div>

@@ -804,9 +804,8 @@ useEffect(() => {
                         type="text" 
                         id="name" 
                         name="name" 
-                        value={name} 
+                        value={name || fetchName} 
                         onChange={(e) => setName(e.target.value)}
-                        placeholder={fetchName}
                         />
                       </div>
                     </div>
@@ -826,7 +825,7 @@ useEffect(() => {
                           name="desc"
                           id="desc"
                           rows={4}
-                          value={desc}
+                          value={desc || descFetch}
                           maxLength={300}
                           style={{maxHeight: '100px', width: '100%', borderRadius: '8px'}} />
                       </div>

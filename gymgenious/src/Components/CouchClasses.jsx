@@ -524,6 +524,10 @@ function CouchClasses() {
       }
       const data = await response.json();
       const filteredClasses = data.filter(event => event.owner == userMail);
+      if(filteredClasses.length===0){
+        setOpenCircularProgress(false)
+        return;
+      }
       const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);

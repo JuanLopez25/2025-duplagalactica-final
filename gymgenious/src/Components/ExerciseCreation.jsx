@@ -73,6 +73,7 @@ export default function ExerciseCreation() {
         setSuccess(true);
         setTimeout(() => {
             setSuccess(false);
+            window.location.reload()
         }, 3000);
       } catch (error) {
         console.error("Error al crear el ejercicio:", error);

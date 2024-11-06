@@ -846,7 +846,8 @@ iframe {
 
 @media screen and (max-width: 700px) {
   .modal-achievements-content {
-    height: 65%
+    height: 65%;
+    overflow-y: auto;
   }
 }
 

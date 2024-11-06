@@ -13,7 +13,7 @@ import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx'
 
 export default function RoutineCreation() {
-    const [routineAssigned, setRoutine] = useState(); 
+    const [routineAssigned, setRoutine] = useState(''); 
     const [userMail,setUserMail] = useState(null);
     const [users, setUsers] = useState([]);
     const [routines, setRoutines] = useState([]);
@@ -26,6 +26,10 @@ export default function RoutineCreation() {
     const [failureErrors, setFailureErrors] = useState(false);
     const [fetchAttempt, setFetchAttempt] = useState(0);
     const [day, setDay] = useState('');
+    const [usersChanged, setUsersChanged] = useState(false);
+    const [errorDaySelected, setErrorDaySelected] = useState(false);
+    const [errorRoutineSelected, setErrorRoutineSelected] = useState(false);
+
 
     const fetchRoutines = async () => {
         setOpenCircularProgress(true);
@@ -87,22 +91,24 @@ export default function RoutineCreation() {
 
     const validateForm = () => {
         let errors = [];
+        setErrorRoutineSelected(false)
+        setErrorDaySelected(false)
         
         if (routineAssigned === '') {
             errors.push('Please select a routine to assign');
+            setErrorRoutineSelected(true)
         }
 
         if (day === '') {
             errors.push('Please select one day to assign the routine.');
+            setErrorDaySelected(true)
         }
-
-        setErrors(errors);
         return errors.length===0;
     }
 
     const handleAssignRoutine = async () => {
-        setOpenCircularProgress(true);
         if(validateForm()){
+            setOpenCircularProgress(true);
             try {
                 const authToken = localStorage.getItem('authToken');
                 if (!authToken) {
@@ -153,12 +159,6 @@ export default function RoutineCreation() {
                     setFailure(false);
                 }, 3000);
             }
-        } else {
-            setOpenCircularProgress(false);
-            setFailureErrors(true);
-            setTimeout(() => {
-                setFailureErrors(false);
-                }, 3000);
         }
     };
 
@@ -168,6 +168,7 @@ export default function RoutineCreation() {
     };
 
     const handleUsersChange = (newUsers) => {
+        setUsersChanged(true);
         setUsers(newUsers);
     };
 
@@ -199,6 +200,7 @@ export default function RoutineCreation() {
                                     </option>
                                 ))}
                             </select>
+                            {errorRoutineSelected && (<p style={{color: 'red', margin: '0px'}}>Select a routine</p>)}
                         </div>
                         <div className="input-small-container">
                             <label htmlFor="day" style={{color:'#424242'}}>Day:</label>
@@ -217,6 +219,7 @@ export default function RoutineCreation() {
                                 <option value="saturday">Saturday</option>
                                 <option value="sunday">Sunday</option>
                             </select>
+                            {errorDaySelected && (<p style={{color: 'red', margin: '0px'}}>Select a day</p>)}
                         </div>
                     </div>
                     <div className="input-container" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0px' }}>
@@ -225,9 +228,16 @@ export default function RoutineCreation() {
                             <UsserAssignment onUsersChange={handleUsersChange} routine={routineAssigned} routineDay={day}/>
                         </div>
                     </div>
-                    <button type="submit" className='button_login' style={{marginTop: '0px'}}>
-                        Assign users
-                    </button>
+                    {usersChanged ? (
+                        <button type="submit" className='button_login' style={{marginTop: '0px'}}>
+                            Assign users
+                        </button>
+                    ) : (
+                        <div className='button_login' style={{marginTop: '0px'}}>
+                            Assign users
+                        </div>
+                    )}
+                    
                 </form>
             </div>
             {openCircularProgress ? (

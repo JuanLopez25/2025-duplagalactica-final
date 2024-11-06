@@ -21,7 +21,7 @@ import {
   MDBCardImage,
   MDBBtn,
   MDBBreadcrumb,
-  MDBBreadcrumbItem,
+  MDBBreadcrumbItem, 
   MDBProgress,
   MDBProgressBar,
   MDBIcon,
@@ -374,7 +374,7 @@ export default function CreateAccount() {
                 )}
                 <div className='user-profile-container'>
                 <section style={{ backgroundColor: '#eee', borderRadius: '8px'}}>
-            <MDBContainer className="py-5">
+            <MDBContainer style={{paddingTop: '10px'}}>
               <MDBRow>
                 <MDBCol>
                   <MDBCard className="mb-4">

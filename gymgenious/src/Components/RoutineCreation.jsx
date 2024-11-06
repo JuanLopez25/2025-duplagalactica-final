@@ -57,12 +57,14 @@ export default function RoutineCreation() {
     };
 
     const handleSeriesChange = (e) => {
-      const newSeries = parseInt(e.target.value);
-      if(newSeries>=0 && newSeries<=8) {
-        setSeries(newSeries);
-        setReps(Array(newSeries).fill(''));
+      const newSeries = parseInt(e.target.value.slice(-1)) || ''; 
+      if (newSeries >= 1 && newSeries <= 8) {
+          setSeries(newSeries);
+          setReps(Array(newSeries).fill(''));
       }
-    };
+  };
+  
+  
 
     const handleRepsChange = (index, value) => {
       const newReps = [...reps];
@@ -137,7 +139,7 @@ export default function RoutineCreation() {
                 onClick={() => handleSelectExercise(exercise)}
               >
                 {isSmallScreen ? (
-                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '20W0px', color: 'white' }}>{exercise.name}</p></ListItemText>
+                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px', color: 'white' }}>{exercise.name}</p></ListItemText>
                 ) : (
                   <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80%', color: 'white' }}>{exercise.name}</p></ListItemText>
                 )}
@@ -276,6 +278,7 @@ export default function RoutineCreation() {
         setFailure(true);
         setTimeout(() => {
             setFailure(false);
+            window.location.reload()
         }, 3000);
       };
     } else {
@@ -433,15 +436,15 @@ export default function RoutineCreation() {
                 <div className="input-small-container">
                     <label htmlFor="desc" style={{color:'#424242'}}>Series:</label>
                     <input 
-                    type="number" 
-                    id="series" 
-                    name="series" 
-                    value={series}
-                    min="1"
-                    step='1'
-                    max="8"
-                    onChange={handleSeriesChange}
-                    />
+                      type="number" 
+                      id="series" 
+                      name="series" 
+                      value={series}
+                      max="8"
+                      min="1"
+                      onInput={(e) => e.target.value = e.target.value.replace(/^0+/, '')} // Elimina ceros iniciales
+                      onChange={handleSeriesChange}
+/>
                 </div>
                 <div className="input-small-container">
                     <label htmlFor="timing" style={{color:'#424242'}}>Timing:</label>
