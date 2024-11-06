@@ -877,7 +877,7 @@ export default function Main_Page() {
       return 'Wednesday'
     } else if (diaEspañol=='Jueves'){
       return 'Thursday'
-    } else if (diaEspañol=='Vienres') {
+    } else if (diaEspañol=='Viernes') {
       return 'Friday'
     } else if (diaEspañol=='Sabado') {
       return 'Saturday'

@@ -201,6 +201,7 @@ export default function CoachMemberships() {
                                         name="price1" 
                                         value={price1}
                                         step={0.01}
+                                        min={0.00}
                                         onChange={(e) => {
                                             const formattedValue = parseFloat(e.target.value).toFixed(2);
                                             setPrice1(formattedValue)
@@ -232,6 +233,7 @@ export default function CoachMemberships() {
                                         name="price2" 
                                         value={price2}
                                         step={0.01}
+                                        min={0.00}
                                         onChange={(e) => {
                                             const formattedValue = parseFloat(e.target.value).toFixed(2);
                                             setPrice2(formattedValue)
@@ -263,6 +265,7 @@ export default function CoachMemberships() {
                                         name="price3" 
                                         value={price3}
                                         step={0.01}
+                                        min={0.00}
                                         onChange={(e) => {
                                             const formattedValue = parseFloat(e.target.value).toFixed(2);
                                             setPrice3(formattedValue)
