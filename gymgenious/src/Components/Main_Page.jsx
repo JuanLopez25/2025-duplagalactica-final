@@ -202,15 +202,11 @@ export default function Main_Page() {
                           {userMail && type==='client' && selectedEvent.BookedUsers.includes(userMail) && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
                           )}
-                          {userMail && type==='coach' && event.owner===userMail && (
-                            <>
                             {event.averageCalification!==0 && event.commentaries?.length!==0 ? (
                               <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
                             ) : (
                               <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
                             )}
-                            </>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -445,6 +441,7 @@ export default function Main_Page() {
     setComment(event)
     setChangingComment(true)
   }
+  
   const handleCloseModal = () => {
     setSelectedEvent(null);
   };
@@ -481,13 +478,29 @@ export default function Main_Page() {
       }
       const data3 = await response3.json();
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
-      console.log('comentarios: ', filteredComments)
+      const groupedComments = data3.reduce((acc, comment) => {
+        if (!acc[comment.cid]) {
+          acc[comment.cid] = { califications: [], commentaries: [] };
+        }
+        acc[comment.cid].califications.push(comment.calification);
+        acc[comment.cid].commentaries.push(comment.commentary);
+        return acc;
+      }, {});
+      
+      const aggregatedComments = Object.entries(groupedComments).map(([cid, details]) => ({
+        cid,
+        averageCalification: details.califications.reduce((sum, cal) => sum + cal, 0) / details.califications.length,
+        commentaries: details.commentaries
+      }));
+      
       const dataWithSalaAndComments = dataWithSala.map(clase => {
         const comment = filteredComments.find(c => c.cid === clase.id);
+        const comments = aggregatedComments.find(comment => comment.cid === clase.id) || { averageCalification: 0, commentaries: [] };
         return {
           ...clase,
           comentario: comment ? comment.commentary : null,
           puntuacion: comment ? comment.calification : -1,
+          ...comments
         };
       });
       
@@ -554,6 +567,7 @@ export default function Main_Page() {
       });
       const clases_que_se_toma_asistencia = clases_hoy.filter(clas=> clas.BookedUsers.length>0)
       setCantidadNotifications(clases_que_se_toma_asistencia.length-assitance_buscadas.length)
+      console.log(calendarEvents)
       setEvents(calendarEvents);
       setOpenCircularProgress(false)
       setClasses(calendarEvents);
@@ -769,7 +783,6 @@ export default function Main_Page() {
         return;
       }
       const formData = new FormData();
-      formData.append('misiones', missionProgressId);
       const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_missions', {
         method: 'DELETE', 
         headers: {
@@ -848,7 +861,6 @@ export default function Main_Page() {
       });
       const missions = await response4.json();
       const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.id)
-      console.log("misiones",missionsIds)
       const formData = new FormData();
       formData.append('misiones', missionsIds);
       if (missionsIds.length!=0) {
@@ -932,7 +944,6 @@ export default function Main_Page() {
         return template ? { ...mission, ...template } : mission;
       });
       setProgress(enrichedProgress)
-      console.log("progresos",enrichedProgress)
     } catch (e) {
     }
   }
@@ -959,7 +970,6 @@ export default function Main_Page() {
       setUserAccount(data)
       setType(data.type);
       
-      console.log("este es el usuario",data)
       const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
           method: 'GET', 
           headers: {
@@ -986,7 +996,6 @@ export default function Main_Page() {
       });
       const membresia = await response2.json();
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
-      console.log("membresia",firstFiler)
       setMembership(firstFiler)
     } catch (error) {
         console.error("Error fetching user:", error);

@@ -67,6 +67,23 @@ function UsserClasses() {
   const [errorStars, setErrorStars] = useState(false);
   const [errorComment, setErrorComment] = useState(false);
   const [newRows, setNewRows] = useState([]);
+  const [viewQualifications, setViewQualifications] = useState(false);
+
+  function HalfRatingCoach() {
+    return (
+      <Stack spacing={1}>
+        <Rating name="read-only"
+          value={selectedEvent.averageCalification}
+          precision={0.5}
+          readOnly
+          />
+      </Stack>
+    );
+  }
+
+  const handleViewQualifications = () => {
+    setViewQualifications(!viewQualifications)
+  }
 
   const handleCommentChange = (event) => {
     setComment(event)
@@ -208,15 +225,32 @@ function UsserClasses() {
       }
       const data3 = await response3.json();
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
-      console.log(filteredComments)
+      const groupedComments = data3.reduce((acc, comment) => {
+        if (!acc[comment.cid]) {
+          acc[comment.cid] = { califications: [], commentaries: [] };
+        }
+        acc[comment.cid].califications.push(comment.calification);
+        acc[comment.cid].commentaries.push(comment.commentary);
+        return acc;
+      }, {});
+      
+      const aggregatedComments = Object.entries(groupedComments).map(([cid, details]) => ({
+        cid,
+        averageCalification: details.califications.reduce((sum, cal) => sum + cal, 0) / details.califications.length,
+        commentaries: details.commentaries
+      }));
+      
       const dataWithSalaAndComments = dataWithSala.map(clase => {
         const comment = filteredComments.find(c => c.cid === clase.id);
+        const comments = aggregatedComments.find(comment => comment.cid === clase.id) || { averageCalification: 0, commentaries: [] };
         return {
           ...clase,
           comentario: comment ? comment.commentary : null,
           puntuacion: comment ? comment.calification : -1,
+          ...comments
         };
       });
+
       const calendarEvents = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -479,6 +513,11 @@ useEffect(() => {
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
+                          {event.averageCalification!==0 && event.commentaries?.length!==0 ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
+                            ) : (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>no qualifications</MDBBtn>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -780,6 +819,42 @@ useEffect(() => {
       {selectedEvent && (
         <ECommerce event={selectedEvent}/>
       )}
+       {viewQualifications && (
+        <div className="Modal" onClick={handleViewQualifications}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                {selectedEvent.name}
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 1,marginRight: '0px'}}>
+                     <label htmlFor="stars" style={{color:'#14213D'}}>Average Qualification:</label>
+                    <HalfRatingCoach/>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                <label htmlFor="stars" style={{color:'#14213D'}}>Comments:</label>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.commentaries.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewQualifications}>Close</button>
+          </div>
+        </div>
+      )}
       {califyModal && (
         <div className="Modal" onClick={handleChangeCalifyModal}>
         <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
@@ -816,8 +891,9 @@ useEffect(() => {
                   {errorComment && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a comment</p>)}
               </div>
           </div>
-          <button onClick={handleChangeCalifyModal}>Cancel</button>
-          <button onClick={() => saveCalification(selectedEvent)} style={{marginLeft:'10px'}}>Send</button>
+          
+          <button onClick={() => saveCalification(selectedEvent)} >Send</button>
+          <button onClick={handleChangeCalifyModal} style={{marginLeft:'10px'}}>Cancel</button>
         </div>
       </div>
       )}

@@ -1247,8 +1247,9 @@ function CouchClasses() {
                                   />
                                   {errorForm && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
                                 </div>
-                                <button onClick={handleEditClass} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
-                                <button onClick={saveClass} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save changes</button>
+                                <button onClick={saveClass} style={{width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save changes</button>
+                                <button onClick={handleEditClass} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%', marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px'}}>Cancel</button>
+                                
                         </div>
                     </div>
                 )}
