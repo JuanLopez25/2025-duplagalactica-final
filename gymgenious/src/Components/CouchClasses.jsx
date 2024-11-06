@@ -620,16 +620,19 @@ function CouchClasses() {
       }
       const assistance_references = await response4.json();
       const dataMatches = calendarEvents.map(evento => {
+        const fechaEvento = new Date(new Date(evento.start).setHours(new Date(evento.start).getHours() - 3));
         const comment = assistance_references.find(c => 
-          (c.cid === evento.cid) && 
-          (new Date(evento.start).toISOString().split('T')[0] === new Date(c.date).toISOString().split('T')[0])
+          (c.cid === evento.id) && 
+          (fechaEvento.toISOString().split('T')[0] === new Date(c.date).toISOString().split('T')[0])
         );
         return {
           ...evento,
           fecha: comment ? comment.date : null,
         };
       });
-      console.log("asi se ven las clases",dataMatches)
+      
+      console.log("asi se ven las clases",new Date(calendarEvents[6].start).toISOString().split('T'))
+      console.log("esta es la asistencia",calendarEvents[6])
       setClasses(dataMatches);
       setTotalClasses(dataMatches);
       setOpenCircularProgress(false);
