@@ -4,7 +4,7 @@ import logging
 import firebase_admin
 from firebase_admin import credentials, firestore
 from Controllers.classesController import get_assistance_route,add_assistance_route,add_calification_route,get_comments_route,get_classes_route, create_class_route,book_class_route,unbook_class_route,delete_class_route,update_class_info_route
-from Controllers.usersController import use_geme_route,get_unique_user_by_email_route ,get_user_route, send_email_route, create_user_route,get_users_route,get_coach_users_route,get_clients_users_route,get_client_users_no_match_routine_route,update_users_info_route
+from Controllers.usersController import leave_ranking_route,join_ranking_route,get_rankings_route,create_ranking_route,use_geme_route,get_unique_user_by_email_route ,get_user_route, send_email_route, create_user_route,get_users_route,get_coach_users_route,get_clients_users_route,get_client_users_no_match_routine_route,update_users_info_route
 from Controllers.excersicesController import create_exersice_route,get_excersice_by_owner_route,get_excersices_route,update_exer_info_route
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
 from Controllers.salasController import get_salas_route
@@ -138,8 +138,34 @@ def use_membership_class():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+    
+    
+@app.route('/join_ranking', methods=['PUT'])
+def join_ranking():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        rankingID = request.json.get('id')
+        userMail = request.json.get('user')
+        return join_ranking_route(rankingID,userMail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+    
 
-
+@app.route('/leave_ranking', methods=['PUT'])
+def leave_ranking():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        rankingID = request.json.get('id')
+        userMail = request.json.get('user')
+        return leave_ranking_route(rankingID,userMail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/unuse_membership_class', methods=['PUT'])
 def unuse_membership_class():
@@ -254,6 +280,18 @@ def get_user():
         password = request.args.get('password')
         mail = request.args.get('mail')
         return get_user_route(password,mail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+    
+    
+@app.route('/get_rankings', methods=['GET'])
+def get_rankings():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_rankings_route()
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -532,6 +570,18 @@ def create_routine():
         print("Error")
         return jsonify({'error':'Something went wrong'})
     
+    
+@app.route('/create_ranking', methods=['POST'])
+def create_ranking():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        newRanking = request.json
+        return create_ranking_route(newRanking)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/add_calification', methods=['PUT'])
 def add_calification():

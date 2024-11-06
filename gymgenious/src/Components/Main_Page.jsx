@@ -1057,7 +1057,7 @@ export default function Main_Page() {
               style={{
                   backgroundColor: '#48CFCB',
                   position: 'absolute',
-                  borderRadius: '50%',
+                  borderRadius: '25%',
                   width: '5vh',
                   height: '5vh',
                   minWidth: '0',
