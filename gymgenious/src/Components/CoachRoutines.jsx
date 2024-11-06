@@ -788,8 +788,8 @@ useEffect(() => {
                   <p><strong>Exercises:</strong> {selectedEvent.excercises.length}</p>
                   <p><strong>Users:</strong> {selectedEvent.cant_asignados}</p>
                       <button onClick={()=> handleEditRoutine(selectedEvent)} style={{width: '70%'}}>Edit routine</button>
-                      <button onClick={handleCloseModalEvent} style={{marginTop:'10px', width: '70%'}}>Close</button>
                       <button onClick={()=> handeDeleteRoutine(selectedEvent)} style={{marginTop:'10px', width: '70%'}}>Delete routine</button>
+                      <button onClick={handleCloseModalEvent} style={{marginTop:'10px', width: '70%'}}>Close</button>
                 </div>
               </div>
             )}
@@ -880,8 +880,9 @@ useEffect(() => {
                           {errorEditRoutine && (<p style={{color: 'red', margin: '0px'}}>No changes were done</p>)}
                       </div>
                     </div>
-                    <button onClick={handleCloseEditRoutine} className='button-create-account2' style={{width: isSmallScreen ? '70%' : '30%'}}>Cancel</button>
-                    <button onClick={saveRoutine} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '30%'}} className='button-create-account2'>Save changes</button>
+                    <button onClick={saveRoutine} style={{ width: isSmallScreen ? '70%' : '30%'}} className='button-create-account2'>Save changes</button>
+                    <button onClick={handleCloseEditRoutine} className='button-create-account2' style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px',width: isSmallScreen ? '70%' : '30%'}}>Cancel</button>
+
                 </div>
               </div>
             )}

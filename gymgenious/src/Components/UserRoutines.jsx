@@ -437,7 +437,7 @@ export default function StickyHeadTable() {
             )}
             {viewExercises && (
                 <div className="Modal" onClick={handleViewExercises}>
-                    <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
+                    <div className="Modal-Content-view-exercises" onClick={(e) => e.stopPropagation()}>
                         <h2>Exercises from {selectedEvent.routine}</h2>
                         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                             <TableContainer sx={{ maxHeight: 440 }}>
