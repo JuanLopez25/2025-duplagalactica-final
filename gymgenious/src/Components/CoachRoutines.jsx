@@ -797,7 +797,7 @@ useEffect(() => {
               <div className="Modal-edit-routine" onClick={handleCloseModal}>
                 <div className="Modal-Content-edit-routine" onClick={(e) => e.stopPropagation()}>
                   <h2>Routine details</h2>
-                    <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                    <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginBottom: '0px'}}>
                       <div className="input-small-container">
                         <label htmlFor="name" style={{color:'#14213D'}}>Name:</label>
                         <input
@@ -809,7 +809,7 @@ useEffect(() => {
                         />
                       </div>
                     </div>
-                    <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                    <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginBottom: '0px'}}>
                       <div className="input-small-container">
                         <label htmlFor="desc" style={{color:'#14213D'}}>Description:</label>
                         {/* <input 
@@ -830,7 +830,7 @@ useEffect(() => {
                           style={{maxHeight: '100px', width: '100%', borderRadius: '8px'}} />
                       </div>
                     </div>
-                    <div className="'grid-transfer-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                    <div className="'grid-transfer-container" style={{display:'flex', justifyContent: 'space-between',  marginTop: '0px'}}>
                       <div className="input-small-container">
                           
                           <div style={{flexDirection: 'column', display: 'flex'}}>
