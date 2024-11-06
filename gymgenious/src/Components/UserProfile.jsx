@@ -373,7 +373,7 @@ export default function CreateAccount() {
                     null
                 )}
                 <div className='user-profile-container'>
-                <section style={{ backgroundColor: '#eee' }}>
+                <section style={{ backgroundColor: '#eee', borderRadius: '8px'}}>
             <MDBContainer className="py-5">
               <MDBRow>
                 <MDBCol>
@@ -470,7 +470,7 @@ export default function CreateAccount() {
                     )}
                     </MDBCardBody>
                   </MDBCard>      
-                  <MDBRow>
+                  {/* <MDBRow>
                     {type=='client'? (
                         <>
                         <MDBCol md="6">
@@ -561,7 +561,7 @@ export default function CreateAccount() {
                         </>
                     )
                     }
-                  </MDBRow>
+                  </MDBRow> */}
                 </MDBCol>
               </MDBRow>
             </MDBContainer>

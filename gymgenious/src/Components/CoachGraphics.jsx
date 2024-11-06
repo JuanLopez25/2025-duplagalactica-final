@@ -99,9 +99,10 @@ function TopRoutines({ routines, isSmallScreen }) {
 
   function ExercisesVsUsers({exersCoachUsers, isSmallScreen}) {
     const [itemNb, setItemNb] = React.useState(5);
-    const orderedClasses = exersCoachUsers.sort((a, b) => b.amount - a.amount);
+    const orderedClasses = exersCoachUsers.sort((a, b) => b.count - a.count);
     const classesNames = orderedClasses?.map(clase => clase.exercise);
     const classesData = orderedClasses?.map(clase => clase.count);
+    console.log(orderedClasses)
   
     return (
       <Box sx={{
