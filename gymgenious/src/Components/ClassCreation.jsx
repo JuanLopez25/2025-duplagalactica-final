@@ -55,7 +55,7 @@ export default function CreateClass() {
   const [salaNoDisponible, setSalaNoDisponible] = useState(['1'])
   const day = (dateString) => {
     const date = new Date(dateString);
-    const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado','Domingo'];
+    const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado','Domingo'];
     return daysOfWeek[date.getDay()];
   };
 

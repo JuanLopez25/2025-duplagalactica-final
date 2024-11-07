@@ -783,6 +783,7 @@ export default function Main_Page() {
         return;
       }
       const formData = new FormData();
+      formData.append('misiones', missionProgressId);
       const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_missions', {
         method: 'DELETE', 
         headers: {
