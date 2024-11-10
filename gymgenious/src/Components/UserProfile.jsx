@@ -21,7 +21,7 @@ import {
   MDBCardImage,
   MDBBtn,
   MDBBreadcrumb,
-  MDBBreadcrumbItem,
+  MDBBreadcrumbItem, 
   MDBProgress,
   MDBProgressBar,
   MDBIcon,
@@ -29,10 +29,6 @@ import {
   MDBListGroup,
   MDBListGroupItem
 } from 'mdb-react-ui-kit';
-
-
-
-
 
 export default function CreateAccount() {
     const [name, setName] = useState('');
@@ -67,6 +63,7 @@ export default function CreateAccount() {
     const [type,setType] = useState('')
     const [createdClassesDays,setCreatedClassesDays] = useState(0);
     const isSmallScreen = useMediaQuery('(max-width:700px)');
+    
     const fetchUserInformation = async () => {
         setOpenCircularProgress(true);
         try {
@@ -376,8 +373,8 @@ export default function CreateAccount() {
                     null
                 )}
                 <div className='user-profile-container'>
-                <section style={{ backgroundColor: '#eee' }}>
-            <MDBContainer className="py-5">
+                <section style={{ backgroundColor: '#eee', borderRadius: '8px'}}>
+            <MDBContainer style={{paddingTop: '10px'}}>
               <MDBRow>
                 <MDBCol>
                   <MDBCard className="mb-4">
@@ -454,26 +451,26 @@ export default function CreateAccount() {
                     <hr style={{color:'#14213D'}}/>
                     {isDisabled ? (
                                 <>
-                                    <button className='button_create_account' style={{width:'70%'}} type="button" onClick={handleChangeModify}>
+                                    <button className='button_create_account' style={{width: isSmallScreen ? '70%' : ''}} type="button" onClick={handleChangeModify}>
                                         Modify data
                                     </button>
                                 </>
                             ) : (
                                 <>
-                                    <button className='button_create_account2' style={{width: isSmallScreen ? '37%' : ''}} type="button" onClick={goToChangePassword}>
+                                    <button className='button_create_account2' style={{width: isSmallScreen ? '70%' : '', marginBottom: isSmallScreen ? '10px' : ''}} type="button" onClick={goToChangePassword}>
                                         Change password
                                     </button>
-                                    <button onClick={handleSave} className='button_create_account2' style={{width: isSmallScreen ? '18%' : ''}}>
+                                    <button onClick={handleSave} className='button_create_account2' style={{width: isSmallScreen ? '70%' : '', marginBottom: isSmallScreen ? '10px' : ''}}>
                                         Save
                                     </button>
-                                    <button className='button_create_account2' style={{width: isSmallScreen ? '25%' : ''}} type="button" onClick={handleChangeModify}>
+                                    <button className='button_create_account2' style={{width: isSmallScreen ? '70%' : ''}} type="button" onClick={handleChangeModify}>
                                         Cancel
                                     </button>
                                 </>
                     )}
                     </MDBCardBody>
                   </MDBCard>      
-                  <MDBRow>
+                  {/* <MDBRow>
                     {type=='client'? (
                         <>
                         <MDBCol md="6">
@@ -564,7 +561,7 @@ export default function CreateAccount() {
                         </>
                     )
                     }
-                  </MDBRow>
+                  </MDBRow> */}
                 </MDBCol>
               </MDBRow>
             </MDBContainer>

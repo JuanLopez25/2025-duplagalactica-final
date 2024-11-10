@@ -6,7 +6,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
-import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -18,6 +17,8 @@ import Typography from '@mui/material/Typography';
 import Loader from '../real_components/loader.jsx';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineSharpIcon from '@mui/icons-material/AddCircleOutlineSharp';
+import Button from '@mui/material/Button';
+import SearchIcon from '@mui/icons-material/Search';
 
 function intersection(a, b) {
   return a.filter((value) => b.includes(value));
@@ -30,6 +31,26 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningFetchingUsers, setWarningFetchingUsers] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:950px)');
+
+  const [openSearch, setOpenSearch] = useState(false);
+  const [filterUsers, setFilterUsers] = useState('');
+  const [totalUsers, setTotalUsers] = useState([]);
+
+  const handleOpenSearch = () => {
+    setOpenSearch(true);
+  };
+
+  const handleCloseSearchUsers = () => {
+    setOpenSearch(false);
+    const totalUsersCorrected = totalUsers.reduce((acc, current) => {
+      const x = acc.find(item => item.Mail === current.Mail);
+      if (!x) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+    setUsers(totalUsersCorrected);
+  };
   
   useEffect(() => {
     onUsersChange(selectedUsers); 
@@ -71,6 +92,7 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
       const filteredRowsRight = allUsers.filter(user => assignedUsers.includes(user.Mail));
       setUsers(filteredRows);
       setSelectedUsers(filteredRowsRight);
+      setTotalUsers(filteredRows.concat(filteredRowsRight));
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -83,6 +105,30 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   };
 
   useEffect(() => {
+    if(filterUsers!=''){
+      const filteredUsersSearcher = totalUsers
+      .filter(item => item.Mail.toLowerCase().startsWith(filterUsers.toLowerCase()))
+      .reduce((acc, current) => {
+        const x = acc.find(item => item.Mail === current.Mail);
+        if (!x) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+      setUsers(filteredUsersSearcher);
+    } else {
+      const totalUsersCorrected = totalUsers.reduce((acc, current) => {
+        const x = acc.find(item => item.Mail === current.Mail);
+        if (!x) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+      setUsers(totalUsersCorrected);
+    }
+  }, [filterUsers]);
+
+  useEffect(() => {
     if (routine && routineDay) {
       fetchUsers();
     } else {
@@ -92,10 +138,12 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   }, [routine,routineDay]);
 
   const handleAddUser = (user) => {
+      handleCloseSearchUsers();
       setSelectedUsers([...selectedUsers, user]);
   };
 
   const handleDeleteUser = (user) => {
+    handleCloseSearchUsers();
     const updatedSelectedUsers = selectedUsers.filter(stateUser => stateUser.Mail !== user.Mail);
     setSelectedUsers(updatedSelectedUsers);
   }
@@ -114,7 +162,11 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
               role="listitem"
               onClick={() => handleDeleteUser(user)}
             >
-              <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '98%', color: 'white' }}>{user.Mail}</p></ListItemText>
+              {isSmallScreen ? (
+                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px', color: 'white' }}>{user.Mail}</p></ListItemText>
+                ) : (
+                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80%', color: 'white' }}>{user.Mail}</p></ListItemText>
+                )}
               <DeleteIcon sx={{color:'white'}}/>
             </ListItemButton>
             ) : (
@@ -123,7 +175,11 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
               role="listitem"
               onClick={() => handleAddUser(user)}
             >
-              <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '98%' }}>{user.Mail}</p></ListItemText>
+              {isSmallScreen ? (
+                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{user.Mail}</p></ListItemText>
+                ) : (
+                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80%' }}>{user.Mail}</p></ListItemText>
+                )}
               <AddCircleOutlineSharpIcon/>
             </ListItemButton>
             )}
@@ -143,19 +199,50 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
             </Typography>
           </Grid>
         ) : (
-          <>
-            {users.length===0 ? (
-              <Grid item>
-              <Typography sx={{ color: '#424242', fontWeight: 'bold', textAlign: 'center', backgroundColor: 'white' }}>
-                There are no users
-              </Typography>
-            </Grid>
-            ) : (
               <div className="input-small-container">
-              <Grid className='grid-transfer-content-users' item>{customList(users)}</Grid>
+                {openSearch ? (
+                      <input
+                      type="text"
+                      className="search-input"
+                      placeholder="Search..."
+                      style={{
+                      borderRadius: '10px',
+                      transition: 'all 0.3s ease',
+                      width: isSmallScreen ? '60%' : '30%',
+                      marginBottom: isSmallScreen ? '3%' : '1%',
+                      }}
+                      id={filterUsers}
+                      onChange={(e) => setFilterUsers(e.target.value)} 
+                  />
+                  ) : (
+                  <Button onClick={handleOpenSearch}
+                  style={{
+                      backgroundColor: '#48CFCB',  
+                      marginBottom: isSmallScreen ? '3%' : '1%',
+                      borderRadius: '50%',
+                      width: '5vh',
+                      height: '5vh',
+                      minWidth: '0',
+                      minHeight: '0',
+                      padding: '0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                  }}
+                  >
+                  <SearchIcon sx={{ color: '#424242' }} />
+                  </Button>
+                  )}
+                  {users.length===0 ? (
+                    <Grid item>
+                    <Typography sx={{ color: '#424242', fontWeight: 'bold', textAlign: 'center', backgroundColor: 'white' }}>
+                      There are no users
+                    </Typography>
+                  </Grid>
+                  ) : (
+                <Grid className='grid-transfer-content-users' item>{customList(users)}</Grid>
+                  )}
               </div>
-            )}
-          </>
         )}
       {openCircularProgress ? (
         <Backdrop

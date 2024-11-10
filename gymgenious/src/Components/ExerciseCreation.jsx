@@ -1,6 +1,7 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
@@ -10,7 +11,9 @@ import Slide from '@mui/material/Slide';
 import {jwtDecode} from "jwt-decode";
 import { Button } from '@mui/material';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
+
 export default function ExerciseCreation() {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
@@ -22,6 +25,7 @@ export default function ExerciseCreation() {
   const [failure, setFailure] = useState(false);
   const [errors, setErrors] = useState([]);
   const [failureErrors, setFailureErrors] = useState(false);
+  const isSmallScreen = useMediaQuery('(max-width:700px)');
 
   const validateForm = () => {
     let errors = [];
@@ -69,6 +73,7 @@ export default function ExerciseCreation() {
         setSuccess(true);
         setTimeout(() => {
             setSuccess(false);
+            window.location.reload()
         }, 3000);
       } catch (error) {
         console.error("Error al crear el ejercicio:", error);
@@ -137,13 +142,21 @@ export default function ExerciseCreation() {
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
               <div className="input-small-container">
                   <label htmlFor="desc" style={{color:'#14213D'}}>Desc:</label>
-                  <input 
+                  {/* <input 
                   type="text" 
                   id="desc" 
                   name="desc" 
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)} 
-                  />
+                  /> */}
+                  <textarea 
+                  onChange={(e) => setDesc(e.target.value)}
+                  name="desc"
+                  id="desc"
+                  rows={4}
+                  value={desc}
+                  maxLength={300}
+                  style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}} />
               </div>
           </div>
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>

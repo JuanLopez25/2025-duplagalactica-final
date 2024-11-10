@@ -1,6 +1,7 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import { auth } from '../firebase-config.js';
 import {signInWithEmailAndPassword } from 'firebase/auth';
@@ -10,7 +11,8 @@ import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +23,7 @@ export default function Login() {
   const [verifyEmail, setVerifyEmail] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [errorLogin, setErrorLogin] = useState(false);
+  const isSmallScreen = useMediaQuery('(max-width:700px)');
 
   const goToCreateAccount = () => {
     navigate('/create-account');
@@ -31,6 +34,7 @@ export default function Login() {
   };
 
   const loginUser = async (e) => {
+    setVerifyEmail(false);
     setErrorLogin(false)
     setOpenCircularProgress(true);
     e.preventDefault(); 
@@ -41,7 +45,6 @@ export default function Login() {
       if (!user.emailVerified) {
         setOpenCircularProgress(false);
         setVerifyEmail(true);
-        setTimeout(() => setVerifyEmail(false), 3000);
         return;
       }
       const token = await user.getIdToken();
@@ -109,8 +112,9 @@ export default function Login() {
                       onChange={(e) => setPassword(e.target.value)} 
                     />
                   </div>
-                  {errorLogin && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Credentials or server error.</p>)}
-                  <button type="submit" className='button_login'>
+                  {errorLogin && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Credentials or server error</p>)}
+                  {verifyEmail && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Please verify your mail</p>)}
+                  <button type="submit" className='button_login' style={{width: isSmallScreen ? '70%' : '40%'}}>
                     Login
                   </button>
                 </form>
@@ -152,21 +156,6 @@ export default function Login() {
                     </Slide>
                   </Box>
                 </div>
-            </div>
-          ) : (
-            null
-          )}
-          { verifyEmail ? (
-            <div className='alert-container'>
-              <div className='alert-content'>
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                <Slide direction="up" in={verifyEmail} mountOnEnter unmountOnExit >
-                    <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
-                      Please verify your email address before logging in.
-                    </Alert>
-                  </Slide>
-                </Box>
-              </div>
             </div>
           ) : (
             null

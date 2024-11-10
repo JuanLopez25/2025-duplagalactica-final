@@ -21,7 +21,10 @@ import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+import Button from '@mui/material/Button';
+import SearchIcon from '@mui/icons-material/Search';
+
 function BarAnimation({ routines, isSmallScreen }) {
     const [itemNb, setItemNb] = React.useState(5);
 
@@ -41,32 +44,34 @@ function BarAnimation({ routines, isSmallScreen }) {
       label: routine.name,
       value: routine.cant_asignados, 
     }));
-  
+
     return (
         <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%',backgroundColor:'#F5F5F5',marginTop:'10px',borderRadius:'10px',marginLeft:'2px' }}>
-          <BarChart 
+          <BarChart
             height={250}
             series={[{
               data: routineData.slice(0, itemNb),
+              valueFormatter: (item) => `${item} users`,
             }]}
             xAxis={[{
               scaleType: 'band',
               data: routineNames.slice(0, itemNb),
-            }]}
+            }]}   
           />
           {!isSmallScreen && (
           <PieChart
             height={250}
              legend= {{ hidden: true }}
-                series={[{data: routinesData.slice(0,itemNb),
+                series={[{
+                  data: routinesData.slice(0,itemNb),
                   innerRadius: 50,
-                  arcLabel:(params) => params.label ?? '',
-                  arcLabelMinAngle: 20,
-                  valueFormatter: (item) => `${item.value} users`,                  
+                  // arcLabel:(params) => params.label ?? '',
+                  // arcLabelMinAngle: 20,
+                  valueFormatter: (item) => `${item.value} users`,              
                 }]}
           />
         )}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 250 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 220, textAlign: 'center', marginRight: '1%' }}>
             <Typography id="input-item-number" gutterBottom>
               Routines number
             </Typography>
@@ -102,7 +107,7 @@ function TopRoutines() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const isSmallScreen250 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen250 = useMediaQuery('(max-width:360px)');
   const [routines, setRoutines] = useState([]);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
@@ -111,6 +116,20 @@ function TopRoutines() {
   const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [maxHeight, setMaxHeight] = useState('600px');
   const [viewExercises, setViewExercises] = useState(false);
+  const [type, setType] = useState(null);
+
+  const [openSearch, setOpenSearch] = useState(false);
+  const [filterRoutines, setFilterRoutines] = useState('');
+  const [totalRoutines, setTotalRoutines] = useState([]);
+
+  const handleOpenSearch = () => {
+    setOpenSearch(true);
+  };
+
+  const handleCloseSearch = () => {
+    setOpenSearch(false);
+    setRoutines(totalRoutines);
+  };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -124,6 +143,7 @@ function TopRoutines() {
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
+    handleCloseSearch();
 };
 
   const handleCloseModal = () => {
@@ -225,6 +245,7 @@ const fetchRoutines = async () => {
       });
 
       setRoutines(routinesWithAssignedCount);
+      setTotalRoutines(routinesWithAssignedCount);
       setOpenCircularProgress(false);
   } catch (error) {
       console.error("Error fetching rutinas:", error);
@@ -236,6 +257,16 @@ const fetchRoutines = async () => {
   }
 };
 
+useEffect(() => {
+  if(filterRoutines!=''){
+    const filteredRoutinesSearcher = totalRoutines.filter(item => 
+      item.name.toLowerCase().startsWith(filterRoutines.toLowerCase())
+    );
+    setRoutines(filteredRoutinesSearcher);
+  } else {
+    setRoutines(totalRoutines);
+  }
+}, [filterRoutines]);
 
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
@@ -263,6 +294,37 @@ const fetchRoutines = async () => {
             console.error('No token found');
         }
       }, []);
+
+      useEffect(() => {
+        if (userMail) {
+            fetchUser();
+        }
+    }, [userMail]);
+
+    const fetchUser = async () => {
+      setOpenCircularProgress(true);
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          console.error('Token no disponible en localStorage');
+          return;
+        }
+        const encodedUserMail = encodeURIComponent(userMail);
+        const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+          if (!response.ok) {
+              throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+          }
+          const data = await response.json();
+          setType(data.type);
+      } catch (error) {
+          console.error("Error fetching user:", error);
+      }
+    };
     
       useEffect(() => {
         if (userMail) {
@@ -303,6 +365,43 @@ const fetchRoutines = async () => {
         ) : (
           <>
             <NewLeftBar/>
+            <div className='input-container' style={{marginLeft: isSmallScreen ? '60px' : '50px', width: isSmallScreen ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
+                        <div className='input-small-container'>
+                            {openSearch ? (
+                                <input
+                                type="text"
+                                className="search-input"
+                                placeholder="Search..."
+                                style={{
+                                position: 'absolute',
+                                borderRadius: '10px',
+                                padding: '0 10px',
+                                transition: 'all 0.3s ease',
+                                }}
+                                id={filterRoutines}
+                                onChange={(e) => setFilterRoutines(e.target.value)} 
+                            />
+                            ) : (
+                            <Button onClick={handleOpenSearch}
+                            style={{
+                                backgroundColor: '#48CFCB',
+                                position: 'absolute',
+                                borderRadius: '50%',
+                                width: '5vh',
+                                height: '5vh',
+                                minWidth: '0',
+                                minHeight: '0',
+                                padding: '0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                            >
+                            <SearchIcon sx={{ color: '#424242' }} />
+                            </Button>
+                            )}
+                            </div>
+                    </div>
             <div className="Table-Container">
             <Box sx={{ width: '100%', flexWrap: 'wrap', background: '#F5F5F5', border: '2px solid #424242', borderRadius: '10px' }}>
               <Paper
@@ -444,14 +543,14 @@ const fetchRoutines = async () => {
                   <p><strong>Exercises:</strong> {selectedEvent.excercises.length}</p>
                   <p><strong>Users:</strong> {selectedEvent.cant_asignados}</p>
                   <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Owner:</strong> {selectedEvent.owner}</p>
-                  <button onClick={handleViewExercises}>View exercises</button>
-                  <button onClick={handleCloseModal} style={{marginLeft:'10px'}}>Close</button>
+                  <button onClick={handleViewExercises} style={{width: isSmallScreen ? '70%' : '40%'}}>View exercises</button>
+                  <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '40%'}}>Close</button>
                 </div>
               </div>
             )}
             {viewExercises && (
                 <div className="Modal" onClick={handleViewExercises}>
-                    <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
+                    <div className="Modal-Content-view-exercises" onClick={(e) => e.stopPropagation()}>
                         <h2>Exercises from {selectedEvent.routine}</h2>
                         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                             <TableContainer sx={{ maxHeight: 440 }}>

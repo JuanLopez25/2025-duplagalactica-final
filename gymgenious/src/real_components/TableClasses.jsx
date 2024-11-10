@@ -21,14 +21,14 @@ import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import CloseIcon from '@mui/icons-material/Close';
 
-function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClass, handleSelectEvent }) {
+function EnhancedTable({ newRows, user, userType, handleSelectEvent }) {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const isSmallScreen400 = useMediaQuery('(max-width:400px)');
+  const isSmallScreen400 = useMediaQuery('(max-width:360px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
   const isMobileScreen = useMediaQuery('(min-height:750px)');
@@ -61,7 +61,6 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
     setSelectedEvent(null);
   };
 
-
   useEffect(() => {
     if(isSmallScreen400 || isSmallScreen500) {
       setRowsPerPage(10);
@@ -77,7 +76,7 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
 
   const visibleRows = React.useMemo(
     () =>
-      [...rows]
+      [...newRows]
         .sort((a, b) =>
           order === 'asc'
             ? a[orderBy] < b[orderBy]
@@ -88,7 +87,7 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
             : 1
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, rows]
+    [order, orderBy, page, rowsPerPage, newRows]
   );
 
   return (
@@ -144,12 +143,12 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
                 {!isSmallScreen400 && (
                   <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
                     <TableSortLabel
-                      active={orderBy === 'dateInicio'}
-                      direction={orderBy === 'dateInicio' ? order : 'asc'}
-                      onClick={(event) => handleRequestSort(event, 'dateInicio')}
+                      active={orderBy === 'start'}
+                      direction={orderBy === 'start' ? order : 'asc'}
+                      onClick={(event) => handleRequestSort(event, 'start')}
                     >
                       Date
-                      {orderBy === 'dateInicio' ? (
+                      {orderBy === 'start' ? (
                         <Box component="span" sx={visuallyHidden}>
                           {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                         </Box>
@@ -185,11 +184,18 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
               ) : (
                 <>
                   {visibleRows.map((row) => {
-                    const isTransparent = user && userType === 'client' &&
-                      (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-                      (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) &&
-                      (row.BookedUsers.length<row.capacity);
-
+                    const conditions = (
+                      (row.permanent === 'No' &&
+                        (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+                        (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
+                        )
+                        ||
+                      (row.permanent === 'Si' && 
+                        (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
+                        (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+                      )
+                    )
+                    const isTransparent = user && userType === 'client' && conditions;
                     return (
                       <TableRow
                         onClick={() => handleSelectEvent(row)}
@@ -209,7 +215,7 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
                           <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
                         )}
                         {!isSmallScreen400 && (
-                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.dateInicio))}</TableCell>
+                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
                         )}
                         {!isSmallScreen600 && (
                           <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
@@ -228,7 +234,7 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
               <TablePagination
                 rowsPerPageOptions={[10]}
                 component="div"
-                count={rows.length}
+                count={newRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 sx={{color:'#424242'}}
@@ -238,7 +244,7 @@ function EnhancedTable({ rows, user, userType, handleBookClass, handleUnbookClas
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={rows.length}
+                count={newRows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 sx={{color:'#424242'}}

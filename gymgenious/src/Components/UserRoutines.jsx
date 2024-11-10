@@ -20,7 +20,8 @@ import DaySelection from '../real_components/DaySelection.jsx';
 import { useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+
 export default function StickyHeadTable() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -373,7 +374,7 @@ export default function StickyHeadTable() {
                                         </TableRow>
                                     ) : (
                                         visibleRows.map((row) => (
-                                        <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #ccc' }}>
+                                        <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={`${row.id}-${row.day}`} sx={{ cursor: 'pointer', borderBottom: '1px solid #ccc' }}>
                                             <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
                                             {row.routine}
                                             </TableCell>
@@ -426,17 +427,17 @@ export default function StickyHeadTable() {
                         <h2>Routine details</h2>
                         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Name:</strong> {routine.name}</p>
                         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Description:</strong> {routine.description}</p>
-                        <p><strong>Day:</strong> {routine.day}</p>
+                        <p><strong>Day:</strong> {selectedEvent.day}</p>
                         <p><strong>Exercises:</strong> {routine.excercises ? routine.excercises.length : 0}</p>
                         <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Owner:</strong> {routine.owner}</p>
-                        <button onClick={handleViewExercises}>View exercises</button>
-                        <button onClick={handleCloseModal} style={{marginLeft:'10px'}}>Close</button>
+                        <button onClick={handleViewExercises} style={{width: isSmallScreen ? '70%' : '40%'}}>View exercises</button>
+                        <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '40%'}}>Close</button>
                     </div>
                 </div>
             )}
             {viewExercises && (
                 <div className="Modal" onClick={handleViewExercises}>
-                    <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
+                    <div className="Modal-Content-view-exercises" onClick={(e) => e.stopPropagation()}>
                         <h2>Exercises from {selectedEvent.routine}</h2>
                         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                             <TableContainer sx={{ maxHeight: 440 }}>

@@ -16,7 +16,9 @@ import ListItemText from '@mui/material/ListItemText';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineSharpIcon from '@mui/icons-material/AddCircleOutlineSharp';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+import Button from '@mui/material/Button';
+import SearchIcon from '@mui/icons-material/Search';
 
 export default function RoutineCreation() {
     const [name, setName] = useState('');
@@ -41,13 +43,28 @@ export default function RoutineCreation() {
     const [timing, setTiming] = useState(0);
     const [errorAddExercise, setErrorAddExercise] = useState(false);
 
-    const handleSeriesChange = (e) => {
-      const newSeries = parseInt(e.target.value);
-      if(newSeries>=0 && newSeries<=8) {
-        setSeries(newSeries);
-        setReps(Array(newSeries).fill(''));
-      }
+    const [openSearch, setOpenSearch] = useState(false);
+    const [filterExercises, setFilterExercises] = useState('');
+    const [totalExercises, setTotalExercises] = useState([]);
+  
+    const handleOpenSearch = () => {
+      setOpenSearch(true);
     };
+  
+    const handleCloseSearch = () => {
+      setOpenSearch(false);
+      setExercises(totalExercises);
+    };
+
+    const handleSeriesChange = (e) => {
+      const newSeries = parseInt(e.target.value.slice(-1)) || ''; 
+      if (newSeries >= 1 && newSeries <= 8) {
+          setSeries(newSeries);
+          setReps(Array(newSeries).fill(''));
+      }
+  };
+  
+  
 
     const handleRepsChange = (index, value) => {
       const newReps = [...reps];
@@ -94,6 +111,7 @@ export default function RoutineCreation() {
     };
 
     const handleSelectExercise = (exercise) => {
+      handleCloseSearch();
       setSelectedExercise(exercise);
       if(routineExercises?.some(stateExercise => stateExercise.id === exercise.id)){
         setOpenAdvise(true);
@@ -108,7 +126,7 @@ export default function RoutineCreation() {
 
     const customList = (items) => (
       <div className='transfer-list'>
-        <List dense component="div" role="list">
+        <List dense component="div" role="list" sx={{maxHeight: '200px'}}>
           {items.map((exercise) => {
             const labelId = `transfer-list-item-${exercise.name}-label`;
             return (
@@ -121,7 +139,7 @@ export default function RoutineCreation() {
                 onClick={() => handleSelectExercise(exercise)}
               >
                 {isSmallScreen ? (
-                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '20W0px', color: 'white' }}>{exercise.name}</p></ListItemText>
+                  <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px', color: 'white' }}>{exercise.name}</p></ListItemText>
                 ) : (
                   <ListItemText id={labelId}><p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80%', color: 'white' }}>{exercise.name}</p></ListItemText>
                 )}
@@ -177,6 +195,7 @@ export default function RoutineCreation() {
         const exercisesDataFromTrainMate = await response2.json();
         const totalExercises = exercisesData.concat(exercisesDataFromTrainMate.exercises)
         setExercises(totalExercises);
+        setTotalExercises(totalExercises);
         setOpenCircularProgress(false);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -187,6 +206,18 @@ export default function RoutineCreation() {
         }, 3000);
       }
     };
+
+    useEffect(() => {
+      if(filterExercises!=''){
+        const filteredExercisesSearcher = totalExercises.filter(item => 
+          item.name.toLowerCase().startsWith(filterExercises.toLowerCase())
+        );
+        setExercises(filteredExercisesSearcher);
+      } else {
+          setExercises(totalExercises);
+      }
+  
+    }, [filterExercises]);
 
     const validateForm = () => {
       let errors = [];
@@ -247,6 +278,7 @@ export default function RoutineCreation() {
         setFailure(true);
         setTimeout(() => {
             setFailure(false);
+            window.location.reload()
         }, 3000);
       };
     } else {
@@ -313,19 +345,62 @@ export default function RoutineCreation() {
           </div>
           <div className="input-create-routine-container" style={{display:'flex', justifyContent: 'space-between'}}>
           <div className="input-small-container">
-                  <label htmlFor="desc" style={{color:'#424242'}}>Description:</label>
-                  <input 
+                  <label htmlFor="desc" style={{color:'#424242'}}>Desc:</label>
+                  {/* <input 
                   type="text" 
                   id="desc" 
                   name="desc" 
                   value={desc} 
                   onChange={(e) => setDesc(e.target.value)} 
-                  />
+                  /> */}
+                  <textarea 
+                  onChange={(e) => setDesc(e.target.value)}
+                  name="desc"
+                  id="desc"
+                  rows={4}
+                  value={desc}
+                  maxLength={300}
+                  style={{maxHeight: '100px', width: '100%', borderRadius: '8px'}} />
               </div>
           </div>
           <div className="'grid-transfer-container" style={{display:'flex', justifyContent: 'space-between'}}>
             <div className="input-small-container">
+                <div style={{flexDirection: 'column', display: 'flex'}}>
                 <label htmlFor="users" style={{ color: '#424242' }}>Exercises:</label>
+                {openSearch ? (
+                                <input
+                                type="text"
+                                className="search-input"
+                                placeholder="Search..."
+                                style={{
+                                borderRadius: '10px',
+                                transition: 'all 0.3s ease',
+                                marginBottom: isSmallScreen ? '3%' : '1%',
+                                width: isSmallScreen ? '60%' : '30%'
+                                }}
+                                id={filterExercises}
+                                onChange={(e) => setFilterExercises(e.target.value)} 
+                            />
+                            ) : (
+                            <Button onClick={handleOpenSearch}
+                            style={{
+                                backgroundColor: '#48CFCB',  
+                                marginBottom: isSmallScreen ? '3%' : '1%',
+                                borderRadius: '50%',
+                                width: '5vh',
+                                height: '5vh',
+                                minWidth: '0',
+                                minHeight: '0',
+                                padding: '0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                            >
+                            <SearchIcon sx={{ color: '#424242' }} />
+                            </Button>
+                            )}
+                </div>
                 {exercises.length!=0 ? (
                   <Grid className='grid-transfer-content' item>{customList(exercises)}</Grid>
                 ) : (
@@ -361,15 +436,15 @@ export default function RoutineCreation() {
                 <div className="input-small-container">
                     <label htmlFor="desc" style={{color:'#424242'}}>Series:</label>
                     <input 
-                    type="number" 
-                    id="series" 
-                    name="series" 
-                    value={series}
-                    min="1"
-                    step='1'
-                    max="8"
-                    onChange={handleSeriesChange}
-                    />
+                      type="number" 
+                      id="series" 
+                      name="series" 
+                      value={series}
+                      max="8"
+                      min="1"
+                      onInput={(e) => e.target.value = e.target.value.replace(/^0+/, '')} // Elimina ceros iniciales
+                      onChange={handleSeriesChange}
+/>
                 </div>
                 <div className="input-small-container">
                     <label htmlFor="timing" style={{color:'#424242'}}>Timing:</label>
@@ -401,8 +476,8 @@ export default function RoutineCreation() {
                 {errorAddExercise && (<p style={{color: 'red', margin: '0px'}}>Complete all fields</p>)}
               </div>
             </div>
-            <button onClick={() => handleAddExercise(selectedExercise)}>Add exercise</button>
-            <button onClick={handleCloseModal} style={{marginLeft: '10px'}}>Close</button>
+            <button onClick={() => handleAddExercise(selectedExercise)} style={{width: isSmallScreen ? '70%' : '30%'}}>Add exercise</button>
+            <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '30%'}}>Close</button>
           </div>
         </div>
       )}

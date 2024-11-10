@@ -19,7 +19,10 @@ import Slide from '@mui/material/Slide';
 import { jwtDecode } from "jwt-decode";
 import CheckIcon from '@mui/icons-material/Check';
 import { useNavigate } from 'react-router-dom';
-import Loader from '../real_components/loader.jsx'
+import Loader from '../real_components/loader.jsx';
+import Button from '@mui/material/Button';
+import SearchIcon from '@mui/icons-material/Search';
+
 export default function CoachExercises() {
     const [order, setOrder] = useState('asc');
     const [id,setId] = useState()
@@ -47,7 +50,20 @@ export default function CoachExercises() {
     const[fetchName,setNameFetch] = useState('')
     const[fetchDes,setDescFetch] = useState('')
     const[fetchOwner,setOwnerFetch] = useState('')
-    const[fetchExer,setExercise] = useState({})
+    const[fetchExer,setExercise] = useState({});
+
+    const [openSearch, setOpenSearch] = useState(false);
+    const [filterExercises, setFilterExercises] = useState('');
+    const [totalExercises, setTotalExercises] = useState([]);
+  
+    const handleOpenSearch = () => {
+      setOpenSearch(true);
+    };
+  
+    const handleCloseSearch = () => {
+      setOpenSearch(false);
+      setExercises(totalExercises);
+    };
 
 
     const handleRequestSort = (event, property) => {
@@ -67,6 +83,7 @@ export default function CoachExercises() {
 
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
+        handleCloseSearch();
     };
 
     const handleCloseModalEvent = () => {
@@ -133,6 +150,7 @@ export default function CoachExercises() {
             const totalExercises = exercisesData.concat(exercisesDataFromTrainMate.exercises)
             const totalExercisesCorrected = await correctExercisesData(totalExercises);
             setExercises(totalExercisesCorrected);
+            setTotalExercises(totalExercisesCorrected);
             setOpenCircularProgress(false);
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -143,6 +161,18 @@ export default function CoachExercises() {
             }, 3000);
         }
     };
+
+    useEffect(() => {
+        if(filterExercises!=''){
+          const filteredExercisesSearcher = totalExercises.filter(item => 
+            item.name.toLowerCase().startsWith(filterExercises.toLowerCase())
+          );
+          setExercises(filteredExercisesSearcher);
+        } else {
+            setExercises(totalExercises);
+        }
+    
+      }, [filterExercises]);
 
     const verifyToken = async (token) => {
         try {
@@ -292,6 +322,43 @@ export default function CoachExercises() {
             ) : (
                 <>
                     <NewLeftBar />
+                    <div className='input-container' style={{marginLeft: isSmallScreen650 ? '60px' : '50px', width: isSmallScreen650 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
+                        <div className='input-small-container'>
+                            {openSearch ? (
+                                <input
+                                type="text"
+                                className="search-input"
+                                placeholder="Search..."
+                                style={{
+                                position: 'absolute',
+                                borderRadius: '10px',
+                                padding: '0 10px',
+                                transition: 'all 0.3s ease',
+                                }}
+                                id={filterExercises}
+                                onChange={(e) => setFilterExercises(e.target.value)} 
+                            />
+                            ) : (
+                            <Button onClick={handleOpenSearch}
+                            style={{
+                                backgroundColor: '#48CFCB',
+                                position: 'absolute',
+                                borderRadius: '50%',
+                                width: '5vh',
+                                height: '5vh',
+                                minWidth: '0',
+                                minHeight: '0',
+                                padding: '0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                            >
+                            <SearchIcon sx={{ color: '#424242' }} />
+                            </Button>
+                            )}
+                            </div>
+                    </div>
                     {openCircularProgress && (
                         <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={openCircularProgress}>
                             <Loader></Loader>
@@ -475,9 +542,9 @@ export default function CoachExercises() {
                                     }} 
                                 />
                                 {selectedEvent.owner==userMail? (
-                                <button onClick={()=> handleEditExercise(selectedEvent)}>Edit exercise</button>
+                                <button style={{width: isSmallScreen650 ? '70%' : '30%'}} onClick={()=> handleEditExercise(selectedEvent)}>Edit exercise</button>
                                 ) :(<></>)}                            
-                                <button onClick={handleCloseModalEvent} style={{marginLeft:'10px'}}>Close</button>
+                                <button onClick={handleCloseModalEvent} style={{marginTop: isSmallScreen650 ? '10px' : '', marginLeft: isSmallScreen650 ? '' : '10px', width: isSmallScreen650 ? '70%' : '30%'}}>Close</button>
                             </div>
                         </div>
                     )}
@@ -501,13 +568,21 @@ export default function CoachExercises() {
                                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                                         <div className="input-small-container">
                                             <label htmlFor="desc" style={{color:'#14213D'}}>Desc:</label>
-                                            <input 
+                                            {/* <input 
                                             type="text" 
                                             id="desc" 
                                             name="desc" 
                                             value={desc || selectedEvent.description}
                                             onChange={(e) => setDesc(e.target.value)} 
-                                            />
+                                            /> */}
+                                            <textarea 
+                                                onChange={(e) => setDesc(e.target.value)}
+                                                name="desc"
+                                                id="desc"
+                                                rows={4}
+                                                value={desc || selectedEvent.description}
+                                                maxLength={300}
+                                                style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}} />
                                         </div>
                                     </div>
                                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -524,8 +599,8 @@ export default function CoachExercises() {
                                         />
                                         </div>
                                     </div>
-                                    <button type="submit" className='button_login'>Save</button>                            
-                                    <button onClick={handleCloseModal} style={{merginTop:'10px'}} className='button_login'>Cancel</button>
+                                    <button type="submit" className='button_login' style={{width: isSmallScreen650 ? '70%' : '30%'}}>Save</button>                            
+                                    <button onClick={handleCloseModal} className='button_login' style={{marginTop: isSmallScreen650 ? '10px' : '', marginLeft: isSmallScreen650 ? '' : '10px', width: isSmallScreen650 ? '70%' : '30%'}}>Cancel</button>
                                 </form>
                             </div>
                         </div>

@@ -61,6 +61,17 @@ def send_email(to_email):
         return False
     
 
+def get_rankings():
+    try:
+        users_ref = db.collection('rankings')
+        docs = users_ref.stream()
+        users = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return users
+    except Exception as e:
+        print(f"Error al obtener los rankings: {e}")
+        raise RuntimeError("No se pudo obtener los rankings")
+
+
 def get_users():
     try:
         users_ref = db.collection('users')
@@ -137,3 +148,72 @@ def update_client_user(newUser):
         print(f"Error actualizando el usuario: {e}")
         raise RuntimeError("No se pudo actualizar el usuario")
 
+def use_geme(mail):
+    try:
+        users_ref = db.collection('users')
+        docs = users_ref.where('Mail', '==', mail).stream()
+        updated = False
+        for doc in docs:
+            doc_ref = users_ref.document(doc.id)
+            doc = doc_ref.get()
+            cant_gemas = doc.to_dict().get('Gemas',' ')
+            doc_ref.update({
+                'Gemas': cant_gemas-1
+            })
+            updated = True
+
+        if not updated:
+            print(f"No se encontró un usuario con el correo: {newUser.Mail}")
+        return {"message": "Actualización realizada"} 
+    except Exception as e:
+        print(f"Error actualizando el usuario: {e}")
+        raise RuntimeError("No se pudo actualizar el usuario")
+    
+
+
+def create_ranking(newRanking):
+    try:
+        ranking_ref = db.collection('rankings').add(newRanking)
+        created_ranking = {**newRanking}
+        return created_ranking
+    except Exception as e:
+        print(f"Error al crear el ranking: {e}")
+        raise RuntimeError("No se pudo crear el ranking")
+    
+    
+def join_ranking(rankingID,userMail): 
+    try:
+        users_ref = db.collection('rankings')
+        doc_ref = users_ref.document(rankingID)
+        doc = doc_ref.get()
+        if doc.exists: 
+            current_data = doc.to_dict()
+            booked_users = current_data.get('participants', [])
+            if userMail not in booked_users:
+                booked_users.append(userMail)
+            doc_ref.update({
+                'participants': booked_users
+            })
+        return {"message": "Actualización realizada"}
+    except Exception as e:
+        print(f"Error actualizando el usuario: {e}")
+        raise RuntimeError("No se pudo actualizar el usuario")
+
+
+def leave_ranking(rankingID,userMail): 
+    try:
+        users_ref = db.collection('rankings')
+        doc_ref = users_ref.document(rankingID)
+        doc = doc_ref.get()
+        print("datos",rankingID,userMail)
+        if doc.exists: 
+            current_data = doc.to_dict()
+            booked_users = current_data.get('participants', [])
+            updated_participants = [user for user in booked_users if user != userMail]
+            doc_ref.update({
+                'participants': updated_participants
+            })
+        return {"message": "Actualización realizada"}
+    except Exception as e:
+        print(f"Error actualizando el usuario: {e}")
+        raise RuntimeError("No se pudo actualizar el usuario")

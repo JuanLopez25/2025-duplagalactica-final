@@ -15,6 +15,26 @@ def get_classes():
         print(f"Error al obtener las clases: {e}")
         raise RuntimeError("No se pudo obtener las clases")
 
+def get_comments():
+    try:
+        classes_ref = db.collection('califications')
+        docs = classes_ref.stream()
+        classes = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return classes
+    except Exception as e:
+        print(f"Error al obtener las clases: {e}")
+        raise RuntimeError("No se pudo obtener las clases")
+
+def get_assistance():
+    try:
+        classes_ref = db.collection('classAssistance')
+        docs = classes_ref.stream()
+        classes = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return classes
+    except Exception as e:
+        print(f"Error al obtener las clases: {e}")
+        raise RuntimeError("No se pudo obtener las clases")
+    
 def create_class(new_class):
     try:
         class_ref = db.collection('classes').add(new_class)
@@ -23,6 +43,43 @@ def create_class(new_class):
     except Exception as e:
         print(f"Error al crear la clase: {e}")
         raise RuntimeError("No se pudo crear la clase")
+    
+
+def add_assistance(class_assistance,fecha,uid):
+    try:
+        new_assist = {'date':fecha,'cid':class_assistance,'uid':uid}
+        class_ref = db.collection('classAssistance').add(new_assist)
+        created_class = {**new_assist}
+        return created_class
+    except Exception as e:
+        print(f"Error al crear la clase: {e}")
+        raise RuntimeError("No se pudo crear la clase")
+
+def add_calification(classId, calification, commentary, userId):
+    try:
+        new_calification = {
+            'cid': classId,
+            'uid': userId,
+            'calification': calification,
+            'commentary': commentary
+        }
+        ref = db.collection('califications')
+        docs = list(ref.where('uid', '==', userId).where('cid', '==', classId).stream())
+        
+        if docs:
+            for doc in docs:
+                ref.document(doc.id).update({
+                    'calification': calification,
+                    'commentary': commentary
+                })
+            return new_calification 
+        else:
+            ref.add(new_calification)
+            return new_calification 
+    except Exception as e:
+        print(f"Error al crear la calificación: {e}")
+        raise RuntimeError("No se pudo crear la calificación")
+
 
 
 def book_class(event, mail):
