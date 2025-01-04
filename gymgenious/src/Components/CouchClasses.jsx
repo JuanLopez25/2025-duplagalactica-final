@@ -4,6 +4,7 @@ import { Box, useMediaQuery } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import { QRCodeCanvas } from "qrcode.react";
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
@@ -104,6 +105,38 @@ function CouchClasses() {
     );
   }
 
+  const EventQRCode = ({ selectedEvent}) => {
+    const [qrToken, setQrToken] = useState(null);
+    useEffect(() => {
+      const fetchToken = async () => {
+        try {
+          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token/${selectedEvent.id}`);
+          const data = await response.json();
+          setQrToken(data.token);
+        } catch (error) {
+          console.error("Error al obtener el token:", error);
+        }
+      };
+  
+      fetchToken();
+    }, [selectedEvent.id]);
+  
+    if (!qrToken) {
+      return <div>Cargando token...</div>;
+    }
+  
+    return (
+      <div>
+        <h2>Escanea este código QR para marcar tu asistencia</h2>
+        <QRCodeCanvas value={`https://2025-duplagalactica-final.vercel.app/mark-attendance?token=${qrToken}`} size={256} />
+        <p>Evento: {selectedEvent.name}</p>
+        <p>Fecha: {selectedEvent.date}</p>
+        <p>Ubicación: {selectedEvent.location}</p>
+      </div>
+    );
+  };
+  
+
   const toggleUserSelection = (userId) => {
     setSelectedUsers((prev) =>
       prev.includes(userId)
@@ -127,7 +160,7 @@ function CouchClasses() {
       console.error('Token no disponible en localStorage');
       return;
     }
-    const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_users`, {
+    const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_users`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -147,7 +180,7 @@ function CouchClasses() {
       const formData = new FormData();
       formData.append('usuarios', allUsers);
       formData.append('selectedEvent',selectedEvent.id);
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_class_use', {
+      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/update_class_use', {
           method: 'PUT', 
           headers: {
               'Authorization': `Bearer ${authToken}`
@@ -161,7 +194,7 @@ function CouchClasses() {
     const formData3 = new FormData();
     formData3.append('usuarios', updatedSelectedUsers);
     formData3.append('selectedEvent',selectedEvent.id);
-    const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_missions', {
+    const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/add_missions', {
         method: 'POST', 
         headers: {
             'Authorization': `Bearer ${authToken}`
@@ -175,7 +208,7 @@ function CouchClasses() {
     formData4.append('selectedEvent',selectedEvent.id);
     formData4.append('fecha',formatDate(new Date(selectedEvent.start)))
     formData4.append('uid',userAccount.uid)
-    const response4 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_assistance', {
+    const response4 = await fetch('https://two025-duplagalactica-final.onrender.com/add_assistance', {
         method: 'POST', 
         headers: {
             'Authorization': `Bearer ${authToken}`
@@ -228,7 +261,7 @@ function CouchClasses() {
           console.error('Token no disponible en localStorage');
           return;
         }
-        const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_salas`, {
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_salas`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -327,7 +360,7 @@ function CouchClasses() {
           return;
         }
 
-        const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
         if (!response2.ok) {
             throw new Error('Error al obtener las clases: ' + response2.statusText);
         }
@@ -427,7 +460,7 @@ function CouchClasses() {
         formData.append('Permanent',permanent || fetchPermanent);
         formData.append('sala', salaAssigned || fetchSala);
         formData.append('capacity', maxNum || fetchCapacity);
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_class_info', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_class_info', {
             method: 'PUT', 
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -485,7 +518,7 @@ function CouchClasses() {
           console.error('Token no disponible en localStorage');
           return;
         }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_class', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/delete_class', {
         method: 'DELETE', 
         headers: {
           'Content-Type': 'application/json',
@@ -518,22 +551,23 @@ function CouchClasses() {
           console.error('Token no disponible en localStorage');
           return;
         }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
       if (!response.ok) {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
+      //console.log("primero response",response.json())
       const data = await response.json();
       const filteredClasses = data.filter(event => event.owner == userMail);
       if(filteredClasses.length===0){
         setOpenCircularProgress(false)
         return;
       }
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_salas');
+      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
       const salas = await response2.json();
-  
+      //console.log("segundo response",response2.json())
       const dataWithSala = filteredClasses.map(clase => {
         const salaInfo = salas.find(sala => sala.id === clase.sala);
         return {
@@ -542,7 +576,7 @@ function CouchClasses() {
         };
       });
 
-      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
+      const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
@@ -617,13 +651,14 @@ function CouchClasses() {
         }
       });
       const argentinaDateOptions = { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' };
-      const response4 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assistance', {
+      const response4 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assistance', {
         method: 'GET'
       });
       if (!response4.ok) {
         throw new Error('Error al obtener las salas: ' + response4.statusText);
       }
       const assistance_references = await response4.json();
+      console.log(calendarEvents)
       const dataMatches = calendarEvents.map(evento => {
         const fechaEvento = new Date(new Date(evento.start).setHours(new Date(evento.start).getHours() - 3));
         const comment = assistance_references.find(c => 
@@ -636,8 +671,6 @@ function CouchClasses() {
         };
       });
       
-      console.log("asi se ven las clases",new Date(calendarEvents[6].start).toISOString().split('T'))
-      console.log("esta es la asistencia",calendarEvents[6])
       setClasses(dataMatches);
       setTotalClasses(dataMatches);
       setOpenCircularProgress(false);
@@ -737,7 +770,7 @@ function CouchClasses() {
         return;
       }
       const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -1132,29 +1165,7 @@ function CouchClasses() {
                 </Paper>
                 {openCheckList && (
                   <div className="Modal" style={{zIndex:'1001'}}>
-                    <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
-                      <h2>Check List</h2>
-                        {selectedEvent?.BookedUsers?.length!==0 ? (
-                          <>
-                          <div className="check-list-container">
-                            {selectedEvent?.BookedUsers?.map((user, index) => (
-                              <div key={index} className="check-list-item"  >
-                                {user}
-                                <Checkbox
-                                  checked={selectedUsers.includes(user)}
-                                  onChange={() => toggleUserSelection(user)}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                          </>
-                        ) : (
-                          <li>There are not booked users</li>
-                        )}
-                      
-                    <button onClick={closeCheckList} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%'}}>Cancel</button>
-                    <button onClick={saveCheckList} style={{marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px', width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save</button>
-                    </div>
+                  <EventQRCode selectedEvent={selectedEvent}/>
                   </div>
                 )}
                 {editClass && (

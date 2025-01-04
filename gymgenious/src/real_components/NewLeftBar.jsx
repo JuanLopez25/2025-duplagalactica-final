@@ -51,6 +51,7 @@ export default function TemporaryDrawer() {
   const goToCoachMemberships = () => navigate('/coach-memberships');
   const goToUserMemberships = () => navigate('/user-memberships');
   const goToRankings = () => navigate('/user-rankings');
+  const goToAssistance = () => navigate('/assistance');
 
   const navigateTo = (index) => {
     const routes = [
@@ -79,6 +80,7 @@ export default function TemporaryDrawer() {
       goToUserRoutines,
       goToTopRoutines,
       goToUserMemberships,
+      goToAssistance,
       goToLogout,
     ];
     routes[index]();
@@ -141,7 +143,7 @@ export default function TemporaryDrawer() {
   const DrawerListClient = (
     <Box sx={{ width: 250, background: '#424242' }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        {['Home', 'Profile', 'Booked classes', 'Rankings', 'My routines', 'Top routines', 'Memberships', 'Logout'].map((text, index) => (
+        {['Home', 'Profile', 'Booked classes', 'Rankings', 'My routines', 'Top routines', 'Memberships','Take assistance','Logout'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton onClick={() => navigateFromUserTo(index)}>
               <ListItemIcon>
@@ -152,7 +154,8 @@ export default function TemporaryDrawer() {
                 {index === 4 && <SportsIcon sx={{ color: '#48CFCB' }} />}
                 {index === 5 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
                 {index === 6 && <ShoppingCartIcon sx={{ color: '#48CFCB' }} />}
-                {index === 7 && <ExitToApp sx={{ color: '#48CFCB' }} />}
+                {index === 7 && <ShoppingCartIcon sx={{ color: '#48CFCB' }} />}
+                {index === 8 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />
             </ListItemButton>
@@ -165,7 +168,7 @@ export default function TemporaryDrawer() {
   const fetchUser = async () => {
     try {
       const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`);
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`);
         if (!response.ok) {
             throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
         }

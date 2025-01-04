@@ -24,6 +24,8 @@ import CoachGraphics from './Components/CoachGraphics.jsx';
 import CoachMemberships from './Components/CoachMemberships.jsx';
 import UserMemberships from './Components/UserMemberships.jsx';
 import UserRankings from './Components/UserRanking.jsx';
+import Assitance from './Components/Assistance.jsx';
+import MarkAttendance from './Components/TakeAssistWithQR.jsx';
 
 function App() {
   return (
@@ -51,6 +53,9 @@ function App() {
         <Route path="/coach-memberships" element={<CoachMemberships/>}/>
         <Route path="/user-memberships" element={<UserMemberships/>}/>
         <Route path="/user-rankings" element={<UserRankings/>}/>
+        <Route path="/assistance" element={<Assitance/>}/>
+        <Route path="/mark-attendance" element={<MarkAttendance/>}/>
+        
       </Routes>
     </Router>
   );

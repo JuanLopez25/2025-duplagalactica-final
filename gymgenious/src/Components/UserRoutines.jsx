@@ -81,7 +81,7 @@ export default function StickyHeadTable() {
               console.error('Token no disponible en localStorage');
               return;
             }
-            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assigned_routines', {
+            const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -114,7 +114,7 @@ export default function StickyHeadTable() {
                 console.error('Token no disponible en localStorage');
                 return;
             }
-            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_routines', {
+            const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -125,7 +125,7 @@ export default function StickyHeadTable() {
             }
             const routines = await response.json();
             const filteredRows = routines.filter((row) => row.name === routineName);
-            const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_excersices', {
+            const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -225,7 +225,7 @@ export default function StickyHeadTable() {
               return;
             }
           const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`

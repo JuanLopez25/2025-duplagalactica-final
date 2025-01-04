@@ -163,7 +163,7 @@ function UsserClasses() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/unbook_class', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/unbook_class', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -200,13 +200,13 @@ function UsserClasses() {
           console.error('Token no disponible en localStorage');
           return;
         }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
       if (!response.ok) {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
       const data = await response.json();
       const filteredClasses = data.filter(event => event.BookedUsers.includes(userMail));
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_salas');
+      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
@@ -219,7 +219,7 @@ function UsserClasses() {
           salaInfo, 
         };
       });
-      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
+      const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
@@ -361,7 +361,7 @@ function UsserClasses() {
         console.log("evento",event)
         let starsValue = changingStars ? stars : event.puntuacion;
         let commentValue = changingComment ? comment : event.comentario;
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/add_calification', {
           method: 'PUT', 
           headers: {
             'Content-Type': 'application/json',
@@ -443,7 +443,7 @@ useEffect(() => {
         return;
       }
       const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`

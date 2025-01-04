@@ -39,7 +39,7 @@ export default function RoutineCreation() {
               console.error('Token no disponible en localStorage');
               return;
             }
-            const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_routines`, {
+            const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_routines`, {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -115,7 +115,7 @@ export default function RoutineCreation() {
                   console.error('Token no disponible en localStorage');
                   return;
                 }
-                const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_routines', {
+                const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
                     method: 'GET', 
                     headers: {
                       'Authorization': `Bearer ${authToken}`
@@ -134,7 +134,7 @@ export default function RoutineCreation() {
                     day: day,
                     routine: filteredRoutines[0].name
                 };
-                const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/assign_routine_to_user', {
+                const response = await fetch('https://two025-duplagalactica-final.onrender.com/assign_routine_to_user', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

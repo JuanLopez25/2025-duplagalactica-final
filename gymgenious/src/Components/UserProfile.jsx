@@ -73,7 +73,7 @@ export default function CreateAccount() {
               console.error('Token no disponible en localStorage');
               return;
             }
-            const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_users`, {
+            const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_users`, {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -90,7 +90,7 @@ export default function CreateAccount() {
             setEmailFetch(filteredRows[0].Mail);
             setDateFetch(filteredRows[0].Birthday);
             setUser(filteredRows[0]);
-            const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_assigned_routines`, {
+            const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_assigned_routines`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -100,7 +100,7 @@ export default function CreateAccount() {
             if (!response2.ok) {
                 throw new Error('Error al obtener los datos del usuario: ' + response2.statusText);
             }
-            const response5 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_excersices`, {
+            const response5 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_excersices`, {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -129,7 +129,7 @@ export default function CreateAccount() {
             setAssignedDays(uniqueAssignedDays.size)
             setAssignerRoutineAmount(fileredAssignerRoutine)
             setAssignedRoutines(filteredRows2);
-            const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_routines', {
+            const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -160,7 +160,7 @@ export default function CreateAccount() {
                     uniqueOwners.add(routine.matchedRoutine.owner);
                 }
             });
-            const response4 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes', {
+            const response4 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes', {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -220,7 +220,7 @@ export default function CreateAccount() {
               console.error('Token no disponible en localStorage');
               return;
             }
-            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_users_info', {
+            const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_users_info', {
                 method: 'PUT', 
                 headers: {
                     'Content-Type': 'application/json',
