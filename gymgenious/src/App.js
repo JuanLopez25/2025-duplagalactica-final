@@ -14,6 +14,7 @@ import UserProfile from './Components/UserProfile.jsx';
 import UserClasses from './Components/UserClasses.jsx';
 import CouchClasses from './Components/CouchClasses.jsx';
 import UserRoutines from './Components/UserRoutines.jsx';
+
 import Logout from './Components/Logout.jsx';
 import CoachRoutines from './Components/CoachRoutines.jsx';
 import CoachExercises from './Components/CoachExercises.jsx';
