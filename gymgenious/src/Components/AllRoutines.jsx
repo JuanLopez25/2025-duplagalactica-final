@@ -97,7 +97,7 @@ const handleSelectEvent = (event) => {
             console.error('Token no disponible en localStorage');
             return;
         }
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_routines', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -107,7 +107,7 @@ const handleSelectEvent = (event) => {
             throw new Error('Error al obtener las rutinas: ' + response.statusText);
         }
         const routines = await response.json();
-        const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assigned_routines', {
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -117,7 +117,7 @@ const handleSelectEvent = (event) => {
             throw new Error('Error al obtener las rutinas asignadas: ' + response2.statusText);
         }
         const assignedRoutines = await response2.json();
-        const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_excersices', {
+        const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -249,7 +249,7 @@ useEffect(() => {
             return;
           }
           const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`

@@ -257,7 +257,7 @@ function CoachRoutines() {
           console.error('Token no disponible en localStorage');
           return;
         }
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/update_routine_info', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_routine_info', {
             method: 'PUT', 
             headers: {
                 'Content-Type': 'application/json',
@@ -331,7 +331,7 @@ function CoachRoutines() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_routine', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/delete_routine', {
         method: 'DELETE', 
         headers: {
           'Content-Type': 'application/json',
@@ -363,7 +363,7 @@ function CoachRoutines() {
             console.error('Token no disponible en localStorage');
             return;
         }
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_routines', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
             method: 'GET', 
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -374,7 +374,7 @@ function CoachRoutines() {
         }
         const routines = await response.json();
         const filteredRoutines = routines.filter(event => event.owner.includes(userMail));
-        const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assigned_routines', {
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -384,7 +384,7 @@ function CoachRoutines() {
             throw new Error('Error al obtener las rutinas asignadas: ' + response2.statusText);
         }
         const assignedRoutines = await response2.json();
-        const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_excersices', {
+        const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -470,7 +470,7 @@ const fetchExercises = async () => {
       console.error('Token no disponible en localStorage');
       return;
     }
-    const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_excersices`, {
+    const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_excersices`, {
       method: 'GET', 
       headers: {
         'Authorization': `Bearer ${authToken}`
@@ -570,7 +570,7 @@ useEffect(() => {
             return;
           }
           const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`

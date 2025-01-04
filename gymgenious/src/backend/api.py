@@ -10,12 +10,45 @@ from Controllers.routineController import create_routine_route,assign_routine_to
 from Controllers.salasController import get_salas_route
 from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
 from Controllers.membershipController import edit_memb_price_route,get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
-
+import jwt
+import datetime
 
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+
+
+SECRET_KEY = 'mi_clave_secreta'
+
+def generate_token(event_id):
+    payload = {
+        'eventId': event_id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') 
+    return token
+
+@app.route('/generate-token/<event_id>', methods=['GET'])
+def generate_qr_token(event_id):
+    token = generate_token(event_id)  
+    return jsonify({'token': token}), 200
+
+@app.route('/attendance', methods=['GET'])
+def mark_attendance():
+    token = request.args.get('token')  
+    if not token:
+        return jsonify({'error': 'Token is required'}), 400
+
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        event_id = decoded_token['eventId']
+        return jsonify({'message': f'Asistencia marcada para el evento {event_id} por el usuario'}), 200
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token ha expirado'}), 400
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Token inválido'}), 400
 
 
 @app.route('/get_classes', methods=['GET'])

@@ -58,7 +58,7 @@ export default function ExerciseCreation() {
           console.error('Token no disponible en localStorage');
           return;
         }
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/create_exersice', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_exersice', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${authToken}`

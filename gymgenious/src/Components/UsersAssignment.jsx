@@ -64,7 +64,7 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const assignedResponse = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_assigned_routines`, {
+      const assignedResponse = await fetch(`https://two025-duplagalactica-final.onrender.com/get_assigned_routines`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -78,7 +78,7 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
       const assignedUsers = assignedUsersData2.flatMap(routine => 
         routine.users.map(user => user)
       );
-      const allUsersResponse = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_users`, {
+      const allUsersResponse = await fetch(`https://two025-duplagalactica-final.onrender.com/get_users`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`

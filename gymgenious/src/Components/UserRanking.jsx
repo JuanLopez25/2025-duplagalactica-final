@@ -108,7 +108,7 @@ export default function StickyHeadTable() {
             console.error('Token no disponible en localStorage');
             return;
             }
-            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_rankings', {
+            const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_rankings', {
             method: 'GET', 
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -119,7 +119,7 @@ export default function StickyHeadTable() {
             }
             const data = await response.json();
             const userRankings = data.filter(rank=>rank.participants.includes(userMail))
-            const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_users`, {
+            const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_users`, {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -179,7 +179,7 @@ export default function StickyHeadTable() {
                     console.error('Token no disponible en localStorage');
                     return;
                 }
-                const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/create_ranking', {
+                const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_ranking', {
                     method: 'POST',
                     headers: {
                     'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ export default function StickyHeadTable() {
                 if(alreadyJoined){
                     throw new Error('ya te has unido a este ranking')
                 }
-                const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_rankings', {
+                const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_rankings', {
                     method: 'GET', 
                     headers: {
                         'Authorization': `Bearer ${authToken}`
@@ -246,7 +246,7 @@ export default function StickyHeadTable() {
                 if (userRankings.length==0) {
                     throw new Error('No existe ningun ranking asi');
                 }
-                const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/join_ranking', {
+                const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/join_ranking', {
                     method: 'PUT', 
                     headers: {
                     'Content-Type': 'application/json',
@@ -282,7 +282,7 @@ export default function StickyHeadTable() {
                 console.error('Token no disponible en localStorage');
                 return;
             }
-            const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/leave_ranking', {
+            const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/leave_ranking', {
                 method: 'PUT', 
                 headers: {
                   'Content-Type': 'application/json',
@@ -347,7 +347,7 @@ export default function StickyHeadTable() {
               return;
             }
           const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`

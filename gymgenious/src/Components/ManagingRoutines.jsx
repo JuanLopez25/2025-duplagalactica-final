@@ -220,7 +220,7 @@ export default function ManagingRoutines () {
           return;
         }
       const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`
         , {
           method: 'GET', 
           headers: {
