@@ -454,13 +454,13 @@ export default function Main_Page() {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
       const data = await response.json();
-      
+      console.log(data)
       const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
       const salas = await response2.json();
-  
+      console.log(salas)
       const dataWithSala = data.map(clase => {
         const salaInfo = salas.find(sala => sala.id === clase.sala);
         return {
@@ -477,6 +477,7 @@ export default function Main_Page() {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
       const data3 = await response3.json();
+      console.log(data3)
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
       const groupedComments = data3.reduce((acc, comment) => {
         if (!acc[comment.cid]) {
@@ -553,6 +554,7 @@ export default function Main_Page() {
         throw new Error('Error al obtener las salas: ' + response4.statusText);
       }
       const assistance_references = await response4.json();
+      console.log(assistance_references)
       const assitance_buscadas = assistance_references.filter(asis=>asis.uid==userAccount.uid)
       const clases_del_profesor = calendarEvents.filter(clas => clas.owner==userMail)
       const year = today.getFullYear();

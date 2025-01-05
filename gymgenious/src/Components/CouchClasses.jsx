@@ -110,7 +110,7 @@ function CouchClasses() {
     useEffect(() => {
       const fetchToken = async () => {
         try {
-          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token/${selectedEvent.id}`);
+          const response = await fetch(`http://127.0.0.1:5000/generate-token/${selectedEvent.id}/${selectedEvent.dateFin}/${selectedEvent.dateInicio}`);
           const data = await response.json();
           setQrToken(data.token);
         } catch (error) {
@@ -137,7 +137,7 @@ function CouchClasses() {
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>Assistance for "{selectedEvent.name}"</MDBTypography>
                     </div>
                     <div style={{justifyContent:'center',left:'23%',alignContent:'center',width:'60%',position:'relative'}}>
-                      <QRCodeCanvas value={`https://2025-duplagalactica-final.vercel.app/mark-attendance?token=${qrToken}`} size={256} />
+                      <QRCodeCanvas value={`http://localhost:3000/mark-attendance?token=${qrToken}`} size={256} />
                     </div>
                     <button 
                         onClick={handleCloseCheckList}
