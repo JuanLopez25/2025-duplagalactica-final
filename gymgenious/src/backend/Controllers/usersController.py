@@ -25,9 +25,7 @@ def leave_ranking_route(rankingID,userMail):
 
 def get_unique_user_by_email_route(mail):
     try:
-        print(mail)
         user = get_unique_user_by_email(mail)
-        print("controller final",user)
         return jsonify(user), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404

@@ -39,14 +39,14 @@ const MarkAttendance = () => {
   useEffect(()=>{
     const fetchToken = async () => {
       try {
-        const tokenDataResponse = await fetch(`http://127.0.0.1:5000/get_decoded_token?token=${token}`);
+        const tokenDataResponse = await fetch(`https://two025-duplagalactica-final.onrender.com/get_decoded_token?token=${token}`);
         const dataToken = await tokenDataResponse.json()
         const eventId=dataToken.eventId
         const mailUsuario=userMail
         const dateInicio = dataToken.start
         const dateFin = dataToken.end
         console.log("asi se ve la data",dataToken)
-        const response = await fetch(`http://127.0.0.1:5000/generate-token-userSide/${eventId}/${dateFin}/${dateInicio}/${mailUsuario}`);
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token-userSide/${eventId}/${dateFin}/${dateInicio}/${mailUsuario}`);
         const data = await response.json();
         setNewToken(data.token);
       } catch (error) {
@@ -61,7 +61,7 @@ const MarkAttendance = () => {
   useEffect(() => {
     if (newToken) {
       try {
-        fetch(`http://127.0.0.1:5000/attendance?token=${newToken}`, {
+        fetch(`https://two025-duplagalactica-final.onrender.com/attendance?token=${newToken}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

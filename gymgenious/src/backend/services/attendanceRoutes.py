@@ -16,3 +16,11 @@ def mark_attendance(eventId,dateInicio,dateEnd,userMail):
         print(f"Error al crear la clase: {e}")
         raise RuntimeError("No se pudo crear la clase")
     
+def get_coach_clients_assistance():
+    try:
+        classes_ref = db.collection('assistedClasses').stream()
+        classes = [{'id': doc.id, **doc.to_dict()} for doc in classes_ref]
+        return classes
+    except Exception as e:
+        print(f"Error al obtener las asistencias: {e}")
+        raise RuntimeError("No se pudo obtener la información de asistencia")

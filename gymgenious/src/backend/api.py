@@ -10,7 +10,7 @@ from Controllers.routineController import create_routine_route,assign_routine_to
 from Controllers.salasController import get_salas_route
 from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
 from Controllers.membershipController import edit_memb_price_route,get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
-from Controllers.attendanceController import mark_attendance_route
+from Controllers.attendanceController import mark_attendance_route,get_coach_clients_assistance_route
 import jwt
 import datetime
 
@@ -95,6 +95,18 @@ def get_decoded_token():
 def get_classes():
     return get_classes_route()
 
+
+@app.route('/get_coach_clients_assistance', methods=['GET'])
+def get_coach_clients_assistance():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_coach_clients_assistance_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
 @app.route('/get_missions', methods=['GET'])
 def get_missions():
     return get_missions_route()
@@ -152,7 +164,6 @@ def update_class_info():
             'sala':sala,
             'capacity':capacity
         }
-        print(newUser)
         return update_class_info_route(newUser)
     except Exception as e:
         print("Error")
@@ -275,7 +286,6 @@ def update_class_use():
             return jsonify({'error':'Missing token'})
         usuarios = request.form.get('usuarios')
         event = request.form.get('selectedEvent')
-        print(usuarios)
         return update_class_use_route(usuarios,event)
     except Exception as e:
         print("Error")
@@ -288,7 +298,6 @@ def delete_missions():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         misiones = request.form.get('misiones')
-        print("llegue acs",misiones)
         
         return delete_missions_route(misiones)
     except Exception as e:
@@ -614,7 +623,6 @@ def create_exersice():
         description = request.form.get('description')
         owner = request.form.get('owner')        
         image = request.files.get('image')
-        print("asi se ve la imagen",image)
         image_data = None
         if image:
             image_data = image.read()  
@@ -625,7 +633,6 @@ def create_exersice():
             'owner': owner,
             'image': image_data 
         }
-        print(f'Datos recibidos: {name}, {description}, {owner}, {image}')
         return create_exersice_route(newExersice)
     except Exception as e:
         print("Error a")
