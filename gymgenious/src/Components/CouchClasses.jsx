@@ -110,7 +110,7 @@ function CouchClasses() {
     useEffect(() => {
       const fetchToken = async () => {
         try {
-          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token/${selectedEvent.id}`);
+          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token/${selectedEvent.id}/${selectedEvent.dateFin}/${selectedEvent.dateInicio}`);
           const data = await response.json();
           setQrToken(data.token);
         } catch (error) {
@@ -126,12 +126,36 @@ function CouchClasses() {
     }
   
     return (
-      <div>
-        <h2>Escanea este código QR para marcar tu asistencia</h2>
-        <QRCodeCanvas value={`https://2025-duplagalactica-final.vercel.app/mark-attendance?token=${qrToken}`} size={256} />
-        <p>Evento: {selectedEvent.name}</p>
-        <p>Fecha: {selectedEvent.date}</p>
-        <p>Ubicación: {selectedEvent.location}</p>
+      <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
+        visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseCheckList}>
+          <MDBContainer>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5">
+                <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
+                  <MDBCardBody className="p-4 text-black">
+                    <div>
+                      <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>Assistance for "{selectedEvent.name}"</MDBTypography>
+                    </div>
+                    <div style={{justifyContent:'center',left:'23%',alignContent:'center',width:'60%',position:'relative'}}>
+                      <QRCodeCanvas value={`https://2025-duplagalactica-final.vercel.app//mark-attendance?token=${qrToken}`} size={256} />
+                    </div>
+                    <button 
+                        onClick={handleCloseCheckList}
+                        className="custom-button-go-back-managing"
+                        style={{
+                          zIndex: '2',
+                          position: 'absolute', 
+                          top: '1%',
+                          left: isSmallScreen700 ? '88%' : '90%',
+                        }}
+                      >
+                        <CloseIcon sx={{ color: '#F5F5F5' }} />
+                      </button>
+                  </MDBCardBody>
+                </MDBCard>
+              </MDBCol>
+            </MDBRow>
+          </MDBContainer>
       </div>
     );
   };
@@ -319,6 +343,9 @@ function CouchClasses() {
   };
   const handleCloseModal = () => {
     setSelectedEvent(null);
+  };
+  const handleCloseCheckList = () => {
+    setOpenCheckList(null);
   };
   const handleEditClass = (selectedEvent) => {
     setEditClass(!editClass);
@@ -775,7 +802,7 @@ function CouchClasses() {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
-    });
+      });
         if (!response.ok) {
             throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
         }

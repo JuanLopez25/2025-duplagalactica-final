@@ -8,7 +8,6 @@ import logging
 def get_unique_user_by_email(mail):
     try:
         users_collection = db.collection('users')
-        print("llegamos al final", mail)
         query = users_collection.where('Mail', '==', mail).stream()
         users = [doc.to_dict() for doc in query]
         
@@ -17,7 +16,6 @@ def get_unique_user_by_email(mail):
             user_ref = users_collection.where('Mail', '==', mail).stream()
             user_id = [doc.id for doc in user_ref][0]  
             user['id'] = user_id
-            print("final",user)
             return user
         else:
             raise ValueError('No existen usuarios con ese mail')

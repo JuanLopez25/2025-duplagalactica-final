@@ -10,6 +10,7 @@ from Controllers.routineController import create_routine_route,assign_routine_to
 from Controllers.salasController import get_salas_route
 from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
 from Controllers.membershipController import edit_memb_price_route,get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
+from Controllers.attendanceController import mark_attendance_route,get_coach_clients_assistance_route
 import jwt
 import datetime
 
@@ -21,20 +22,40 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 SECRET_KEY = 'mi_clave_secreta'
 
-def generate_token(event_id):
+def generate_token(event_id,date_fin,date_inicio):
     payload = {
         'eventId': event_id,
+        'start': date_inicio,
+        'end':date_fin,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') 
     return token
 
-@app.route('/generate-token/<event_id>', methods=['GET'])
-def generate_qr_token(event_id):
-    token = generate_token(event_id)  
+def generate_token_userSide(event_id,date_fin,date_inicio,user_id):
+    payload = {
+        'eventId': event_id,
+        'userMail':user_id,
+        'start': date_inicio,
+        'end':date_fin,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') 
+    return token
+
+
+@app.route('/generate-token/<event_id>/<date_fin>/<date_inicio>', methods=['GET'])
+def generate_qr_token(event_id,date_fin,date_inicio):
+    token = generate_token(event_id,date_fin,date_inicio)  
     return jsonify({'token': token}), 200
 
-@app.route('/attendance', methods=['GET'])
+@app.route('/generate-token-userSide/<event_id>/<date_fin>/<date_inicio>/<user_id>', methods=['GET'])
+def generate_qr_token_userSide(event_id,date_fin,date_inicio,user_id):
+    token = generate_token_userSide(event_id,date_fin,date_inicio,user_id)  
+    return jsonify({'token': token}), 200
+
+
+@app.route('/attendance', methods=['POST'])
 def mark_attendance():
     token = request.args.get('token')  
     if not token:
@@ -43,8 +64,27 @@ def mark_attendance():
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
         event_id = decoded_token['eventId']
-        return jsonify({'message': f'Asistencia marcada para el evento {event_id} por el usuario'}), 200
+        dateInicio = decoded_token['start']
+        dateEnd = decoded_token['end']
+        userMail = decoded_token['userMail']
+        return mark_attendance_route(event_id,dateInicio,dateEnd,userMail)
 
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token ha expirado'}), 400
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Token inválido'}), 400
+
+@app.route('/get_decoded_token', methods=['GET'])
+def get_decoded_token():
+    token = request.args.get('token')  
+    if not token:
+        return jsonify({'error': 'Token is required'}), 400
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        event_id = decoded_token['eventId']
+        dateInicio = decoded_token['start']
+        dateEnd = decoded_token['end']
+        return {'eventId':event_id,'start':dateInicio,'end':dateEnd}
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token ha expirado'}), 400
     except jwt.InvalidTokenError:
@@ -54,6 +94,18 @@ def mark_attendance():
 @app.route('/get_classes', methods=['GET'])
 def get_classes():
     return get_classes_route()
+
+
+@app.route('/get_coach_clients_assistance', methods=['GET'])
+def get_coach_clients_assistance():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_coach_clients_assistance_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/get_missions', methods=['GET'])
 def get_missions():
@@ -112,7 +164,6 @@ def update_class_info():
             'sala':sala,
             'capacity':capacity
         }
-        print(newUser)
         return update_class_info_route(newUser)
     except Exception as e:
         print("Error")
@@ -235,7 +286,6 @@ def update_class_use():
             return jsonify({'error':'Missing token'})
         usuarios = request.form.get('usuarios')
         event = request.form.get('selectedEvent')
-        print(usuarios)
         return update_class_use_route(usuarios,event)
     except Exception as e:
         print("Error")
@@ -248,7 +298,6 @@ def delete_missions():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         misiones = request.form.get('misiones')
-        print("llegue acs",misiones)
         
         return delete_missions_route(misiones)
     except Exception as e:
@@ -574,7 +623,6 @@ def create_exersice():
         description = request.form.get('description')
         owner = request.form.get('owner')        
         image = request.files.get('image')
-        print("asi se ve la imagen",image)
         image_data = None
         if image:
             image_data = image.read()  
@@ -585,7 +633,6 @@ def create_exersice():
             'owner': owner,
             'image': image_data 
         }
-        print(f'Datos recibidos: {name}, {description}, {owner}, {image}')
         return create_exersice_route(newExersice)
     except Exception as e:
         print("Error a")
