@@ -2205,3 +2205,128 @@ iframe {
     flex: 1 1 calc(48% - 16px);
   }
 }
+
+
+
+
+
+/* Contenedor principal */
+.container {
+  max-width: 900px;
+  gap: 0.5rem; /* Espaciado entre elementos */
+  display: grid;
+  grid-template-columns: repeat(12, 1fr); /* 12 columnas de igual tamaño */
+  grid-template-rows: repeat(2, auto); /* 2 filas automáticas */
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Card general */
+.card {
+  grid-column: span 12;
+  height: 300px;
+}
+
+@media (min-width: 640px) {
+  .card {
+    grid-column: span 4;
+  }
+}
+
+.card-large {
+  grid-column: span 12;
+  height: 300px;
+}
+
+@media (min-width: 640px) {
+  .card-large {
+    grid-column: span 5;
+  }
+}
+
+.card-extra-large {
+  grid-column: span 12;
+  height: 300px;
+}
+
+@media (min-width: 640px) {
+  .card-extra-large {
+    grid-column: span 7;
+  }
+}
+
+/* CardHeader */
+.card-header {
+  position: absolute;
+  z-index: 10;
+  top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.card-header h4 {
+  color: white;
+  font-weight: 500;
+  font-size: 1.25rem;
+}
+
+.card-header p {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Imagen */
+.image {
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-scaled {
+  transform: scale(1.25);
+  transform: translateY(-1.5rem);
+}
+
+/* CardFooter */
+.card-footer {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.3);
+  bottom: 0;
+  border-top: 1px solid rgba(166, 166, 166, 0.5);
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-footer-dark {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(51, 51, 51, 0.6);
+}
+
+.card-footer p {
+  font-size: 0.75rem;
+  color: black;
+}
+
+.card-footer button {
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  background-color: #3490dc;
+  color: white;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+/* Botón general */
+.button {
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  background-color: #3490dc;
+  color: white;
+  font-size: 0.75rem;
+  cursor: pointer;
+}

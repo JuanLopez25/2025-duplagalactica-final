@@ -1,48 +1,34 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
+import { QrReader } from 'react-qr-reader';
+import { useNavigate } from "react-router-dom";
 
-const CameraPage = () => {
-  const [hasPermission, setHasPermission] = useState(false);
+const QrScanner = () => {
   const [error, setError] = useState(null);
-  const videoRef = useRef(null);
+  const navigate = useNavigate(); 
 
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        setHasPermission(true);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => {
-        console.error("Error al acceder a la cámara:", err);
-        setError("No se pudo acceder a la cámara.");
-      });
+  const handleScan = (data) => {
+    if (data) {
+      navigate(data);
+    }
+  };
 
-    // Limpiar el stream cuando el componente se desmonta
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject;
-        const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
-  }, []);
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!hasPermission) {
-    return <div>Esperando permisos para acceder a la cámara...</div>;
-  }
+  const handleError = (err) => {
+    console.error("Error al escanear QR:", err);
+    setError("No se pudo leer el código QR.");
+  };
 
   return (
-    <div>
-      <h1>Usa tu Cámara</h1>
-      <video ref={videoRef} autoPlay playsInline style={{ width: "100%" }} />
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <h1>Lector de QR</h1>
+      <QrReader
+        delay={300}
+        style={{ width: "100%" }}
+        onError={handleError}
+        onScan={handleScan}
+      />
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };
 
-export default CameraPage;
+export default QrScanner;
