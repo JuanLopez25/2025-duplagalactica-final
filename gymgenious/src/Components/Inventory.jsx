@@ -33,10 +33,10 @@ function CouchClasses() {
   const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [type, setType] = useState(null);
   const [selectedEvent,setSelectedEvent] = useState(null);
-  
+  const [itemData,setItemData] = useState([])
   function calculateRemainingAmount(item) {
-    const sumOfSublistValues = item.reservas.reduce((acc, sublist) => acc + sublist[1], 0);
-    return item.totalAmount - sumOfSublistValues;
+    const sumOfSublistValues = item.reservas.reduce((acc, obj) => acc + obj.cantidad, 0);
+    return item.total - sumOfSublistValues;
   }
 
   function CardExample() {
@@ -83,98 +83,68 @@ function CouchClasses() {
     setSelectedEvent(null);
   };
   
-  const itemData = [
-    {
-      img: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1522770179533-24471fcdba45',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
-      name: 'Breakfast',
-      totalAmount:10,
-      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
-    },
-  ];
+
+
+  const fetchInventory = async () => {
+    setOpenCircularProgress(true)
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
+        }
+        const data = await response.json();
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
+        if (!response2.ok) {
+          throw new Error('Error al obtener las clases: ' + response2.statusText);
+        }
+        const data2 = await response2.json();
+        const itemsWithQuantities = data.map((item) => ({
+          ...item,
+          cantidad: 0, 
+          totalReservado: 0, 
+          reservas: []
+        }));
+        data2.forEach((clase) => {
+          clase.reservations.forEach((objeto) => {
+            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
+            if (item) {
+              item.reservas.push({'name':clase.name,'cantidad': objeto.cantidad})
+            }
+          });
+        })
+        data2.forEach((clase) => {
+          clase.reservations.forEach((objeto) => {
+            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
+            if (item) {
+              item.totalReservado += objeto.cantidad;
+            }
+          });
+        });
+        setItemData(itemsWithQuantities);
+        console.log("Lista de items actualizada con total reservado:", itemsWithQuantities);
+      
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+      
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+    setOpenCircularProgress(false)
+  };
+
   
     
   
@@ -184,10 +154,10 @@ function CouchClasses() {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)',alignItems:'center',justifyContent:'center'}} onClick={handleCloseModal}>
-          <MDBContainer style={{alignItems:'center',justifyContent:'center'}}>
-            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()}>
-              <MDBCol md="9" lg="7" xl="5" className="mt-5">
-                <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' ,width:'40vh',left:'350%'}}>
+           <MDBContainer style={{display:'flex'}}>
+              <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
+                <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'40%'}}>
+                <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5'}}>
                   <MDBCardBody className="p-4 text-black" style={{width:'100vh'}}>
                     <div>
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
@@ -203,19 +173,19 @@ function CouchClasses() {
                       </div>
                       <div className="flex-grow-1 ms-3">
                         <div>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Total units {event.totalAmount}</MDBBtn>
-                           </div>
+                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Total units {event.total}</MDBBtn>
+                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Remaining units {calculateRemainingAmount(event)}</MDBBtn>
+                        </div>
                       </div>
                     </div>
-                    <hr />
                     <button 
                       onClick={handleCloseModal}
                       className="custom-button-go-back-managing"
                       style={{
                         zIndex: 2,
                         position: 'absolute', 
-                        top: '4%',
-                        left: '85%', 
+                        top: '3%',
+                        left: '90%',
                       }}
                     >
                       <CloseIcon sx={{ color: '#F5F5F5' }} />
@@ -269,10 +239,6 @@ function CouchClasses() {
     }
   }, [type])
 
-  const fetchInventory = async () => {
-    setOpenCircularProgress(true);
-    setOpenCircularProgress(false);
-  };
 
   useEffect(() => {
     if(isSmallScreen400 || isSmallScreen500) {

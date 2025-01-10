@@ -70,11 +70,12 @@ export default function CreateClass() {
     const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado','Domingo'];
     return daysOfWeek[date.getDay()];
   };
+  
   const ItemList = () => {
     const incrementQuantity = (itemName) => {
       setItemData((prevItems) =>
         prevItems.map((item) =>
-          item.name === itemName
+          item.name === itemName && (item.total - item.totalReservado - item.cantidad > 0)
             ? { ...item, cantidad: item.cantidad + 1 }
             : item
         )
@@ -90,9 +91,10 @@ export default function CreateClass() {
         )
       );
     };
+  
     return (
-      <div style={{ width: "100%", margin: "auto"}}>
-        <ul style={{ listStyleType: "none", padding: 0,backgroundColor:'white' }}>
+      <div style={{ width: "100%", margin: "auto" }}>
+        <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
           {itemData.map((item) => (
             <li
               key={item.name}
@@ -104,40 +106,53 @@ export default function CreateClass() {
                 border: "1px solid #ccc",
                 padding: "10px",
                 borderRadius: "5px",
-                color:'#424242'
+                color: "#424242",
               }}
             >
-              <span>{item.name}</span>
+              <span>
+                {item.name} ({item.id})
+              </span>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <button
-                  onClick={() => decrementQuantity(item.name)}
+                {item.cantidad > 0 && (
+                  <button
+                    onClick={() => decrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    -
+                  </button>
+                )}
+                <span
                   style={{
-                    padding: "5px 10px",
                     fontSize: "16px",
-                    cursor: "pointer",
-                    border: 'none',
-                    backgroundColor: 'white',
-                    color:'#424242'
+                    minWidth: "20px",
+                    textAlign: "center",
+                    color: "#424242",
                   }}
                 >
-                  -
-                </button>
-                <span style={{ fontSize: "16px", minWidth: "20px", textAlign: "center",color:'#424242' }}>
                   {item.cantidad}
                 </span>
-                <button
-                  onClick={() => incrementQuantity(item.name)}
-                  style={{
-                    padding: "5px 10px",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    border: 'none',
-                    backgroundColor: 'white',
-                    color:'#424242'
-                  }}
-                >
-                  +
-                </button>
+                {(item.total - item.totalReservado - item.cantidad) > 0 && (
+                  <button
+                    onClick={() => incrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    +
+                  </button>
+                )}
               </div>
             </li>
           ))}
@@ -145,6 +160,10 @@ export default function CreateClass() {
       </div>
     );
   };
+  
+  
+
+
   const ComponenteBotonShowGymRoom = () => {
     return (
       <div className="grid-container">
@@ -436,11 +455,18 @@ export default function CreateClass() {
             }
         }
 
+          const itemsReservados = [];
+          itemData.forEach((item) => {
+            if (item.cantidad > 0) {
+              itemsReservados.push({ item: item.id, cantidad: item.cantidad });
+            }
+          });
           const newClass = {
               name: name,
               dateInicio: newClassStartTime.toISOString(),
               dateFin: newClassEndTime.toISOString(),
               hour: hour,
+              reservations: itemsReservados,
               day: day(isoDateString),
               permanent: permanent,
               owner: userMail,
@@ -450,7 +476,6 @@ export default function CreateClass() {
           };
 
           const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_class', {
-          //const response = await fetch('http://127.0.0.1:5000/create_class', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -486,11 +511,6 @@ export default function CreateClass() {
           setOpenCircularProgress(false);
       }
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    handleCreateClass();
   };
 
   const handleComeBack = (e) => {
@@ -581,19 +601,43 @@ export default function CreateClass() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch(`http://127.0.0.1:5000/get_inventory`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
+      
+      try {
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
         });
         if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
         }
         const data = await response.json();
-        const itemsWithQuantities = data.map((item) => ({ ...item, cantidad: 0 }));
-        setItemData(itemsWithQuantities)
-        console.log("data de inventario",data)
+        const itemsWithQuantities = data.map((item) => ({
+          ...item,
+          cantidad: 0, 
+          totalReservado: 0, 
+        }));
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
+        if (!response2.ok) {
+          throw new Error('Error al obtener las clases: ' + response2.statusText);
+        }
+        const data2 = await response2.json();
+        data2.forEach((clase) => {
+          clase.reservations.forEach((objeto) => {
+            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
+            if (item) {
+              item.totalReservado += objeto.cantidad;
+            }
+          });
+        });
+        setItemData(itemsWithQuantities);
+        console.log("Lista de items actualizada con total reservado:", itemsWithQuantities);
+      
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+      
     } catch (error) {
         console.error("Error fetching user:", error);
     }
