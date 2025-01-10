@@ -41,33 +41,43 @@ function CouchClasses() {
 
   function CardExample() {
     return (
-      <ImageList sx={{ width: "80%", height: "auto" }} cols={4} gap={8}>
-        {itemData.map((item) => (
-          <ImageListItem key={item.img}>
-            <img
-              srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-              src={`${item.img}?w=248&fit=crop&auto=format`}
-              alt={item.name}
-              loading="lazy"
-            />
-            <ImageListItemBar
-              title={item.name}
-              subname={`Remaining: ${calculateRemainingAmount(item)}`}
-              actionIcon={
-                <IconButton
-                  sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                  aria-label={`info about ${item.name}`}
-                  onClick={() => setSelectedEvent(item)}
-                >
-                  <InfoIcon />
-                </IconButton>
-              }
-            />
-          </ImageListItem>
-        ))}
-      </ImageList>
+      <div
+        style={{
+          width: "80%",
+          height: "85%", 
+          overflowY: "auto", 
+          overflowX: "hidden",
+        }}
+      >
+        <ImageList sx={{ width: "100%", height: "auto" }} cols={4} gap={8}>
+          {itemData.map((item) => (
+            <ImageListItem key={item.img}>
+              <img
+                srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                src={`${item.img}?w=248&fit=crop&auto=format`}
+                alt={item.name}
+                loading="lazy"
+              />
+              <ImageListItemBar
+                title={item.name}
+                subname={`Remaining: ${calculateRemainingAmount(item)}`}
+                actionIcon={
+                  <IconButton
+                    sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                    aria-label={`info about ${item.name}`}
+                    onClick={() => setSelectedEvent(item)}
+                  >
+                    <InfoIcon />
+                  </IconButton>
+                }
+              />
+            </ImageListItem>
+          ))}
+        </ImageList>
+      </div>
     );
   }
+  
 
   const handleCloseModal = () => {
     setSelectedEvent(null);
@@ -124,6 +134,24 @@ function CouchClasses() {
     },
     {
       img: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
+      name: 'Breakfast',
+      totalAmount:10,
+      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
+    },
+    {
+      img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
+      name: 'Breakfast',
+      totalAmount:10,
+      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
+    },
+    {
+      img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
+      name: 'Breakfast',
+      totalAmount:10,
+      reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]
+    },
+    {
+      img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
       name: 'Breakfast',
       totalAmount:10,
       reservas:[['Juan',2,'2024-01-10'],['Pedro',7,'2024-01-10']]

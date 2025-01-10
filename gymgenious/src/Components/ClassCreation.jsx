@@ -17,6 +17,90 @@ import Loader from '../real_components/loader.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 
 
+
+
+
+const ItemList = () => {
+  const [quantities, setQuantities] = useState(
+    itemData.reduce((acc, item) => ({ ...acc, [item.name]: 0 }), {})
+  );
+
+  const incrementQuantity = (itemName) => {
+    setQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [itemName]: prevQuantities[itemName] + 1,
+    }));
+  };
+
+  const decrementQuantity = (itemName) => {
+    setQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [itemName]: Math.max(prevQuantities[itemName] - 1, 0), 
+    }));
+  };
+
+  return (
+    <div style={{ width: "80%", margin: "auto" }}>
+      <ul style={{ listStyleType: "none", padding: 0 }}>
+        {itemData.map((item) => (
+          <li
+            key={item.name}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "10px",
+              border: "1px solid #ccc",
+              padding: "10px",
+              borderRadius: "5px",
+            }}
+          >
+            <span>{item.name}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <button
+                onClick={() => decrementQuantity(item.name)}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                }}
+              >
+                -
+              </button>
+              <span style={{ fontSize: "16px", minWidth: "20px", textAlign: "center" }}>
+                {quantities[item.name]}
+              </span>
+              <button
+                onClick={() => incrementQuantity(item.name)}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                }}
+              >
+                +
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+const itemData = [
+  { name: "Item 1", img: "https://via.placeholder.com/150" },
+  { name: "Item 2", img: "https://via.placeholder.com/150" },
+  { name: "Item 3", img: "https://via.placeholder.com/150" },
+];
+
+
+
+
+
+
+
+
 export default function CreateClass() {
   const [hour, setHour] = useState('');
   const [hourFin, setHourFin] = useState('');
@@ -510,12 +594,6 @@ export default function CreateClass() {
     }
   }, [isSmallScreen]);
 
-  // useEffect(() => {
-  //   if (userMail && maxNum) {
-  //     fetchSalas();
-  //   }
-  // }, [userMail,maxNum]);
-
   const fetchUser = async () => {
     try {
       const authToken = localStorage.getItem('authToken');
@@ -525,7 +603,6 @@ export default function CreateClass() {
       }
       const encodedUserMail = encodeURIComponent(userMail);
       const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-      //const response = await fetch(`http://127.0.0.1:5000/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -548,9 +625,9 @@ export default function CreateClass() {
   const [openHourRequirements, setOpenHourRequirements] = useState(false);
   const handleOpenHourRequirements = (event) => {
     if (openHourRequirements) {
-        setAnchorEl(null); // Close popper
+        setAnchorEl(null); 
     } else {
-        setAnchorEl(event.currentTarget); // Open popper with the clicked element as anchor
+        setAnchorEl(event.currentTarget);
     }
     setOpenHourRequirements(!openHourRequirements);
 };
@@ -559,6 +636,12 @@ export default function CreateClass() {
   const handleCloseHourRequirements = () => {
     setOpenHourRequirements(false);
   }
+
+
+
+  
+
+
 
   return (
     <div className='full-screen-image-2'>
@@ -592,6 +675,21 @@ export default function CreateClass() {
                           />
                            {errorName && (<p style={{color: 'red', margin: '0px'}}>Enter a name</p>)}
                         </div>
+                        <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
+                            <label htmlFor="permanent" style={{color:'#424242'}}>Recurrent:</label>
+                            <select
+                              onClick={handleCloseHourRequirements}
+                              id="permanent" 
+                              name="permanent" 
+                              value={permanent} 
+                              onChange={(e) => setPermanent(e.target.value)} 
+                            >
+                              <option value="" >Select</option>
+                              <option value="Si">Yes</option>
+                              <option value="No">No</option>
+                            </select>
+                            {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
+                          </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                         <div className="input-small-container" style={{marginBottom: '0px'}}>
@@ -655,21 +753,7 @@ export default function CreateClass() {
                         </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                          <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                            <label htmlFor="permanent" style={{color:'#424242'}}>Recurrent:</label>
-                            <select
-                              onClick={handleCloseHourRequirements}
-                              id="permanent" 
-                              name="permanent" 
-                              value={permanent} 
-                              onChange={(e) => setPermanent(e.target.value)} 
-                            >
-                              <option value="" >Select</option>
-                              <option value="Si">Yes</option>
-                              <option value="No">No</option>
-                            </select>
-                            {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
-                          </div>
+                          <ItemList/>
                         </div>
                         <ComponenteBotonShowGymRoom/>
                     </>
@@ -735,6 +819,7 @@ export default function CreateClass() {
                             <option value="No">No</option>
                           </select>
                           {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
+                          
                         </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
