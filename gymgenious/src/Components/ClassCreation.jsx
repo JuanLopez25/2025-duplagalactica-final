@@ -20,79 +20,6 @@ import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 
 
 
-const ItemList = () => {
-  const [quantities, setQuantities] = useState(
-    itemData.reduce((acc, item) => ({ ...acc, [item.name]: 0 }), {})
-  );
-
-  const incrementQuantity = (itemName) => {
-    setQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [itemName]: prevQuantities[itemName] + 1,
-    }));
-  };
-
-  const decrementQuantity = (itemName) => {
-    setQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [itemName]: Math.max(prevQuantities[itemName] - 1, 0), 
-    }));
-  };
-
-  return (
-    <div style={{ width: "80%", margin: "auto" }}>
-      <ul style={{ listStyleType: "none", padding: 0 }}>
-        {itemData.map((item) => (
-          <li
-            key={item.name}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "10px",
-              border: "1px solid #ccc",
-              padding: "10px",
-              borderRadius: "5px",
-            }}
-          >
-            <span>{item.name}</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <button
-                onClick={() => decrementQuantity(item.name)}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                }}
-              >
-                -
-              </button>
-              <span style={{ fontSize: "16px", minWidth: "20px", textAlign: "center" }}>
-                {quantities[item.name]}
-              </span>
-              <button
-                onClick={() => incrementQuantity(item.name)}
-                style={{
-                  padding: "5px 10px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                }}
-              >
-                +
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-const itemData = [
-  { name: "Item 1", img: "https://via.placeholder.com/150" },
-  { name: "Item 2", img: "https://via.placeholder.com/150" },
-  { name: "Item 3", img: "https://via.placeholder.com/150" },
-];
 
 
 
@@ -137,12 +64,87 @@ export default function CreateClass() {
   const [errorDate, setErrorDate] = useState(false);
   const [errorDateStart, setErrorDateStart] = useState(false);
   const [salaNoDisponible, setSalaNoDisponible] = useState(['1'])
+  const [itemData,setItemData] = useState([])
   const day = (dateString) => {
     const date = new Date(dateString);
     const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado','Domingo'];
     return daysOfWeek[date.getDay()];
   };
-
+  const ItemList = () => {
+    const incrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item
+        )
+      );
+    };
+  
+    const decrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName
+            ? { ...item, cantidad: Math.max(item.cantidad - 1, 0) }
+            : item
+        )
+      );
+    };
+    return (
+      <div style={{ width: "100%", margin: "auto"}}>
+        <ul style={{ listStyleType: "none", padding: 0,backgroundColor:'white' }}>
+          {itemData.map((item) => (
+            <li
+              key={item.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "10px",
+                border: "1px solid #ccc",
+                padding: "10px",
+                borderRadius: "5px",
+                color:'#424242'
+              }}
+            >
+              <span>{item.name}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <button
+                  onClick={() => decrementQuantity(item.name)}
+                  style={{
+                    padding: "5px 10px",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    border: 'none',
+                    backgroundColor: 'white',
+                    color:'#424242'
+                  }}
+                >
+                  -
+                </button>
+                <span style={{ fontSize: "16px", minWidth: "20px", textAlign: "center",color:'#424242' }}>
+                  {item.cantidad}
+                </span>
+                <button
+                  onClick={() => incrementQuantity(item.name)}
+                  style={{
+                    padding: "5px 10px",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    border: 'none',
+                    backgroundColor: 'white',
+                    color:'#424242'
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
   const ComponenteBotonShowGymRoom = () => {
     return (
       <div className="grid-container">
@@ -507,6 +509,7 @@ export default function CreateClass() {
   }
 
   const handleViewRooms = () => {
+    console.log(itemData)
     if(validateForm()){
       setSalaNoDisponible([])
       validateSalas()
@@ -529,7 +532,6 @@ export default function CreateClass() {
           return;
         }
         const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_salas`, {
-        //const response = await fetch(`http://127.0.0.1:5000/get_salas`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -570,6 +572,34 @@ export default function CreateClass() {
     }
   };
 
+
+
+  const fetchInventory = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const response = await fetch(`http://127.0.0.1:5000/get_inventory`, {
+            method: 'GET', 
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+        }
+        const data = await response.json();
+        const itemsWithQuantities = data.map((item) => ({ ...item, cantidad: 0 }));
+        setItemData(itemsWithQuantities)
+        console.log("data de inventario",data)
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  };
+
+
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -585,6 +615,13 @@ export default function CreateClass() {
       fetchUser();
     }
   }, [userMail]);
+
+
+  useEffect(() => {
+    if(type==='coach' && userMail!=null){
+        fetchInventory();
+    }
+  }, [type])
 
   useEffect(() => {
     if (isSmallScreen) {
@@ -753,8 +790,10 @@ export default function CreateClass() {
                         </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                        <div className="input-small-container">
                           <ItemList/>
                         </div>
+                      </div>
                         <ComponenteBotonShowGymRoom/>
                     </>
                   ) : (

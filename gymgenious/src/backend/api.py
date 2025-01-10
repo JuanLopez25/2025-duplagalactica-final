@@ -11,6 +11,7 @@ from Controllers.salasController import get_salas_route
 from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
 from Controllers.membershipController import edit_memb_price_route,get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 from Controllers.attendanceController import mark_attendance_route,get_coach_clients_assistance_route
+from Controllers.inventoryController import get_inventory_route
 import jwt
 import datetime
 
@@ -588,6 +589,20 @@ def get_excersices():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+
+
+
+@app.route('/get_inventory', methods=['GET'])
+def get_inventory():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_inventory_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
 
 
 @app.route('/get_missions_progress', methods=['GET'])
