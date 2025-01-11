@@ -9,10 +9,6 @@
     "@mui/material": "^6.1.1",
     "@mui/styled-engine-sc": "^6.1.1",
     "@mui/x-charts": "^7.22.1",
-    "@nextui-org/accordion": "^2.2.7",
-    "@nextui-org/badge": "^2.2.5",
-    "@nextui-org/dropdown": "^2.3.9",
-    "@nextui-org/react": "^2.6.11",
     "@prisma/client": "^5.19.1",
     "buffer": "^6.0.3",
     "cors": "^2.8.5",
@@ -45,7 +41,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "npm install --legacy-peer-deps && react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

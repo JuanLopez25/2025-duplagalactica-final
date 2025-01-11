@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { QrReader } from 'react-qr-reader';
+import { ReactQRScanner } from "react-qr-scanner";
 import { useNavigate } from "react-router-dom";
 
 const QrScanner = () => {
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleScan = (data) => {
     if (data) {
-      navigate(data);
+      navigate(data); // Usar el contenido del QR para redirigir
     }
   };
 
@@ -20,7 +20,7 @@ const QrScanner = () => {
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
       <h1>Lector de QR</h1>
-      <QrReader
+      <ReactQRScanner
         delay={300}
         style={{ width: "100%" }}
         onError={handleError}
