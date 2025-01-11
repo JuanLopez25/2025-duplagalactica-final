@@ -13,6 +13,7 @@ from Controllers.membershipController import edit_memb_price_route,get_membershi
 from Controllers.attendanceController import mark_attendance_route,get_coach_clients_assistance_route
 from Controllers.inventoryController import get_inventory_route
 import jwt
+import json
 import datetime
 
 
@@ -154,6 +155,11 @@ def update_class_info():
         permanent = request.form.get('Permanent')
         sala = request.form.get('sala')
         capacity = request.form.get('capacity')
+        reservations_json = request.form.get('reservations')
+        if reservations_json:
+            reservations = json.loads(reservations_json)  
+        else:
+            reservations = []
         newUser = {
             'cid' : cid,
             'DateFin': DateFin,
@@ -163,7 +169,8 @@ def update_class_info():
             'Hour':Hour,
             'Permanent':permanent,
             'sala':sala,
-            'capacity':capacity
+            'capacity':capacity,
+            'reservations':reservations
         }
         return update_class_info_route(newUser)
     except Exception as e:

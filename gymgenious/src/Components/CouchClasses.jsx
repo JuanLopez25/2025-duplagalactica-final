@@ -86,6 +86,99 @@ function CouchClasses() {
   const [openCheckList, setOpenCheckList] = useState(false);
   const [viewQualifications, setViewQualifications] = useState(false);
   const [viewInventory, setViewInventory] = useState(false)
+  const [inventoryChange, setInventoryChange] = useState(false)
+  const ItemList = () => {
+    const incrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName && (item.total - item.totalReservado - item.cantidad > 0)
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item
+        )
+      );
+      console.log("asi se ve el inventario",itemData)
+      setInventoryChange(true)
+    };
+  
+    const decrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName
+            ? { ...item, cantidad: Math.max(item.cantidad - 1, 0) }
+            : item
+        )
+      );
+      setInventoryChange(true)
+    };
+  
+    return (
+      <div style={{ width: "100%", margin: "auto" }}>
+        <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
+          {itemData.map((item) => (
+            <li
+              key={item.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "10px",
+                border: "1px solid #ccc",
+                padding: "10px",
+                borderRadius: "5px",
+                color: "#424242",
+              }}
+            >
+              <span>
+                {item.name} ({item.id})
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {item.cantidad > 0 && (
+                  <button
+                    onClick={() => decrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    -
+                  </button>
+                )}
+                <span
+                  style={{
+                    fontSize: "16px",
+                    minWidth: "20px",
+                    textAlign: "center",
+                    color: "#424242",
+                  }}
+                >
+                  {item.cantidad}
+                </span>
+                {(item.total - item.totalReservado - item.cantidad) > 0 && (
+                  <button
+                    onClick={() => incrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    +
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
 
   const handleViewQualifications = () => {
     setViewQualifications(!viewQualifications)
@@ -271,11 +364,18 @@ function CouchClasses() {
           throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
         }
         const data = await response.json();
-        const itemsWithQuantities = data.map((item) => ({
-          ...item,
-          cantidad: 0, 
-          totalReservado: 0, 
-        }));
+        
+        const itemsWithQuantities = data.map((item) => {
+          const matchingReservation = selectedEvent.reservations.find(
+            (reservation) => reservation.item === item.id
+          );
+          return {
+            ...item,
+            cantidad: matchingReservation ? matchingReservation.cantidad : 0, 
+            totalReservado: 0,
+          };
+        });
+
         const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
         if (!response2.ok) {
           throw new Error('Error al obtener las clases: ' + response2.statusText);
@@ -284,13 +384,12 @@ function CouchClasses() {
         data2.forEach((clase) => {
           clase.reservations.forEach((objeto) => {
             const item = itemsWithQuantities.find((i) => i.id === objeto.item);
-            if (item) {
+            if (item && clase.id!=selectedEvent.id) {
               item.totalReservado += objeto.cantidad;
             }
           });
         });
         setItemData(itemsWithQuantities);
-        console.log("Lista de items actualizada con total reservado:", itemsWithQuantities);
       
       } catch (error) {
         console.error("Error:", error.message);
@@ -437,6 +536,13 @@ function CouchClasses() {
         formData.append('Permanent',permanent || fetchPermanent);
         formData.append('sala', salaAssigned || fetchSala);
         formData.append('capacity', maxNum || fetchCapacity);
+        const itemsReservados = [];
+        itemData.forEach((item) => {
+          if (item.cantidad > 0) {
+            itemsReservados.push({ item: item.id, cantidad: item.cantidad });
+          }
+        });
+        formData.append('reservations', JSON.stringify(itemsReservados));
         const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_class_info', {
             method: 'PUT', 
             headers: {
@@ -460,7 +566,7 @@ function CouchClasses() {
   };
   const validateForm = () => {
     let res = true;
-    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='') {
+    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='' && !inventoryChange) {
         setErrorForm(true);
         res = false;
     } else {
@@ -1245,6 +1351,7 @@ function CouchClasses() {
                                       {errorSala && (<p style={{color: 'red', margin: '0px'}}>Room no available</p>)}
                                   </div>
                                 </div>
+                                <ItemList/>
                                 <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
                                   <label htmlFor="maxNum" style={{color:'#14213D'}}>Participants:</label>
                                   <input
