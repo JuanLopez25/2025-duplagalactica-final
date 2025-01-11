@@ -4,7 +4,6 @@ import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -53,6 +52,7 @@ export default function TemporaryDrawer() {
   const goToRankings = () => navigate('/user-rankings');
   const goToAssistance = () => navigate('/assistance');
   const goToYourClients = () => navigate('/coach-clients');
+  const goToInventory = () => navigate('./inventory');
 
   const navigateTo = (index) => {
     const routes = [
@@ -68,6 +68,7 @@ export default function TemporaryDrawer() {
       goToCoachGraphics,
       goToCoachMemberships,
       goToYourClients,
+      goToInventory,
       goToLogout,
     ];
     routes[index]();
@@ -116,7 +117,7 @@ export default function TemporaryDrawer() {
   const DrawerListCoach = (
     <Box sx={{ width: 250, background: '#424242' }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        {['Home', 'Profile', 'Create class', 'My classes', 'Managing', 'Exercises', 'My routines', 'All routines', 'Top routines', 'Graphics', 'Memberships','Your clients','Logout'].map((text, index) => (
+        {['Home', 'Profile', 'Create class', 'My classes', 'Managing', 'Exercises', 'My routines', 'All routines', 'Top routines', 'Graphics', 'Memberships','Your clients','Inventory','Logout'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton onClick={() => navigateTo(index)}>
               <ListItemIcon>
@@ -132,7 +133,8 @@ export default function TemporaryDrawer() {
                 {index === 9 && <SignalCellularAltIcon sx={{ color: '#48CFCB' }} />}
                 {index === 10 && <PaidIcon sx={{ color: '#48CFCB' }} />}
                 {index === 11 && <PaidIcon sx={{ color: '#48CFCB' }} />}
-                {index === 12 && <ExitToApp sx={{ color: '#48CFCB' }} />}
+                {index === 12 && <PaidIcon sx={{ color: '#48CFCB' }} />}
+                {index === 13 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />
             </ListItemButton>

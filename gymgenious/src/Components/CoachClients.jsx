@@ -1,10 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import PropTypes from 'prop-types';
 import { Box, useMediaQuery } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import { QRCodeCanvas } from "qrcode.react";
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
@@ -15,47 +13,21 @@ import { visuallyHidden } from '@mui/utils';
 import NewLeftBar from '../real_components/NewLeftBar'
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
 import {jwtDecode} from "jwt-decode";
 import Loader from '../real_components/loader.jsx';
-import moment from 'moment';
-import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
-import EmailIcon from '@mui/icons-material/Email';
-import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
-import CloseIcon from '@mui/icons-material/Close';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
-import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
-import Checkbox from '@mui/material/Checkbox';
-import Rating from '@mui/material/Rating';
-import Stack from '@mui/material/Stack';
 
 function CouchClasses() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
   const [page, setPage] = useState(0);
-  const [maxNum,setMaxNum] = useState(null);
-  const [salas, setSalas] = useState([]);
-  const [warningFetchingRoutines, setWarningFetchingRoutines] = useState(false);
-  const [salaAssigned, setSala] = useState(null);
-  const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [editClass, setEditClass] = useState(false);
   const [userMail,setUserMail] = useState(null)
-  const [userAccount, setUser] = useState(null)
   const isSmallScreen400 = useMediaQuery('(max-width:400px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
   const isSmallScreen600 = useMediaQuery('(max-width:600px)');
-  const [classes,setClasses]=useState([])
-  const [hour, setHour] = useState('');
-  const [hourFin, setHourFin] = useState('');
-  const [permanent, setPermanent] = useState('');
-  const [date, setDate] = useState('');
-  const [name, setName] = useState('');
   const navigate = useNavigate();
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
@@ -63,53 +35,10 @@ function CouchClasses() {
   const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [maxHeight, setMaxHeight] = useState('600px');
   const [type, setType] = useState(null);
-  const [errorSala, setErrorSala] = useState(false);
-  const [errorHour, setErrorHour] = useState(false);
-  const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [newRows, setNewRows] = useState([]);
-
-  const [fetchId,setFetchId] = useState('');
-  const [fetchDateFin,setFetchDateFin]= useState('');
-  const [fetchDateInicio,setFetchDateInicio]=useState('');
-  const [fetchDay,setFetchDay]=useState('');
-  const [fetchName,setFetchName]=useState('');
-  const [fetchHour,setFetchHour]=useState('');
-  const [fetchPermanent,setFetchPermanent]=useState('');
-  const [fetchClass,setFetchClass]=useState({});
-  const [fetchSala,setFetchSala] = useState('')
-  const [fetchCapacity, setFetchCapacity] = useState('')
-  const [failureErrors, setFailureErrors] = useState(false);
-  const [errorForm, setErrorForm] = useState(false);
-
-  const [openSearch, setOpenSearch] = useState(false);
-  const [filterClasses, setFilterClasses] = useState('');
-  const [totalClasses, setTotalClasses] = useState([]);
-  const [openCheckList, setOpenCheckList] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState(['1']);
-
-
-  const toggleUserSelection = (userId) => {
-    setSelectedUsers((prev) =>
-      prev.includes(userId)
-        ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
-    );
-  };
-
   
 
   function formatDate(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${year}-${month}-${day}`;
-  }
-
- 
-  
-  
-  function formatDateForInput(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const day = String(date.getDate()).padStart(2, '0');
     const year = date.getFullYear();
@@ -133,13 +62,6 @@ function CouchClasses() {
   };
 
   
-
-
-  const timeToMinutes = (time) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  }
-
 
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
@@ -263,7 +185,6 @@ function CouchClasses() {
         }
         const data = await response.json();
         setType(data.type);
-        setUser(data)
         if(data.type!='coach'){
           navigate('/');
         }
@@ -354,7 +275,7 @@ function CouchClasses() {
                         borderCollapse: 'collapse',
                         }}
                         aria-labelledby="tableTitle"
-                        size={dense ? 'small' : 'medium'}
+                        size={'medium'}
                     >
                         <TableHead>
                             <TableRow sx={{ height: '5vh', width: '5vh' }}>

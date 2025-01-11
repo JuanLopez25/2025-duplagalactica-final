@@ -78,19 +78,114 @@ function CouchClasses() {
   const [fetchClass,setFetchClass]=useState({});
   const [fetchSala,setFetchSala] = useState('')
   const [fetchCapacity, setFetchCapacity] = useState('')
-  const [failureErrors, setFailureErrors] = useState(false);
   const [errorForm, setErrorForm] = useState(false);
-
+  const [itemData,setItemData] = useState([])
   const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
   const [openCheckList, setOpenCheckList] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState(['1']);
-  const [checked, setChecked] = useState(false);
   const [viewQualifications, setViewQualifications] = useState(false);
+  const [viewInventory, setViewInventory] = useState(false)
+  const [inventoryChange, setInventoryChange] = useState(false)
+  const ItemList = () => {
+    const incrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName && (item.total - item.totalReservado - item.cantidad > 0)
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item
+        )
+      );
+      console.log("asi se ve el inventario",itemData)
+      setInventoryChange(true)
+    };
+  
+    const decrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName
+            ? { ...item, cantidad: Math.max(item.cantidad - 1, 0) }
+            : item
+        )
+      );
+      setInventoryChange(true)
+    };
+  
+    return (
+      <div style={{ width: "100%", margin: "auto" }}>
+        <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
+          {itemData.map((item) => (
+            <li
+              key={item.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "10px",
+                border: "1px solid #ccc",
+                padding: "10px",
+                borderRadius: "5px",
+                color: "#424242",
+              }}
+            >
+              <span>
+                {item.name} ({item.id})
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {item.cantidad > 0 && (
+                  <button
+                    onClick={() => decrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    -
+                  </button>
+                )}
+                <span
+                  style={{
+                    fontSize: "16px",
+                    minWidth: "20px",
+                    textAlign: "center",
+                    color: "#424242",
+                  }}
+                >
+                  {item.cantidad}
+                </span>
+                {(item.total - item.totalReservado - item.cantidad) > 0 && (
+                  <button
+                    onClick={() => incrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    +
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
 
   const handleViewQualifications = () => {
     setViewQualifications(!viewQualifications)
+  }
+
+  const handleViewInventory = () => {
+    setViewInventory(!viewInventory)
   }
 
   function HalfRatingCoach() {
@@ -104,7 +199,6 @@ function CouchClasses() {
       </Stack>
     );
   }
-
   const EventQRCode = ({ selectedEvent}) => {
     const [qrToken, setQrToken] = useState(null);
     useEffect(() => {
@@ -159,110 +253,21 @@ function CouchClasses() {
       </div>
     );
   };
-  
-
-  const toggleUserSelection = (userId) => {
-    setSelectedUsers((prev) =>
-      prev.includes(userId)
-        ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
-    );
-  };
-
   const hanldeCheckList = () => {
     setOpenCheckList(true);
   };
-
-  const closeCheckList = () => {
-    setOpenCheckList(false);
-  };
-
-  const saveCheckList = async () => {
-    setOpenCircularProgress(true)
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) {
-      console.error('Token no disponible en localStorage');
-      return;
-    }
-    const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_users`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-    });
-    if (!response.ok) {
-        throw new Error('Error al obtener las rutinas: ' + response.statusText);
-    }
-    const data = await response.json();
-    const emailToUidMap = data.reduce((acc, user) => {
-      acc[user.Mail] = user.uid;
-      return acc;
-    }, {});
-    const allUsers = selectedEvent.BookedUsers.map(email => emailToUidMap[email] || email)
-    const updatedSelectedUsers = selectedUsers.map(email => emailToUidMap[email] || email);
-    if (selectedEvent.permanent=='Si') {
-      const formData = new FormData();
-      formData.append('usuarios', allUsers);
-      formData.append('selectedEvent',selectedEvent.id);
-      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/update_class_use', {
-          method: 'PUT', 
-          headers: {
-              'Authorization': `Bearer ${authToken}`
-          },
-          body: formData,
-      });
-      if (!response2.ok) {
-          throw new Error('Error al actualizar los datos del usuario: ' + response.statusText);
-      }
-    }
-    const formData3 = new FormData();
-    formData3.append('usuarios', updatedSelectedUsers);
-    formData3.append('selectedEvent',selectedEvent.id);
-    const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/add_missions', {
-        method: 'POST', 
-        headers: {
-            'Authorization': `Bearer ${authToken}`
-        },
-        body: formData3,
-    });
-    if (!response3.ok) {
-        throw new Error('Error al actualizar los datos de las misiones: ' + response3.statusText);
-    }
-    const formData4 = new FormData();
-    formData4.append('selectedEvent',selectedEvent.id);
-    formData4.append('fecha',formatDate(new Date(selectedEvent.start)))
-    formData4.append('uid',userAccount.uid)
-    const response4 = await fetch('https://two025-duplagalactica-final.onrender.com/add_assistance', {
-        method: 'POST', 
-        headers: {
-            'Authorization': `Bearer ${authToken}`
-        },
-        body: formData4,
-    });
-    if (!response4.ok) {
-        throw new Error('Error al actualizar los datos de la asistencia: ' + response4.statusText);
-    }
-    setTimeout(() => {
-      setOpenCircularProgress(false);
-    }, 2000);
-    window.location.reload()
-  }
-
   const handleOpenSearch = () => {
     setOpenSearch(true);
   };
-
   const handleCloseSearch = () => {
     setOpenSearch(false);
     setClasses(totalClasses);
   };
-
   const day = (dateString) => {
     const date = new Date(dateString);
     const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     return daysOfWeek[date.getDay()];
   };
-
   function formatDate(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const day = String(date.getDate()).padStart(2, '0');
@@ -270,13 +275,11 @@ function CouchClasses() {
     
     return `${year}-${month}-${day}`;
   }
-
   useEffect(() => {
     if (userMail && (maxNum || fetchCapacity)) {
       fetchSalas();
     }
   }, [userMail,maxNum,fetchCapacity]);
-  
   const fetchSalas = async () => {
     setOpenCircularProgress(true);
     try {
@@ -312,7 +315,6 @@ function CouchClasses() {
         }, 3000);
     }
   };
-  
   function formatDateForInput(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const day = String(date.getDate()).padStart(2, '0');
@@ -320,22 +322,18 @@ function CouchClasses() {
     
     return `${year}-${month}-${day}`;
   }
-
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
-
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     handleCloseSearch();
@@ -347,7 +345,62 @@ function CouchClasses() {
   const handleCloseCheckList = () => {
     setOpenCheckList(null);
   };
+  const fetchInventory = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`http://localhost:5000/get_inventory`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
+        }
+        const data = await response.json();
+        
+        const itemsWithQuantities = data.map((item) => {
+          const matchingReservation = selectedEvent.reservations.find(
+            (reservation) => reservation.item === item.id
+          );
+          return {
+            ...item,
+            cantidad: matchingReservation ? matchingReservation.cantidad : 0, 
+            totalReservado: 0,
+          };
+        });
+
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
+        if (!response2.ok) {
+          throw new Error('Error al obtener las clases: ' + response2.statusText);
+        }
+        const data2 = await response2.json();
+        data2.forEach((clase) => {
+          clase.reservations.forEach((objeto) => {
+            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
+            if (item && clase.id!=selectedEvent.id) {
+              item.totalReservado += objeto.cantidad;
+            }
+          });
+        });
+        setItemData(itemsWithQuantities);
+      
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+      
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  };
   const handleEditClass = (selectedEvent) => {
+    fetchInventory()
     setEditClass(!editClass);
     setFetchId(selectedEvent.id)
     setFetchDateFin(selectedEvent.dateFin)
@@ -369,14 +422,10 @@ function CouchClasses() {
     setErrorForm(false);
     setErrorSala(false);
   } 
-
-
   const timeToMinutes = (time) => {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
   }
-
-
   const fetchModifyClassInformation = async () => {
     setOpenCircularProgress(true);
     setErrorSala(false);
@@ -487,6 +536,13 @@ function CouchClasses() {
         formData.append('Permanent',permanent || fetchPermanent);
         formData.append('sala', salaAssigned || fetchSala);
         formData.append('capacity', maxNum || fetchCapacity);
+        const itemsReservados = [];
+        itemData.forEach((item) => {
+          if (item.cantidad > 0) {
+            itemsReservados.push({ item: item.id, cantidad: item.cantidad });
+          }
+        });
+        formData.append('reservations', JSON.stringify(itemsReservados));
         const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_class_info', {
             method: 'PUT', 
             headers: {
@@ -507,10 +563,10 @@ function CouchClasses() {
         setOpenCircularProgress(false);
         setErrorSala(true);
     }
-};
+  };
   const validateForm = () => {
     let res = true;
-    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='') {
+    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='' && !inventoryChange) {
         setErrorForm(true);
         res = false;
     } else {
@@ -529,14 +585,12 @@ function CouchClasses() {
     }
     return res;
   }
-
   const saveClass = (event) => {
     if(validateForm()){
       event.preventDefault(); 
       fetchModifyClassInformation();
     }
   };
-
   const handleDeleteClass = async (event) => {
     setOpenCircularProgress(true);
     try {
@@ -569,7 +623,6 @@ function CouchClasses() {
       }, 3000);
     }
   };
-
   const fetchClasses = async () => {
     setOpenCircularProgress(true);
     try {
@@ -582,7 +635,6 @@ function CouchClasses() {
       if (!response.ok) {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
-      //console.log("primero response",response.json())
       const data = await response.json();
       const filteredClasses = data.filter(event => event.owner == userMail);
       if(filteredClasses.length===0){
@@ -594,7 +646,6 @@ function CouchClasses() {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
       const salas = await response2.json();
-      //console.log("segundo response",response2.json())
       const dataWithSala = filteredClasses.map(clase => {
         const salaInfo = salas.find(sala => sala.id === clase.sala);
         return {
@@ -677,7 +728,6 @@ function CouchClasses() {
           });
         }
       });
-      const argentinaDateOptions = { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' };
       const response4 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assistance', {
         method: 'GET'
       });
@@ -697,9 +747,43 @@ function CouchClasses() {
           fecha: comment ? comment.date : null,
         };
       });
-      
-      setClasses(dataMatches);
-      setTotalClasses(dataMatches);
+      const response5 = await fetch(`http://localhost:5000/get_inventory`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+      if (!response5.ok) {
+        throw new Error('Error al obtener los datos del inventario: ' + response5.statusText);
+      }
+      const data5 = await response5.json();
+      const mapData5 = new Map();
+
+      data5.forEach(item => {
+        mapData5.set(item.id, { name: item.name, img: item.img }); 
+      });
+
+      const updatedDataMatches = dataMatches.map(match => {
+        const updatedReservations = match.reservations.map(reservation => {
+          const matchedData = mapData5.get(reservation.item);
+          return {
+            cantidad: reservation.cantidad,
+            item: reservation.item,
+            name: matchedData?.name || null,  
+            img: matchedData?.img || null,
+          };
+        });
+        return {
+          ...match,
+          reservations: updatedReservations,
+        };
+      });
+
+      console.log("Data matches actualizada:", updatedDataMatches);
+
+
+      setClasses(updatedDataMatches);
+      setTotalClasses(updatedDataMatches);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -710,7 +794,6 @@ function CouchClasses() {
       }, 3000);
     }
   };
-
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
     try {
@@ -727,7 +810,6 @@ function CouchClasses() {
         throw error;
     }
   };
-
   useEffect(() => {
     const newRowsList = [];
   
@@ -752,7 +834,6 @@ function CouchClasses() {
   
     setNewRows(newRowsList);
   }, [filterClasses, totalClasses]);
-  
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -761,20 +842,16 @@ function CouchClasses() {
         console.error('No token found');
     }
   }, []);
-
   useEffect(() => {
     if (userMail) {
         fetchUser();
     }
 }, [userMail]);
-
-
   useEffect(() => {
     if(type==='coach'){
         fetchClasses();
     }
   }, [type])
-
   useEffect(() => {
     if(isSmallScreen400 || isSmallScreen500) {
       setRowsPerPage(10);
@@ -787,7 +864,6 @@ function CouchClasses() {
       setMaxHeight('600px')
     }
   }, [isSmallScreen400, isSmallScreen500, isMobileScreen])
-
   const fetchUser = async () => {
     setOpenCircularProgress(true);
     try {
@@ -816,7 +892,6 @@ function CouchClasses() {
         console.error("Error fetching user:", error);
     }
   };
-
   const compararfechaHoy = (fecha) => {
     const fechaGuardada = new Date(fecha);
     const fechaActual = new Date();
@@ -829,7 +904,6 @@ function CouchClasses() {
     const coincide = (diaGuardado === diaActual) && (mesGuardado === mesActual) && (anioGuardado === anioActual);
     return coincide
   }
-
   const visibleRows = React.useMemo(
     () =>
       [...newRows]
@@ -845,14 +919,13 @@ function CouchClasses() {
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [order, orderBy, page, rowsPerPage, newRows]
   );
-
   function ECommerce({event}) {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
-          <MDBContainer>
-            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()}>
-              <MDBCol md="9" lg="7" xl="5" className="mt-5">
+          <MDBContainer style={{display:'flex'}}>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'40%'}}>
                 <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
                   <MDBCardBody className="p-4 text-black">
                     <div>
@@ -878,8 +951,11 @@ function CouchClasses() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
-                          {/* <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.averageCalification}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.commentaries}</MDBBtn> */}
+                          {userMail && type==='coach' && event.reservations.length!==0? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewInventory}>Inventory reserves</MDBBtn>
+                          ) : (
+                            <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>No inventory reserves</MDBBtn>
+                          )}  
                           {userMail && type==='coach' && event.averageCalification!==0 && event.commentaries?.length!==0 ? (
                               <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewQualifications}>qualifications</MDBBtn>
                           ) : (
@@ -1275,6 +1351,7 @@ function CouchClasses() {
                                       {errorSala && (<p style={{color: 'red', margin: '0px'}}>Room no available</p>)}
                                   </div>
                                 </div>
+                                <ItemList/>
                                 <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
                                   <label htmlFor="maxNum" style={{color:'#14213D'}}>Participants:</label>
                                   <input
@@ -1302,6 +1379,46 @@ function CouchClasses() {
         {selectedEvent && (
           <ECommerce event={selectedEvent}/>
         )}
+        {viewInventory && (
+        <div className="Modal" onClick={handleViewInventory}>
+          <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <p style={{
+                marginTop: '5px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                Items reserved
+            </p>
+            <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+                <div className="input-small-container" style={{flex: 3}}>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                      {selectedEvent.reservations.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm.name}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+                <div className="input-small-container" style={{flex: 3}}>
+                    <ul style={{maxHeight: '400px', overflowY: 'auto',listStyle:'none'}}>
+                      {selectedEvent.reservations.map((cm) => (
+                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                          {cm.cantidad}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+            </div>
+            <button onClick={handleViewInventory}>Close</button>
+          </div>
+        </div>
+      )}
         {viewQualifications && (
         <div className="Modal" onClick={handleViewQualifications}>
           <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>

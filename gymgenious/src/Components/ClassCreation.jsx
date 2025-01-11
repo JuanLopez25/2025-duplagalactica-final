@@ -17,6 +17,17 @@ import Loader from '../real_components/loader.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 
 
+
+
+
+
+
+
+
+
+
+
+
 export default function CreateClass() {
   const [hour, setHour] = useState('');
   const [hourFin, setHourFin] = useState('');
@@ -53,11 +64,105 @@ export default function CreateClass() {
   const [errorDate, setErrorDate] = useState(false);
   const [errorDateStart, setErrorDateStart] = useState(false);
   const [salaNoDisponible, setSalaNoDisponible] = useState(['1'])
+  const [itemData,setItemData] = useState([])
   const day = (dateString) => {
     const date = new Date(dateString);
     const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado','Domingo'];
     return daysOfWeek[date.getDay()];
   };
+  
+  const ItemList = () => {
+    const incrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName && (item.total - item.totalReservado - item.cantidad > 0)
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item
+        )
+      );
+    };
+  
+    const decrementQuantity = (itemName) => {
+      setItemData((prevItems) =>
+        prevItems.map((item) =>
+          item.name === itemName
+            ? { ...item, cantidad: Math.max(item.cantidad - 1, 0) }
+            : item
+        )
+      );
+    };
+  
+    return (
+      <div style={{ width: "100%", margin: "auto" }}>
+        <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
+          {itemData.map((item) => (
+            <li
+              key={item.name}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "10px",
+                border: "1px solid #ccc",
+                padding: "10px",
+                borderRadius: "5px",
+                color: "#424242",
+              }}
+            >
+              <span>
+                {item.name} ({item.id})
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {item.cantidad > 0 && (
+                  <button
+                    onClick={() => decrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    -
+                  </button>
+                )}
+                <span
+                  style={{
+                    fontSize: "16px",
+                    minWidth: "20px",
+                    textAlign: "center",
+                    color: "#424242",
+                  }}
+                >
+                  {item.cantidad}
+                </span>
+                {(item.total - item.totalReservado - item.cantidad) > 0 && (
+                  <button
+                    onClick={() => incrementQuantity(item.name)}
+                    style={{
+                      padding: "5px 10px",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      border: "none",
+                      backgroundColor: "white",
+                      color: "#424242",
+                    }}
+                  >
+                    +
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+  
+  
+
 
   const ComponenteBotonShowGymRoom = () => {
     return (
@@ -350,11 +455,18 @@ export default function CreateClass() {
             }
         }
 
+          const itemsReservados = [];
+          itemData.forEach((item) => {
+            if (item.cantidad > 0) {
+              itemsReservados.push({ item: item.id, cantidad: item.cantidad });
+            }
+          });
           const newClass = {
               name: name,
               dateInicio: newClassStartTime.toISOString(),
               dateFin: newClassEndTime.toISOString(),
               hour: hour,
+              reservations: itemsReservados,
               day: day(isoDateString),
               permanent: permanent,
               owner: userMail,
@@ -364,7 +476,6 @@ export default function CreateClass() {
           };
 
           const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_class', {
-          //const response = await fetch('http://127.0.0.1:5000/create_class', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -402,11 +513,6 @@ export default function CreateClass() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    handleCreateClass();
-  };
-
   const handleComeBack = (e) => {
     setShowSalas(false);
     setSala(null);
@@ -423,6 +529,7 @@ export default function CreateClass() {
   }
 
   const handleViewRooms = () => {
+    console.log(itemData)
     if(validateForm()){
       setSalaNoDisponible([])
       validateSalas()
@@ -445,7 +552,6 @@ export default function CreateClass() {
           return;
         }
         const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_salas`, {
-        //const response = await fetch(`http://127.0.0.1:5000/get_salas`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -486,6 +592,58 @@ export default function CreateClass() {
     }
   };
 
+
+
+  const fetchInventory = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`http://localhost:5000/get_inventory`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
+        }
+        const data = await response.json();
+        const itemsWithQuantities = data.map((item) => ({
+          ...item,
+          cantidad: 0, 
+          totalReservado: 0, 
+        }));
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
+        if (!response2.ok) {
+          throw new Error('Error al obtener las clases: ' + response2.statusText);
+        }
+        const data2 = await response2.json();
+        data2.forEach((clase) => {
+          clase.reservations.forEach((objeto) => {
+            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
+            if (item) {
+              item.totalReservado += objeto.cantidad;
+            }
+          });
+        });
+        setItemData(itemsWithQuantities);
+        console.log("Lista de items actualizada con total reservado:", itemsWithQuantities);
+      
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+      
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  };
+
+
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -502,6 +660,13 @@ export default function CreateClass() {
     }
   }, [userMail]);
 
+
+  useEffect(() => {
+    if(type==='coach' && userMail!=null){
+        fetchInventory();
+    }
+  }, [type])
+
   useEffect(() => {
     if (isSmallScreen) {
       setMaxWidthImg('100%')
@@ -509,12 +674,6 @@ export default function CreateClass() {
       setMaxWidthImg('200px')
     }
   }, [isSmallScreen]);
-
-  // useEffect(() => {
-  //   if (userMail && maxNum) {
-  //     fetchSalas();
-  //   }
-  // }, [userMail,maxNum]);
 
   const fetchUser = async () => {
     try {
@@ -525,7 +684,6 @@ export default function CreateClass() {
       }
       const encodedUserMail = encodeURIComponent(userMail);
       const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-      //const response = await fetch(`http://127.0.0.1:5000/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -548,9 +706,9 @@ export default function CreateClass() {
   const [openHourRequirements, setOpenHourRequirements] = useState(false);
   const handleOpenHourRequirements = (event) => {
     if (openHourRequirements) {
-        setAnchorEl(null); // Close popper
+        setAnchorEl(null); 
     } else {
-        setAnchorEl(event.currentTarget); // Open popper with the clicked element as anchor
+        setAnchorEl(event.currentTarget);
     }
     setOpenHourRequirements(!openHourRequirements);
 };
@@ -559,6 +717,12 @@ export default function CreateClass() {
   const handleCloseHourRequirements = () => {
     setOpenHourRequirements(false);
   }
+
+
+
+  
+
+
 
   return (
     <div className='full-screen-image-2'>
@@ -592,6 +756,21 @@ export default function CreateClass() {
                           />
                            {errorName && (<p style={{color: 'red', margin: '0px'}}>Enter a name</p>)}
                         </div>
+                        <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
+                            <label htmlFor="permanent" style={{color:'#424242'}}>Recurrent:</label>
+                            <select
+                              onClick={handleCloseHourRequirements}
+                              id="permanent" 
+                              name="permanent" 
+                              value={permanent} 
+                              onChange={(e) => setPermanent(e.target.value)} 
+                            >
+                              <option value="" >Select</option>
+                              <option value="Si">Yes</option>
+                              <option value="No">No</option>
+                            </select>
+                            {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
+                          </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                         <div className="input-small-container" style={{marginBottom: '0px'}}>
@@ -655,22 +834,10 @@ export default function CreateClass() {
                         </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                          <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                            <label htmlFor="permanent" style={{color:'#424242'}}>Recurrent:</label>
-                            <select
-                              onClick={handleCloseHourRequirements}
-                              id="permanent" 
-                              name="permanent" 
-                              value={permanent} 
-                              onChange={(e) => setPermanent(e.target.value)} 
-                            >
-                              <option value="" >Select</option>
-                              <option value="Si">Yes</option>
-                              <option value="No">No</option>
-                            </select>
-                            {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
-                          </div>
+                        <div className="input-small-container">
+                          <ItemList/>
                         </div>
+                      </div>
                         <ComponenteBotonShowGymRoom/>
                     </>
                   ) : (
@@ -735,6 +902,7 @@ export default function CreateClass() {
                             <option value="No">No</option>
                           </select>
                           {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
+                          
                         </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
