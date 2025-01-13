@@ -603,7 +603,7 @@ export default function CreateClass() {
       }
       
       try {
-        const response = await fetch(`http://localhost:5000/get_inventory`, {
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${authToken}`,
