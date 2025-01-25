@@ -20,9 +20,8 @@ def get_unique_user_by_email(mail):
         else:
             raise ValueError('No existen usuarios con ese mail')
     except Exception as error:
-        print("Error al obtener el usuario:", error)
-        raise ValueError('No existen usuarios con ese mail')
-
+        print("Error while getting the user:", error)
+        raise ValueError('It was impossible to get the user')
 
 def get_user(password, mail):
     try:
@@ -37,18 +36,17 @@ def get_user(password, mail):
         else:
             raise ValueError('Usuario no encontrado')
     except Exception as error:
-        print("Error al obtener el usuario:", error)
-        raise ValueError("No se pudo obtener el usuario")
+        print("Error while getting the user:", error)
+        raise ValueError("It was nos possible to get the user")
 
 def create_user(user):
     try:
-        print(user)
         users_collection = db.collection('users')
         users_collection.add(user)
         return user
     except Exception as error:
-        print("Error al crear el usuario:", error)
-        raise ValueError("No se pudo crear el usuario")
+        print("Error while creating the user:", error)
+        raise ValueError("It was not possible to create the user")
 
 def send_email(to_email):
     try:
@@ -58,17 +56,15 @@ def send_email(to_email):
         print("Error al enviar el correo:", error)
         return False
     
-
 def get_rankings():
     try:
-        users_ref = db.collection('rankings')
-        docs = users_ref.stream()
-        users = [{'id': doc.id, **doc.to_dict()} for doc in docs]
-        return users
+        renkings_ref = db.collection('rankings')
+        docs = renkings_ref.stream()
+        rankings = [{'id': doc.id, **doc.to_dict()} for doc in docs]
+        return rankings
     except Exception as e:
-        print(f"Error al obtener los rankings: {e}")
-        raise RuntimeError("No se pudo obtener los rankings")
-
+        print(f"Error while getting rankings: {e}")
+        raise RuntimeError("It was not possible to get the rankings")
 
 def get_users():
     try:
@@ -77,8 +73,8 @@ def get_users():
         users = [{**doc.to_dict()} for doc in docs]
         return users
     except Exception as e:
-        print(f"Error al obtener los usuarios: {e}")
-        raise RuntimeError("No se pudo obtener las usuarios")
+        print(f"Error while getting the user: {e}")
+        raise RuntimeError("It was not possible to get the user")
     
 def get_clients_users():
     try:
@@ -87,8 +83,8 @@ def get_clients_users():
         users = [{**doc.to_dict()} for doc in docs]
         return users
     except Exception as e:
-        print(f"Error al obtener los usuarios: {e}")
-        raise RuntimeError("No se pudo obtener las usuarios")
+        print(f"Error while getting the users that are clients: {e}")
+        raise RuntimeError("It was not possible to get the client users")
 
 def get_coach_users():
     try:
@@ -97,17 +93,16 @@ def get_coach_users():
         users = [{**doc.to_dict()} for doc in docs]
         return users
     except Exception as e:
-        print(f"Error al obtener los usuarios: {e}")
-        raise RuntimeError("No se pudo obtener las usuarios")
-
+        print(f"Error while getting the coaches: {e}")
+        raise RuntimeError("It was not possible to get the coaches")
 
 def get_client_users_no_match_routine(routine):
     try:
-        routines_ref = db.collection('assigned_routines')
-        docs = routines_ref.where('routine', '!=', routine).stream()
+        assigned_routines_ref = db.collection('assigned_routines')
+        docs = assigned_routines_ref.where('routine', '!=', routine).stream()
         emails = set()
-        datitos = [{**doc.to_dict()} for doc in docs]
-        for dat in datitos:
+        data = [{**doc.to_dict()} for doc in docs]
+        for dat in data:
             for user in dat['user']:
                 if 'Mail' in user:
                     emails.add(user['Mail'])
@@ -120,16 +115,14 @@ def get_client_users_no_match_routine(routine):
                 final_data.append(doc.to_dict())        
         return final_data  
     except Exception as e:
-        print(f"Error al obtener los usuarios: {e}")
-        raise RuntimeError("No se pudo obtener los usuarios")
+        print(f"Error while getting the users: {e}")
+        raise RuntimeError("It was not possible to get the users")
 
 def update_client_user(newUser):
     try:
-        print(newUser)
         users_ref = db.collection('users')
         docs = users_ref.where('Mail', '==', newUser['Mail']).stream()
         updated = False
-
         for doc in docs:
             doc_ref = users_ref.document(doc.id)
             doc_ref.update({
@@ -143,8 +136,8 @@ def update_client_user(newUser):
             print(f"No se encontró un usuario con el correo: {newUser.Mail}")
         return {"message": "Actualización realizada"} 
     except Exception as e:
-        print(f"Error actualizando el usuario: {e}")
-        raise RuntimeError("No se pudo actualizar el usuario")
+        print(f"Error while updating the user: {e}")
+        raise RuntimeError("It was not possible to update the user")
 
 def use_geme(mail):
     try:
@@ -154,35 +147,32 @@ def use_geme(mail):
         for doc in docs:
             doc_ref = users_ref.document(doc.id)
             doc = doc_ref.get()
-            cant_gemas = doc.to_dict().get('Gemas',' ')
+            gems_amount = doc.to_dict().get('Gemas',' ')
             doc_ref.update({
-                'Gemas': cant_gemas-1
+                'Gemas': gems_amount-1
             })
             updated = True
 
         if not updated:
-            print(f"No se encontró un usuario con el correo: {newUser.Mail}")
+            print(f"No se encontró un usuario con el correo: {mail}")
         return {"message": "Actualización realizada"} 
     except Exception as e:
-        print(f"Error actualizando el usuario: {e}")
-        raise RuntimeError("No se pudo actualizar el usuario")
+        print(f"Error while using gems: {e}")
+        raise RuntimeError("It was not possible to use gems")
     
-
-
 def create_ranking(newRanking):
     try:
-        ranking_ref = db.collection('rankings').add(newRanking)
+        db.collection('rankings').add(newRanking)
         created_ranking = {**newRanking}
         return created_ranking
     except Exception as e:
-        print(f"Error al crear el ranking: {e}")
-        raise RuntimeError("No se pudo crear el ranking")
-    
+        print(f"Error while crating the ranking: {e}")
+        raise RuntimeError("It was not possible to create the ranking")
     
 def join_ranking(rankingID,userMail): 
     try:
-        users_ref = db.collection('rankings')
-        doc_ref = users_ref.document(rankingID)
+        ranking_ref = db.collection('rankings')
+        doc_ref = ranking_ref.document(rankingID)
         doc = doc_ref.get()
         if doc.exists: 
             current_data = doc.to_dict()
@@ -194,16 +184,14 @@ def join_ranking(rankingID,userMail):
             })
         return {"message": "Actualización realizada"}
     except Exception as e:
-        print(f"Error actualizando el usuario: {e}")
-        raise RuntimeError("No se pudo actualizar el usuario")
-
+        print(f"Error joining the ranking: {e}")
+        raise RuntimeError("It was not possible to join the ranking")
 
 def leave_ranking(rankingID,userMail): 
     try:
-        users_ref = db.collection('rankings')
-        doc_ref = users_ref.document(rankingID)
+        ranking_ref = db.collection('rankings')
+        doc_ref = ranking_ref.document(rankingID)
         doc = doc_ref.get()
-        print("datos",rankingID,userMail)
         if doc.exists: 
             current_data = doc.to_dict()
             booked_users = current_data.get('participants', [])
@@ -213,5 +201,5 @@ def leave_ranking(rankingID,userMail):
             })
         return {"message": "Actualización realizada"}
     except Exception as e:
-        print(f"Error actualizando el usuario: {e}")
-        raise RuntimeError("No se pudo actualizar el usuario")
+        print(f"Error while leaving the ranking: {e}")
+        raise RuntimeError("It was not possible to leave the ranking")

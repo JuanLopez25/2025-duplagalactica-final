@@ -10,59 +10,56 @@ def upload_image_to_storage(image_data, file_name):
         bucket = storage.bucket()
         blob = bucket.blob(file_name)
         if not image_data:
-            raise ValueError("No se han obtenido bytes de imagen válidos.")
+            raise ValueError("It was not obtained valid bytes.")
         
         blob.upload_from_string(image_data, content_type='image/jpeg')
         blob.make_public()
         return blob.public_url
     except Exception as e:
-        print(f"Error al subir la imagen: {str(e)}")
-        raise RuntimeError(f"No se pudo subir la imagen: {str(e)}")
+        print(f"Error while uploading the image: {str(e)}")
+        raise RuntimeError(f"It was not possible to upload the image: {str(e)}")
 
-
-def create_excersice(excersice):
+def create_excersice(exercise):
     try:
         
-        image_data = excersice.get('image')
+        image_data = exercise.get('image')
         if image_data:
-            unique_file_name = f"{excersice['name']}_{uuid.uuid4()}.jpeg"
+            unique_file_name = f"{exercise['name']}_{uuid.uuid4()}.jpeg"
             image_url = upload_image_to_storage(image_data, unique_file_name)
-            excersice['image_url'] = image_url
-            del excersice['image']
-        class_ref = db.collection('exersices').add(excersice)
-        created_excersice = {**excersice}
-        return created_excersice
+            exercise['image_url'] = image_url
+            del exercise['image']
+        db.collection('exersices').add(exercise)
+        created_exercise = {**exercise}
+        return created_exercise
     except Exception as e:
-        print(f"Error al crear la clase: {e}")
-        raise RuntimeError("No se pudo crear la clase")
+        print(f"Error while creating the exercise: {e}")
+        raise RuntimeError("It was not possible to create the exercise")
 
 def get_excersice_by_owner(owner):
     try:
-        routines_ref = db.collection('exersices')
-        docs = routines_ref.where('owner', '==', owner).stream()
-        datitos = [{**doc.to_dict()} for doc in docs] 
-        return datitos
+        exercise_ref = db.collection('exersices')
+        docs = exercise_ref.where('owner', '==', owner).stream()
+        data = [{**doc.to_dict()} for doc in docs] 
+        return data
     except Exception as e:
-        print(f"Error al obtener los ejercicios: {e}")
-        raise RuntimeError("No se pudo obtener los ejercicios")
+        print(f"Error while obtaining the exercises: {e}")
+        raise RuntimeError("It was not possible to obtain the exercises")
 
 def get_excersices():
     try:
-        routines_ref = db.collection('exersices')
-        docs = routines_ref.stream()
-        datitos = [{'id': doc.id,**doc.to_dict()} for doc in docs] 
-        return datitos
+        exercises_ref = db.collection('exersices')
+        docs = exercises_ref.stream()
+        data = [{'id': doc.id,**doc.to_dict()} for doc in docs] 
+        return data
     except Exception as e:
-        print(f"Error al obtener los ejercicios: {e}")
-        raise RuntimeError("No se pudo obtener los ejercicios")
-
+        print(f"Error while getting the exercises: {e}")
+        raise RuntimeError("It was not possible to obtain the exercises")
 
 def update_exer_info(newExer):
     try:
-        users_ref = db.collection('exersices')
-        doc_ref = users_ref.document(newExer['id'])
+        exercises_ref = db.collection('exersices')
+        doc_ref = exercises_ref.document(newExer['id'])
         doc = doc_ref.get()
-        print("asi seria",newExer)
         if doc.exists:
             if newExer['image']: 
                 file_name = f"{newExer['id']}_exercise_image.jpg"
@@ -80,8 +77,8 @@ def update_exer_info(newExer):
                 
             return {"message": "Actualización realizada"}
         else:
-            print(f"No se encontró un ejercicio con el id: {newExer['id']}")
-            return {"message": "No se encontró el ejercicio"}
+            print(f"It was not find an exercise with the id: {newExer['id']}")
+            return {"message": "The exercise was not found"}
 
     except Exception as e:
         print(f"Error actualizando el ejercicio: {e}")

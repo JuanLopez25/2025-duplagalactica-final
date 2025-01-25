@@ -10,38 +10,37 @@ def get_inventory():
     try:
         inventory_ref = db.collection('inventory')
         docs = inventory_ref.stream()
-        datitos = [{'id': doc.id,**doc.to_dict()} for doc in docs] 
-        return datitos
+        data = [{'id': doc.id,**doc.to_dict()} for doc in docs] 
+        return data
     except Exception as e:
-        print(f"Error al obtener el inventario: {e}")
-        raise RuntimeError("No se pudo obtener el inventario")
+        print(f"Error while getting the inventory: {e}")
+        raise RuntimeError("It was not possible to get the inventory")
 
 def upload_image_to_storage(image_data, file_name):
     try:
         bucket = storage.bucket()
         blob = bucket.blob(file_name)
         if not image_data:
-            raise ValueError("No se han obtenido bytes de imagen válidos.")
+            raise ValueError("The image bytes were not obtained correctly")
         
         blob.upload_from_string(image_data, content_type='image/jpeg')
         blob.make_public()
         return blob.public_url
     except Exception as e:
-        print(f"Error al subir la imagen: {str(e)}")
-        raise RuntimeError(f"No se pudo subir la imagen: {str(e)}")
+        print(f"Error while uploading the image: {str(e)}")
+        raise RuntimeError(f"It was not possible to upload the image: {str(e)}")
 
-def create_inventory(excersice):
-    try:
-        
-        image_data = excersice.get('image')
+def create_inventory(item):
+    try: 
+        image_data = item.get('image')
         if image_data:
-            unique_file_name = f"{excersice['name']}_{uuid.uuid4()}.jpeg"
+            unique_file_name = f"{item['name']}_{uuid.uuid4()}.jpeg"
             image_url = upload_image_to_storage(image_data, unique_file_name)
-            excersice['image_url'] = image_url
-            del excersice['image']
-        class_ref = db.collection('inventory').add(excersice)
-        created_excersice = {**excersice}
-        return created_excersice
+            item['image_url'] = image_url
+            del item['image']
+        db.collection('inventory').add(item)
+        created_item = {**item}
+        return created_item
     except Exception as e:
-        print(f"Error al crear la clase: {e}")
-        raise RuntimeError("No se pudo crear la clase")
+        print(f"Error while creating the item: {e}")
+        raise RuntimeError("It was not possible to create the item")

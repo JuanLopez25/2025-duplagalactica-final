@@ -24,38 +24,484 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 SECRET_KEY = 'mi_clave_secreta'
 
-def generate_token(event_id,date_fin,date_inicio):
-    payload = {
-        'eventId': event_id,
-        'start': date_inicio,
-        'end':date_fin,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-    }
-    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') 
-    return token
+@app.route('/', methods=['GET'])
+def default_route():
+    return jsonify({'status': 'OK'})
 
-def generate_token_userSide(event_id,date_fin,date_inicio,user_id):
-    payload = {
-        'eventId': event_id,
-        'userMail':user_id,
-        'start': date_inicio,
-        'end':date_fin,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-    }
-    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') 
-    return token
+# Users functions -------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/get_user', methods=['GET'])
+def get_user():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        password = request.args.get('password')
+        mail = request.args.get('mail')
+        return get_user_route(password,mail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+        
+@app.route('/get_rankings', methods=['GET'])
+def get_rankings():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_rankings_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_users', methods=['GET'])
+def get_users():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_users_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_client_users', methods=['GET'])
+def get_client_users():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_clients_users_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+       
+@app.route('/get_coach_users', methods=['GET'])
+def get_coach_users():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_coach_users_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_client_users_no_match_routine', methods=['GET'])
+def get_client_users_no_match_routine():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        routine = request.args.get('routine')
+        return get_client_users_no_match_routine_route(routine)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_unique_user_by_email', methods=['GET'])
+def get_unique_user_by_email():
+    username = request.args.get('mail')
+    return get_unique_user_by_email_route(username)
+
+#------------------------------------------------
+#------------------------------------------------
+
+# PUT -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/use_geme', methods=['PUT'])
+def use_geme():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        mail = request.json.get('mail')
+        return use_geme_route(mail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+   
+@app.route('/join_ranking', methods=['PUT'])
+def join_ranking():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        rankingID = request.json.get('id')
+        userMail = request.json.get('user')
+        return join_ranking_route(rankingID,userMail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+    
+@app.route('/leave_ranking', methods=['PUT'])
+def leave_ranking():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        rankingID = request.json.get('id')
+        userMail = request.json.get('user')
+        return leave_ranking_route(rankingID,userMail)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+    
+@app.route('/update_users_info', methods=['PUT'])
+def update_users_info():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        newUserInfo = request.json.get('newUser')
+        return update_users_info_route(newUserInfo)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+   
+#------------------------------------------------
+#------------------------------------------------
+
+# POST -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/create_user', methods=['POST'])
+def create_user():
+    user = request.json
+    return create_user_route(user)
+
+@app.route('/send_email', methods=['POST'])
+def send_email():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        to_email = request.json.get('toEmail')
+        return send_email_route(to_email)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/create_ranking', methods=['POST'])
+def create_ranking():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        newRanking = request.json
+        return create_ranking_route(newRanking)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# Salas functions -------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/get_salas', methods=['GET'])
+def get_salas():
+    return get_salas_route()
+
+#------------------------------------------------
+#------------------------------------------------
+
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# Missions functions ----------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/get_missions_progress', methods=['GET'])
+def get_missions_progress():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_missions_progress_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_missions_template', methods=['GET'])
+def get_missions_template():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_missions_template_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_missions', methods=['GET'])
+def get_missions():
+    return get_missions_route()
+
+@app.route('/delete_missions', methods=['DELETE'])
+def delete_missions():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        missions = request.form.get('misiones')
+        
+        return delete_missions_route(missions)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+# POST  -----------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/assign_mission', methods=['POST'])
+def assign_mission():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        amount = request.form.get('cant')
+        userId = request.form.get('uid')
+        return assign_mission_route(amount,userId)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/add_missions', methods=['POST'])
+def add_missions():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        users = request.form.get('usuarios')
+        event = request.form.get('selectedEvent')
+        return add_missions_route(users,event)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+# DELETE  ---------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/add_mission_progress', methods=['DELETE'])
+def add_mission_progress():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        missions = request.form.get('misiones')
+        
+        return add_mission_progress_route(missions)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
 
-@app.route('/generate-token/<event_id>/<date_fin>/<date_inicio>', methods=['GET'])
-def generate_qr_token(event_id,date_fin,date_inicio):
-    token = generate_token(event_id,date_fin,date_inicio)  
-    return jsonify({'token': token}), 200
+# Membership functions --------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
-@app.route('/generate-token-userSide/<event_id>/<date_fin>/<date_inicio>/<user_id>', methods=['GET'])
-def generate_qr_token_userSide(event_id,date_fin,date_inicio,user_id):
-    token = generate_token_userSide(event_id,date_fin,date_inicio,user_id)  
-    return jsonify({'token': token}), 200
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
+@app.route('/get_memb_user', methods=['GET'])
+def get_memb_user():
+    return get_memb_user_route()
+
+@app.route('/get_memberships', methods=['GET'])
+def get_unique_user_membership():
+    return get_unique_user_membership_route()
+
+@app.route('/get_membership_template', methods=['GET'])
+def get_membership_template():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_membership_template_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------ 
+
+# PUT -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+    
+@app.route('/aquire_membership_month', methods=['PUT'])
+def aquire_membership_month():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        startDate = request.json.get('inicio')
+        uid = request.json.get('userId')
+        endDate = request.json.get('fin')
+        type_memb = request.json.get('type_memb')
+        return aquire_membership_month_route(startDate,uid,endDate,type_memb)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+    
+@app.route('/unuse_membership_class', methods=['PUT'])
+def unuse_membership_class():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        classId = request.json.get('id')
+        membId = request.json.get('membId')
+        return unuse_membership_class_route(classId,membId)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/update_class_use', methods=['PUT'])
+def update_class_use():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        users = request.form.get('usuarios')
+        event = request.form.get('selectedEvent')
+        return update_class_use_route(users,event)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/edit_memb_price', methods=['PUT'])
+def edit_memb_price():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        type_user = request.json.get('tipo')
+        price = request.json.get('precio')
+        return edit_memb_price_route(type_user,price)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+@app.route('/use_membership_class', methods=['PUT'])
+def use_membership_class():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        classId = request.json.get('id')
+        membId = request.json.get('membId')
+        return use_membership_class_route(classId,membId)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------ 
+
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# Attendance functions --------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/get_coach_clients_assistance', methods=['GET'])
+def get_coach_clients_assistance():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_coach_clients_assistance_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+# POST  -----------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
 @app.route('/attendance', methods=['POST'])
 def mark_attendance():
@@ -72,61 +518,117 @@ def mark_attendance():
         return mark_attendance_route(event_id,dateInicio,dateEnd,userMail)
 
     except jwt.ExpiredSignatureError:
-        return jsonify({'error': 'Token ha expirado'}), 400
+        return jsonify({'error': 'Token had expired'}), 400
     except jwt.InvalidTokenError:
-        return jsonify({'error': 'Token inválido'}), 400
+        return jsonify({'error': 'Token invalid'}), 400
+    
+#------------------------------------------------
+#------------------------------------------------
+    
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
-@app.route('/get_decoded_token', methods=['GET'])
-def get_decoded_token():
-    token = request.args.get('token')  
-    if not token:
-        return jsonify({'error': 'Token is required'}), 400
-    try:
-        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        event_id = decoded_token['eventId']
-        dateInicio = decoded_token['start']
-        dateEnd = decoded_token['end']
-        return {'eventId':event_id,'start':dateInicio,'end':dateEnd}
-    except jwt.ExpiredSignatureError:
-        return jsonify({'error': 'Token ha expirado'}), 400
-    except jwt.InvalidTokenError:
-        return jsonify({'error': 'Token inválido'}), 400
+# Inventory functions ---------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
-@app.route('/get_classes', methods=['GET'])
-def get_classes():
-    return get_classes_route()
-
-
-@app.route('/get_coach_clients_assistance', methods=['GET'])
-def get_coach_clients_assistance():
+@app.route('/get_inventory', methods=['GET'])
+def get_inventory():
     try :
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        return get_coach_clients_assistance_route()
+        return get_inventory_route()
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
-@app.route('/get_missions', methods=['GET'])
-def get_missions():
-    return get_missions_route()
+#------------------------------------------------
+#------------------------------------------------
 
+# POST  -----------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/create_inventory', methods=['POST'])
+def create_inventory():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        name = request.form.get('name')
+        total = request.form.get('total')
+        image = request.files.get('image')
+        image_data = None
+        if image:
+            image_data = image.read()  
+
+        newExersice = {
+            'name': name,
+            'total': int(total),
+            'image': image_data 
+        }
+        return create_inventory_route(newExersice)
+    except Exception as e:
+        print("Error a")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+
+# Classes functions -----------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+@app.route('/get_classes', methods=['GET'])
+def get_classes():
+    return get_classes_route()
+
+@app.route('/get_assistance', methods=['GET'])
+def get_assistance():
+    try:
+        return get_assistance_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 @app.route('/get_comments', methods=['GET'])
 def get_comments():
     return get_comments_route()
 
+#------------------------------------------------
+#------------------------------------------------
 
-
-@app.route('/get_memb_user', methods=['GET'])
-def get_memb_user():
-    return get_memb_user_route()
-
-@app.route('/get_salas', methods=['GET'])
-def get_salas():
-    return get_salas_route()
+# POST  -----------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
 @app.route('/create_class', methods=['POST'])
 def create_class():
@@ -139,6 +641,22 @@ def create_class():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+    
+
+@app.route('/add_assistance', methods=['POST'])
+def add_assistance():
+    classId = request.form.get('selectedEvent')
+    uid = request.form.get('uid')
+    date = request.form.get('fecha')
+    return add_assistance_route(classId,date,uid)
+
+#------------------------------------------------
+#------------------------------------------------
+
+
+# PUT  ------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
 @app.route('/update_class_info', methods=['PUT'])
 def update_class_info():
@@ -153,14 +671,14 @@ def update_class_info():
         Day = request.form.get('Day')       
         Hour = request.form.get('Hour')
         permanent = request.form.get('Permanent')
-        sala = request.form.get('sala')
+        place = request.form.get('sala')
         capacity = request.form.get('capacity')
         reservations_json = request.form.get('reservations')
         if reservations_json:
             reservations = json.loads(reservations_json)  
         else:
             reservations = []
-        newUser = {
+        newClassInfo = {
             'cid' : cid,
             'DateFin': DateFin,
             'DateInicio': DateInicio,
@@ -168,106 +686,11 @@ def update_class_info():
             'Name': name,
             'Hour':Hour,
             'Permanent':permanent,
-            'sala':sala,
+            'sala':place,
             'capacity':capacity,
             'reservations':reservations
         }
-        return update_class_info_route(newUser)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
-@app.route('/use_geme', methods=['PUT'])
-def use_geme():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        mail = request.json.get('mail')
-        return use_geme_route(mail)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-        
-@app.route('/edit_memb_price', methods=['PUT'])
-def edit_memb_price():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        tipo = request.json.get('tipo')
-        precio = request.json.get('precio')
-        return edit_memb_price_route(tipo,precio)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/book_class', methods=['PUT'])
-def book_class():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        event = request.json.get('event')
-        mail = request.json.get('mail')
-        return book_class_route(event,mail)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-    
-
-@app.route('/use_membership_class', methods=['PUT'])
-def use_membership_class():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        classId = request.json.get('id')
-        membId = request.json.get('membId')
-        return use_membership_class_route(classId,membId)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-    
-    
-@app.route('/join_ranking', methods=['PUT'])
-def join_ranking():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        rankingID = request.json.get('id')
-        userMail = request.json.get('user')
-        return join_ranking_route(rankingID,userMail)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-    
-
-@app.route('/leave_ranking', methods=['PUT'])
-def leave_ranking():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        rankingID = request.json.get('id')
-        userMail = request.json.get('user')
-        return leave_ranking_route(rankingID,userMail)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/unuse_membership_class', methods=['PUT'])
-def unuse_membership_class():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        classId = request.json.get('id')
-        membId = request.json.get('membId')
-        return unuse_membership_class_route(classId,membId)
+        return update_class_info_route(newClassInfo)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -285,48 +708,40 @@ def unbook_class():
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
-
-@app.route('/update_class_use', methods=['PUT'])
-def update_class_use():
+@app.route('/book_class', methods=['PUT'])
+def book_class():
     try :
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        usuarios = request.form.get('usuarios')
-        event = request.form.get('selectedEvent')
-        return update_class_use_route(usuarios,event)
+        event = request.json.get('event')
+        mail = request.json.get('mail')
+        return book_class_route(event,mail)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
-@app.route('/delete_missions', methods=['DELETE'])
-def delete_missions():
+@app.route('/add_calification', methods=['PUT'])
+def add_calification():
     try :
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        misiones = request.form.get('misiones')
-        
-        return delete_missions_route(misiones)
+        classId = request.json.get('event')
+        calification = request.json.get('calification')
+        commentary = request.json.get('commentary')        
+        userId = request.json.get('user')
+        return add_calification_route(classId,calification,commentary,userId)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
     
+#------------------------------------------------
+#------------------------------------------------
 
-@app.route('/add_mission_progress', methods=['DELETE'])
-def add_mission_progress():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        misiones = request.form.get('misiones')
-        
-        return add_mission_progress_route(misiones)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
+# DELETE ----------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 @app.route('/delete_class', methods=['DELETE'])
 def delete_class():
     try :
@@ -339,155 +754,62 @@ def delete_class():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+#------------------------------------------------
+#------------------------------------------------
 
-@app.route('/delete_routine', methods=['DELETE'])
-def delete_routine():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        event = request.json.get('event')
-        return delete_routine_route(event)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/get_unique_user_by_email', methods=['GET'])
-def get_unique_user_by_email():
-    username = request.args.get('mail')
-    return get_unique_user_by_email_route(username)
-
-@app.route('/get_memberships', methods=['GET'])
-def get_unique_user_membership():
-    return get_unique_user_membership_route()
-
-@app.route('/get_user', methods=['GET'])
-def get_user():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        password = request.args.get('password')
-        mail = request.args.get('mail')
-        return get_user_route(password,mail)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
     
-    
-@app.route('/get_rankings', methods=['GET'])
-def get_rankings():
+
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+
+
+# Excersices functions --------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/get_excersice_by_owner', methods=['GET'])
+def get_excersice_by_owner():
     try :
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        return get_rankings_route()
+        owner = request.args.get('owner')
+        return get_excersice_by_owner_route(owner)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
-@app.route('/get_membership_template', methods=['GET'])
-def get_membership_template():
+@app.route('/get_excersices', methods=['GET'])
+def get_excersices():
     try :
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        return get_membership_template_route()
+        return get_excersices_route()
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
-
-@app.route('/create_user', methods=['POST'])
-def create_user():
-    user = request.json
-    return create_user_route(user)
-
-@app.route('/add_assistance', methods=['POST'])
-def add_assistance():
-    clase = request.form.get('selectedEvent')
-    uid = request.form.get('uid')
-    fecha = request.form.get('fecha')
-    return add_assistance_route(clase,fecha,uid)
-
-@app.route('/assign_mission', methods=['POST'])
-def assign_mission():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        cantidad = request.form.get('cant')
-        usuario = request.form.get('uid')
-        return assign_mission_route(cantidad,usuario)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/add_missions', methods=['POST'])
-def add_missions():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        usuarios = request.form.get('usuarios')
-        event = request.form.get('selectedEvent')
-        return add_missions_route(usuarios,event)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
-@app.route('/send_email', methods=['POST'])
-def send_email():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        to_email = request.json.get('toEmail')
-        return send_email_route(to_email)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-    
-@app.route('/aquire_membership_month', methods=['PUT'])
-def aquire_membership_month():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        fechaInicio = request.json.get('inicio')
-        uid = request.json.get('userId')
-        fechaFin = request.json.get('fin')
-        type_memb = request.json.get('type_memb')
-        return aquire_membership_month_route(fechaInicio,uid,fechaFin,type_memb)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/update_users_info', methods=['PUT'])
-def update_users_info():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        newUser = request.json.get('newUser')
-        return update_users_info_route(newUser)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/update_routine_info', methods=['PUT'])
-def update_routine_info():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        newRoutine = request.json.get('newRoutine')
-        return update_routine_info_route(newRoutine)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
+#------------------------------------------------
+#------------------------------------------------
+ 
+# PUT  ------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+  
 @app.route('/update_exer_info', methods=['PUT'])
 def update_exer_info():
     try :
@@ -513,127 +835,13 @@ def update_exer_info():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
-
-
-
-@app.route('/get_users', methods=['GET'])
-def get_users():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_users_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
     
-@app.route('/get_assistance', methods=['GET'])
-def get_assistance():
-    try:
-        return get_assistance_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
+#------------------------------------------------
+#------------------------------------------------
 
-@app.route('/get_client_users', methods=['GET'])
-def get_client_users():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_clients_users_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-    
-@app.route('/', methods=['GET'])
-def default_route():
-    return jsonify({'status': 'OK'})
-    
-@app.route('/get_coach_users', methods=['GET'])
-def get_coach_users():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_coach_users_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/get_client_users_no_match_routine', methods=['GET'])
-def get_client_users_no_match_routine():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        routine = request.args.get('routine')
-        return get_client_users_no_match_routine_route(routine)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
-@app.route('/get_excersice_by_owner', methods=['GET'])
-def get_excersice_by_owner():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        owner = request.args.get('owner')
-        return get_excersice_by_owner_route(owner)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/get_excersices', methods=['GET'])
-def get_excersices():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_excersices_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
-
-@app.route('/get_inventory', methods=['GET'])
-def get_inventory():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_inventory_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
-
-@app.route('/get_missions_progress', methods=['GET'])
-def get_missions_progress():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_missions_progress_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
-@app.route('/get_missions_template', methods=['GET'])
-def get_missions_template():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_missions_template_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
+# POST  -----------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
 @app.route('/create_exersice', methods=['POST'])
 def create_exersice():
@@ -659,29 +867,77 @@ def create_exersice():
     except Exception as e:
         print("Error a")
         return jsonify({'error':'Something went wrong'})
-    
-@app.route('/create_inventory', methods=['POST'])
-def create_inventory():
+#------------------------------------------------
+#------------------------------------------------
+
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+
+
+# Routine functions -----------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+# GET -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/get_assigned_routines', methods=['GET'])
+def get_assigned_routines():
     try :
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        name = request.form.get('name')
-        total = request.form.get('total')
-        image = request.files.get('image')
-        image_data = None
-        if image:
-            image_data = image.read()  
-
-        newExersice = {
-            'name': name,
-            'total': int(total),
-            'image': image_data 
-        }
-        return create_inventory_route(newExersice)
+        return get_assigned_routines_route()
     except Exception as e:
-        print("Error a")
+        print("Error")
         return jsonify({'error':'Something went wrong'})
+
+@app.route('/get_routines', methods=['GET'])
+def get_routines():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        return get_routines_route()
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+# DELETE ----------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/delete_routine', methods=['DELETE'])
+def delete_routine():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        event = request.json.get('event')
+        return delete_routine_route(event)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
+#------------------------------------------------
+#------------------------------------------------
+
+# POST ------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 
 @app.route('/create_routine', methods=['POST'])
 def create_routine():
@@ -694,43 +950,22 @@ def create_routine():
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
-    
-    
-@app.route('/create_ranking', methods=['POST'])
-def create_ranking():
+
+#------------------------------------------------
+#------------------------------------------------
+
+# PUT -------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+@app.route('/update_routine_info', methods=['PUT'])
+def update_routine_info():
     try :
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        newRanking = request.json
-        return create_ranking_route(newRanking)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/add_calification', methods=['PUT'])
-def add_calification():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        classId = request.json.get('event')
-        calification = request.json.get('calification')
-        commentary = request.json.get('commentary')        
-        userId = request.json.get('user')
-        return add_calification_route(classId,calification,commentary,userId)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-
-@app.route('/get_routines', methods=['GET'])
-def get_routines():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_routines_route()
+        newRoutine = request.json.get('newRoutine')
+        return update_routine_info_route(newRoutine)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -747,17 +982,86 @@ def assign_routine_to_user():
         print("Error")
         return jsonify({'error':'Something went wrong'})
 
+#------------------------------------------------
+#------------------------------------------------
 
-@app.route('/get_assigned_routines', methods=['GET'])
-def get_assigned_routines():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        return get_assigned_routines_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+
+def generate_token(event_id,date_fin,date_inicio):
+    payload = {
+        'eventId': event_id,
+        'start': date_inicio,
+        'end':date_fin,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') 
+    return token
+
+def generate_token_userSide(event_id,date_fin,date_inicio,user_id):
+    payload = {
+        'eventId': event_id,
+        'userMail':user_id,
+        'start': date_inicio,
+        'end':date_fin,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') 
+    return token
+
+@app.route('/generate-token/<event_id>/<date_fin>/<date_inicio>', methods=['GET'])
+def generate_qr_token(event_id,date_fin,date_inicio):
+    token = generate_token(event_id,date_fin,date_inicio)  
+    return jsonify({'token': token}), 200
+
+@app.route('/generate-token-userSide/<event_id>/<date_fin>/<date_inicio>/<user_id>', methods=['GET'])
+def generate_qr_token_userSide(event_id,date_fin,date_inicio,user_id):
+    token = generate_token_userSide(event_id,date_fin,date_inicio,user_id)  
+    return jsonify({'token': token}), 200
+
+@app.route('/get_decoded_token', methods=['GET'])
+def get_decoded_token():
+    token = request.args.get('token')  
+    if not token:
+        return jsonify({'error': 'Token is required'}), 400
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        event_id = decoded_token['eventId']
+        dateInicio = decoded_token['start']
+        dateEnd = decoded_token['end']
+        return {'eventId':event_id,'start':dateInicio,'end':dateEnd}
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token ha expirado'}), 400
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Token inválido'}), 400
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
