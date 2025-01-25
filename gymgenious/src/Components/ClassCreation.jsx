@@ -94,6 +94,7 @@ export default function CreateClass() {
   
     return (
       <div style={{ width: "100%", margin: "auto" }}>
+        <label style={{color:'#424242'}}>Items for the class:</label>
         <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
           {itemData.map((item) => (
             <li
@@ -603,7 +604,7 @@ export default function CreateClass() {
       }
       
       try {
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
+        const response = await fetch(`http://127.0.0.1:5000/get_inventory`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${authToken}`,

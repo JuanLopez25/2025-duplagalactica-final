@@ -11,7 +11,7 @@ from Controllers.salasController import get_salas_route
 from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
 from Controllers.membershipController import edit_memb_price_route,get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 from Controllers.attendanceController import mark_attendance_route,get_coach_clients_assistance_route
-from Controllers.inventoryController import get_inventory_route
+from Controllers.inventoryController import get_inventory_route,create_inventory_route
 import jwt
 import json
 import datetime
@@ -656,6 +656,29 @@ def create_exersice():
             'image': image_data 
         }
         return create_exersice_route(newExersice)
+    except Exception as e:
+        print("Error a")
+        return jsonify({'error':'Something went wrong'})
+    
+@app.route('/create_inventory', methods=['POST'])
+def create_inventory():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        name = request.form.get('name')
+        total = request.form.get('total')
+        image = request.files.get('image')
+        image_data = None
+        if image:
+            image_data = image.read()  
+
+        newExersice = {
+            'name': name,
+            'total': int(total),
+            'image': image_data 
+        }
+        return create_inventory_route(newExersice)
     except Exception as e:
         print("Error a")
         return jsonify({'error':'Something went wrong'})
