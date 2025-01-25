@@ -34,18 +34,12 @@ import Stack from '@mui/material/Stack';
 import CustomTable from '../real_components/Table4columns.jsx'
 
 function UsserClasses() {
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('name');
-  const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail, setUserMail] = useState('');
   const [userAccount, setUserAccount] = useState([])
-  const [classes, setClasses] = useState([]);
   const isSmallScreen400 = useMediaQuery('(max-width:360px)');
   const isSmallScreen500 = useMediaQuery('(max-width:500px)');
-  const isSmallScreen600 = useMediaQuery('(max-width:600px)');
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken, setErrorToken] = useState(false);
@@ -55,8 +49,6 @@ function UsserClasses() {
   const navigate = useNavigate();
   const [type, setType] = useState(null);
   const isMobileScreen = useMediaQuery('(min-height:750px)');
-  const [maxHeight, setMaxHeight] = useState('600px');
-  const [warningConnection, setWarningConnection] = useState(false);
   const [califyModal, setCalifyModal] = useState(false);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
@@ -109,7 +101,6 @@ function UsserClasses() {
 
   const handleCloseSearch = () => {
     setOpenSearch(false);
-    setClasses(totalClasses);
   };
 
   const handleChangeCalifyModal = () => {
@@ -132,20 +123,6 @@ function UsserClasses() {
     return `${year}-${month}-${day}`;
   }
 
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -308,17 +285,11 @@ function UsserClasses() {
         };
       });
       console.log(formattedRoutines)
-
-      setClasses(formattedRoutines);
       setTotalClasses(formattedRoutines);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
-      setWarningConnection(true);
-      setTimeout(() => {
-        setWarningConnection(false);
-      }, 3000);
     }
   };
 
@@ -433,19 +404,6 @@ function UsserClasses() {
     }
   }, [type,userAccount])
 
-  useEffect(() => {
-    if(isSmallScreen400 || isSmallScreen500) {
-      setRowsPerPage(10);
-    } else {
-      setRowsPerPage(5)
-    }
-    if(isMobileScreen) {
-      setMaxHeight('700px');
-    } else {
-      setMaxHeight('600px')
-    }
-  }, [isSmallScreen400, isSmallScreen500, isMobileScreen])
-
   const fetchUser = async () => {
     setOpenCircularProgress(true);
     try {
@@ -475,22 +433,6 @@ function UsserClasses() {
         console.error("Error fetching user:", error);
     }
   };
-
-  const visibleRows = React.useMemo(
-    () =>
-      [...newRows]
-        .sort((a, b) =>
-          order === 'asc'
-            ? a[orderBy] < b[orderBy]
-              ? -1
-              : 1
-            : a[orderBy] > b[orderBy]
-            ? -1
-            : 1
-        )
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, newRows]
-  );
 
   function ECommerce({event}) {
     return (

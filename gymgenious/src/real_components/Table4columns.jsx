@@ -126,7 +126,7 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
                     {visibleRows.length === 0 ? (
                     <TableRow>
                         <TableCell colSpan={isSmallScreen ? 2 : 4} align="center" sx={{ color: '#424242', borderBottom: '1px solid #424242' }}>
-                        {columnsToShow[5]}
+                        {columnsToShow[4]}
                         </TableCell>
                     </TableRow>
                     ) : (
