@@ -9,10 +9,10 @@ def get_inventory_route():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def create_inventory_route(excersice):
+def create_inventory_route(item):
     try:
-        exce = create_inventory(excersice)
-        return jsonify(exce), 200
+        item_created = create_inventory(item)
+        return jsonify(item_created), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except RuntimeError as e:

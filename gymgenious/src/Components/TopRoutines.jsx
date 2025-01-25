@@ -5,11 +5,8 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
 import Paper from '@mui/material/Paper';
-import { visuallyHidden } from '@mui/utils';
 import NewLeftBar from '../real_components/NewLeftBar';
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
@@ -24,6 +21,7 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import Loader from '../real_components/loader.jsx';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
+import CustomTable from '../real_components/Table4columns.jsx';
 
 function BarAnimation({ routines, isSmallScreen }) {
     const [itemNb, setItemNb] = React.useState(5);
@@ -90,34 +88,16 @@ function BarAnimation({ routines, isSmallScreen }) {
     );
   }
 
-  
-
-const day = (dateString) => {
-  const date = new Date(dateString);
-  const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  return daysOfWeek[date.getDay()];
-};
-
 function TopRoutines() {
-  const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState('cant_asignados');
-  const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const isSmallScreen250 = useMediaQuery('(max-width:360px)');
   const [routines, setRoutines] = useState([]);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const navigate = useNavigate();
-  const isMobileScreen = useMediaQuery('(min-height:750px)');
-  const [maxHeight, setMaxHeight] = useState('600px');
   const [viewExercises, setViewExercises] = useState(false);
-  const [type, setType] = useState(null);
-
   const [openSearch, setOpenSearch] = useState(false);
   const [filterRoutines, setFilterRoutines] = useState('');
   const [totalRoutines, setTotalRoutines] = useState([]);
@@ -131,20 +111,10 @@ function TopRoutines() {
     setRoutines(totalRoutines);
   };
 
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     handleCloseSearch();
-};
+  };
 
   const handleCloseModal = () => {
     setSelectedEvent(null);
@@ -153,120 +123,117 @@ function TopRoutines() {
 
   const handleViewExercises = () => {
     setViewExercises(!viewExercises);
-};
+  };
 
-const fetchRoutines = async () => {
-  setOpenCircularProgress(true);
-  try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
-      }
+  const fetchRoutines = async () => {
+    setOpenCircularProgress(true);
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('Token no disponible en localStorage');
+            return;
+        }
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_routines`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Error al obtener las rutinas: ' + response.statusText);
+        }
+        const routines = await response.json();
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (!response2.ok) {
+            throw new Error('Error al obtener las rutinas asignadas: ' + response2.statusText);
+        }
+        const assignedRoutines = await response2.json();
+        const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (!response3.ok) {
+            throw new Error('Error al obtener los ejercicios: ' + response3.statusText);
+        }
+        const exercisesData = await response3.json();
+        const response4 = await fetch('https://train-mate-api.onrender.com/api/exercise/get-all-exercises', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}` 
+            }
+        });
+        if (!response4.ok) {
+            throw new Error('Error al obtener los ejercicios de Train Mate: ' + response4.statusText);
+        }
+        const exercisesDataFromTrainMate = await response4.json();
+        const routinesWithExercisesData = routines.map((routine) => {
+            const updatedExercises = routine.excercises.map((exercise) => {
+                let matchedExercise = exercisesData.find((ex) => ex.id === exercise.id);
+                
+                if (!matchedExercise && Array.isArray(exercisesDataFromTrainMate.exercises)) {
+                    matchedExercise = exercisesDataFromTrainMate.exercises.find((ex) => ex.id === exercise.id);
+                }
+                if (matchedExercise) {
+                    return {
+                        ...exercise,
+                        name: matchedExercise.name,
+                        description: matchedExercise.description,
+                    };
+                }
 
-      // Fetch rutinas
-      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_routines`, {
-          method: 'GET',
-          headers: {
-              'Authorization': `Bearer ${authToken}`
-          }
-      });
-      if (!response.ok) {
-          throw new Error('Error al obtener las rutinas: ' + response.statusText);
-      }
-      const routines = await response.json();
+                return exercise; 
+            });
 
-      // Fetch rutinas asignadas
-      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
-          method: 'GET',
-          headers: {
-              'Authorization': `Bearer ${authToken}`
-          }
-      });
-      if (!response2.ok) {
-          throw new Error('Error al obtener las rutinas asignadas: ' + response2.statusText);
-      }
-      const assignedRoutines = await response2.json();
-      const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
-          method: 'GET',
-          headers: {
-              'Authorization': `Bearer ${authToken}`
-          }
-      });
-      if (!response3.ok) {
-          throw new Error('Error al obtener los ejercicios: ' + response3.statusText);
-      }
-      const exercisesData = await response3.json();
-      const response4 = await fetch('https://train-mate-api.onrender.com/api/exercise/get-all-exercises', {
-          method: 'GET',
-          headers: {
-              'Authorization': `Bearer ${authToken}` 
-          }
-      });
-      if (!response4.ok) {
-          throw new Error('Error al obtener los ejercicios de Train Mate: ' + response4.statusText);
-      }
-      const exercisesDataFromTrainMate = await response4.json();
-      const routinesWithExercisesData = routines.map((routine) => {
-          const updatedExercises = routine.excercises.map((exercise) => {
-              let matchedExercise = exercisesData.find((ex) => ex.id === exercise.id);
-              
-              if (!matchedExercise && Array.isArray(exercisesDataFromTrainMate.exercises)) {
-                  matchedExercise = exercisesDataFromTrainMate.exercises.find((ex) => ex.id === exercise.id);
-              }
-              if (matchedExercise) {
-                  return {
-                      ...exercise,
-                      name: matchedExercise.name,
-                      description: matchedExercise.description,
-                  };
-              }
-
-              return exercise; 
-          });
-
-          return {
-              ...routine,
-              excercises: updatedExercises,
-          };
-      });
+            return {
+                ...routine,
+                excercises: updatedExercises,
+            };
+        });
 
 
-      const routinesWithAssignedCount = routinesWithExercisesData.map((routine) => {
-          const assignedForRoutine = assignedRoutines.filter((assigned) => assigned.id === routine.id);
-          const totalAssignedUsers = assignedForRoutine.reduce((acc, assigned) => {
-              return acc + (assigned.users ? assigned.users.length : 0);
-          }, 0);
+        const routinesWithAssignedCount = routinesWithExercisesData.map((routine) => {
+            const assignedForRoutine = assignedRoutines.filter((assigned) => assigned.id === routine.id);
+            const totalAssignedUsers = assignedForRoutine.reduce((acc, assigned) => {
+                return acc + (assigned.users ? assigned.users.length : 0);
+            }, 0);
 
-          return {
-              ...routine,
-              cant_asignados: totalAssignedUsers,
-          };
-      });
+            return {
+                ...routine,
+                cant_asignados: totalAssignedUsers,
+                exercises_length: routine.excercises ? routine.excercises.length : 0 
+            };
+        });
 
-      setRoutines(routinesWithAssignedCount);
-      setTotalRoutines(routinesWithAssignedCount);
-      setOpenCircularProgress(false);
-  } catch (error) {
-      console.error("Error fetching rutinas:", error);
-      setOpenCircularProgress(false);
-      setWarningConnection(true);
-      setTimeout(() => {
-          setWarningConnection(false);
-      }, 3000);
-  }
-};
+        setRoutines(routinesWithAssignedCount);
+        setTotalRoutines(routinesWithAssignedCount);
+        setOpenCircularProgress(false);
+    } catch (error) {
+        console.error("Error fetching rutinas:", error);
+        setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
+    }
+  };
 
-useEffect(() => {
-  if(filterRoutines!=''){
-    const filteredRoutinesSearcher = totalRoutines.filter(item => 
-      item.name.toLowerCase().startsWith(filterRoutines.toLowerCase())
-    );
-    setRoutines(filteredRoutinesSearcher);
-  } else {
-    setRoutines(totalRoutines);
-  }
-}, [filterRoutines]);
+  useEffect(() => {
+    if(filterRoutines!=''){
+      const filteredRoutinesSearcher = totalRoutines.filter(item => 
+        item.name.toLowerCase().startsWith(filterRoutines.toLowerCase())
+      );
+      setRoutines(filteredRoutinesSearcher);
+    } else {
+      setRoutines(totalRoutines);
+    }
+  }, [filterRoutines]);
 
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
@@ -285,76 +252,23 @@ useEffect(() => {
     }
   };
 
-    useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            verifyToken(token);
-        } else {
-            navigate('/');
-            console.error('No token found');
-        }
-      }, []);
-
-      useEffect(() => {
-        if (userMail) {
-            fetchUser();
-        }
-    }, [userMail]);
-
-    const fetchUser = async () => {
-      setOpenCircularProgress(true);
-      try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
-        }
-        const encodedUserMail = encodeURIComponent(userMail);
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-          method: 'GET', 
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-      });
-          if (!response.ok) {
-              throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-          }
-          const data = await response.json();
-          setType(data.type);
-      } catch (error) {
-          console.error("Error fetching user:", error);
+  useEffect(() => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+          verifyToken(token);
+      } else {
+          navigate('/');
+          console.error('No token found');
       }
-    };
+  }, []);
+
     
-      useEffect(() => {
-        if (userMail) {
-            fetchRoutines();
-        }
-    }, [userMail]);
+  useEffect(() => {
+      if (userMail) {
+          fetchRoutines();
+      }
+  }, [userMail]);
 
-      useEffect(() => {
-        if(isMobileScreen) {
-          setMaxHeight('700px');
-        } else {
-          setMaxHeight('600px')
-        }
-      }, [isSmallScreen, isMobileScreen])
-
-    const visibleRows = React.useMemo(
-      () =>
-        [...routines]
-          .sort((a, b) =>
-            order === 'asc'
-              ? a[orderBy] < b[orderBy]
-                ? -1
-                : 1
-              : a[orderBy] > b[orderBy]
-              ? -1
-              : 1
-          )
-          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-      [order, orderBy, page, rowsPerPage, routines]
-    );
 
     return (
       <div className="App">
@@ -402,137 +316,13 @@ useEffect(() => {
                             )}
                             </div>
                     </div>
-            <div className="Table-Container">
-            <Box sx={{ width: '100%', flexWrap: 'wrap', background: '#F5F5F5', border: '2px solid #424242', borderRadius: '10px' }}>
-              <Paper
-                  sx={{
-                  width: '100%',
-                  backgroundColor: '#F5F5F5',
-                  borderRadius: '10px'
-                  }}
-              >
-                  <TableContainer sx={{maxHeight: {maxHeight}, overflow: 'auto'}}>
-                      <Table
-                          sx={{
-                          width: '100%',
-                          borderCollapse: 'collapse',
-                          }}
-                          aria-labelledby="tableTitle"
-                          size={dense ? 'small' : 'medium'}
-                      >
-                          <TableHead>
-                              <TableRow sx={{ height: '5vh', width: '5vh' }}>
-                                  <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                            <TableSortLabel active={orderBy === 'name'} direction={orderBy === 'name' ? order : 'asc'} onClick={(event) => handleRequestSort(event, 'name')}>
-                              Name
-                              {orderBy === 'name' ? (
-                              <Box component="span" sx={visuallyHidden}>
-                                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                              </Box>
-                              ) : (
-                                null
-                              )}
-                            </TableSortLabel>
-                          </TableCell>
-                          {!isSmallScreen && (
-                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', fontWeight: 'bold',color:'#424242' }}>
-                              <TableSortLabel active={orderBy === 'owner'} direction={orderBy === 'owner' ? order : 'asc'} onClick={(event) => handleRequestSort(event, 'owner')}>
-                                Owner
-                                {orderBy === 'owner' ? (
-                                    <Box component="span" sx={visuallyHidden}>
-                                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                    </Box>
-                                ) : (
-                                  null
-                                )}
-                              </TableSortLabel>
-                            </TableCell>
-                          )}
-                          {!isSmallScreen250 && (
-                            <TableCell align="right" sx={{borderBottom: '1px solid #424242',borderRight: '1px solid #424242', fontWeight: 'bold',color:'#424242' }}>
-                              <TableSortLabel active={orderBy === 'excercises'} direction={orderBy === 'excercises' ? order : 'asc'} onClick={(event) => handleRequestSort(event, 'excercises')}>
-                                Exercises
-                                {orderBy === 'excercises' ? (
-                                    <Box component="span" sx={visuallyHidden}>
-                                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                    </Box>
-                                ) : (
-                                  null
-                                )}
-                              </TableSortLabel>
-                            </TableCell>
-                          )}
-                          {!isSmallScreen && (
-                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', fontWeight: 'bold',color:'#424242' }}>
-                              <TableSortLabel active={orderBy === 'cant_asignados'} direction={orderBy === 'cant_asignados' ? order : 'asc'} onClick={(event) => handleRequestSort(event, 'cant_asignados')}>
-                                Users
-                                {orderBy === 'cant_asignados' ? (
-                                    <Box component="span" sx={visuallyHidden}>
-                                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                    </Box>
-                                ) : (
-                                  null
-                                )}
-                              </TableSortLabel>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {visibleRows.length===0 ? (
-                            <TableRow>
-                            <TableCell colSpan={isSmallScreen ? 2 : 4} align="center" sx={{ color: '#424242', borderBottom: '1px solid #424242' }}>
-                                There are no created routines
-                            </TableCell>
-                            </TableRow>
-                        ) : (
-                          <>
-                            {visibleRows.map((row) => (
-                              <TableRow onClick={()=>handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #ccc' }}>
-                                <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                  {row.name}
-                                </TableCell>
-                                {!isSmallScreen && (
-                                  <TableCell align="right" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242',color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                    {row.owner}
-                                  </TableCell>
-                                )}
-                                {!isSmallScreen250 && (
-                                  <TableCell align="right" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242',color:'#424242' }}>
-                                    {row.excercises.length}
-                                  </TableCell>
-                                )}
-                                {!isSmallScreen && (
-                                  <TableCell align="right" sx={{ borderBottom: '1px solid #424242',color:'#424242' }}>
-                                    {row.cant_asignados} 
-                                  </TableCell>
-                                )}
-                              </TableRow>
-                            ))}
-                          </>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                  {visibleRows.length!=0 ? (
-                    <>
-                        <TablePagination
-                            rowsPerPageOptions={[5]}
-                            component="div"
-                            count={routines.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={handleChangePage}
-                        />
-                    </>
-                  ) : (
-                    null
-                  )}
-                </Paper>
-              </Box> 
+            <div>
+              {routines && (
+                          <CustomTable columnsToShow={['Name','Owner','Exercises','Users','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','exercises_length','cant_asignados']}/> 
+              )}
               <div className='graphic-container'>
-              <BarAnimation routines={routines} isSmallScreen={isSmallScreen}/>
-            </div>
+                <BarAnimation routines={routines} isSmallScreen={isSmallScreen}/>
+              </div>
             </div>
             {selectedEvent && (
               <div className="Modal" onClick={handleCloseModal}>

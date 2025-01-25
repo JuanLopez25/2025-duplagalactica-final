@@ -5,18 +5,17 @@ from services.membershipsRoutes import edit_memb_price,get_membership_template,g
 
 def get_unique_user_membership_route():
     try:
-        user = get_unique_user_membership()
-        return jsonify(user), 200
+        user_membership = get_unique_user_membership()
+        return jsonify(user_membership), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
 
-
 def get_membership_template_route():
     try:
-        user = get_membership_template()
-        return jsonify(user), 200
+        membership_template = get_membership_template()
+        return jsonify(membership_template), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except RuntimeError as e:
@@ -24,43 +23,42 @@ def get_membership_template_route():
 
 def use_membership_class_route(classId,membId):
     try:
-        membresia = use_membership_class(classId,membId)
-        return jsonify({"message": "Membresia actualizada exitosamente"}), 200
+        use_membership_class(classId,membId)
+        return jsonify({"message": "Membrship used successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 def edit_memb_price_route(tipo,precio):
     try:
-        membresia = edit_memb_price(tipo,precio)
-        return jsonify({"message": "Membresia actualizada exitosamente"}), 200
+        edit_memb_price(tipo,precio)
+        return jsonify({"message": "Membrship updated successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def unuse_membership_class_route(classId,membId):
     try:
-        membresia = unuse_membership_class(classId,membId)
-        return jsonify({"message": "Membresia actualizada exitosamente"}), 200
+        unuse_membership_class(classId,membId)
+        return jsonify({"message": "Membrship unused successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-def aquire_membership_month_route(fechaInicio,uid,fechaFin,type_memb):
+def aquire_membership_month_route(startDate,uid,endDate,type_memb):
     try:
-        membresia = aquire_membership_month(fechaInicio,uid,fechaFin,type_memb)
-        return jsonify({"message": "Membresia actualizada exitosamente"}), 200
+        aquire_membership_month(startDate,uid,endDate,type_memb)
+        return jsonify({"message": "Membership aquired successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def get_memb_user_route():
     try:
-        classes_list = get_memb_user()
-        return jsonify(classes_list), 200
+        memberships_users = get_memb_user()
+        return jsonify(memberships_users), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def update_class_use_route(usuarios,selectedEvent):
+def update_class_use_route(users,selectedEvent):
     try:
-        update_class_use(usuarios,selectedEvent)
-        return jsonify({"message": "Clase actualizada exitosamente"}), 200
+        update_class_use(users,selectedEvent)
+        return jsonify({"message": "Class used correctly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

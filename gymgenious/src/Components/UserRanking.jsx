@@ -1,51 +1,32 @@
 import * as React from 'react';
-import Paper from '@mui/material/Paper';
+import { Paper, useMediaQuery} from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
 import { useState, useEffect } from 'react';
-import { Box, useMediaQuery } from '@mui/material';
-import { visuallyHidden } from '@mui/utils';
 import { jwtDecode } from "jwt-decode";
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import NewLeftBar from '../real_components/NewLeftBar';
-import ColorToggleButton from '../real_components/ColorToggleButton.jsx';
 import Backdrop from '@mui/material/Backdrop';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import CircularProgress from '@mui/material/CircularProgress';
-import DaySelection from '../real_components/DaySelection.jsx';
 import { useNavigate } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
-import Slide from '@mui/material/Slide';
 import Loader from '../real_components/loader.jsx';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
+import CustomTable from '../real_components/Table4columns.jsx';
 
 export default function StickyHeadTable() {
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [orderBy, setOrderBy] = useState('name');
-    const [order, setOrder] = useState('asc');
     const [userMail, setUserMail] = useState('');
-    const [routines, setRoutines] = useState([]);
-    const [routine, setRoutine] = useState([]);
-    const [selectedDay, setSelectedDay] = useState('');
     const isSmallScreen = useMediaQuery('(max-width:700px)');
     const [selectedEvent, setSelectedEvent] = useState(null);
-    const [rows, setRows] = useState([]);
-    const [errorToken, setErrorToken] = useState(false);
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
-    const [dense, setDense] = useState(false);
     const navigate = useNavigate();
     const [type, setType] = useState(null);
-    const [warningFetchingUserRoutines, setWarningFetchingUserRoutines] = useState(false);
     const isMobileScreen = useMediaQuery('(min-height:750px)');
-    const [maxHeight, setMaxHeight] = useState('600px');
     const [viewCreateRanking, setViewCreateRanking] = useState(false);
     const [viewJoinRanking, setViewJoinRanking] = useState(false);
     const [name, setName] = useState('');
@@ -59,21 +40,6 @@ export default function StickyHeadTable() {
     const [errorCredentials, setErrorCredentials] = useState(false);
     const [errorAlreadyJoined, setErrorAlreadyJoined] = useState(false);
     const [rankings,setRankings] = useState([])
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
-    };
-
-    const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
-    };
 
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
@@ -141,7 +107,13 @@ export default function StickyHeadTable() {
                 })
             };
             });
-            setRankings(updatedRankings)
+            const updatedRankings2 = updatedRankings.map(rank => {
+                return {
+                    ...rank,
+                    participants_length: rank.participants.length
+                };
+            });
+            setRankings(updatedRankings2)
             setTimeout(() => {
             setOpenCircularProgress(false);
             }, 3000);
@@ -308,10 +280,6 @@ export default function StickyHeadTable() {
             setUserMail(decodedToken.email);
         } catch (error) {
             console.error('Error al verificar el token:', error);
-            setErrorToken(true);
-            setTimeout(() => {
-              setErrorToken(false);
-            }, 3000);
             throw error;
         }
       };
@@ -366,35 +334,6 @@ export default function StickyHeadTable() {
         }
       };
 
-    useEffect(() => {
-        if(isSmallScreen) {
-          setRowsPerPage(10);
-        } else {
-          setRowsPerPage(5)
-        }
-        if(isMobileScreen) {
-          setMaxHeight('700px');
-        } else {
-          setMaxHeight('600px')
-        }
-      }, [isSmallScreen, isMobileScreen])
-
-    const visibleRows = React.useMemo(
-        () =>
-          [...rankings]
-            .sort((a, b) =>
-              order === 'asc'
-                ? a[orderBy] < b[orderBy]
-                  ? -1
-                  : 1
-                : a[orderBy] > b[orderBy]
-                ? -1
-                : 1
-            )
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-        [order, orderBy, page, rowsPerPage, rankings]
-      );
-
     return (
         <div className="App">
             {type!='client' ? (
@@ -447,133 +386,9 @@ export default function StickyHeadTable() {
                     </Button>
                 </div>
             </div>
-            <div className="Table-Container" style={{alignItems: 'center'}}>
-                <Box sx={{ width: '100%', flexWrap: 'wrap', background: '#F5F5F5', border: '2px solid #424242', borderRadius: '10px' }}>
-                    <Paper
-                        sx={{
-                        width: '100%',
-                        backgroundColor: '#F5F5F5',
-                        borderRadius: '10px'
-                        }}
-                    >
-                        <TableContainer sx={{maxHeight: {maxHeight}, overflow: 'auto'}}>
-                            <Table
-                                sx={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                }}
-                                aria-labelledby="tableTitle"
-                                size={dense ? 'small' : 'medium'}
-                            >
-                                <TableHead>
-                                    <TableRow sx={{ height: '5vh', width: '5vh' }}>
-                                        <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                            <TableSortLabel
-                                                active={orderBy === 'name'}
-                                                direction={orderBy === 'name' ? order : 'asc'}
-                                                onClick={(event) => handleRequestSort(event, 'name')}
-                                            >
-                                                Name
-                                                {orderBy === 'name' ? (
-                                                    <Box component="span" sx={visuallyHidden}>
-                                                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                    </Box>
-                                                ) : null}
-                                            </TableSortLabel>
-                                        </TableCell>
-                                        {!isSmallScreen && (
-                                            <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                                <TableSortLabel
-                                                    active={orderBy === 'usersRanked'}
-                                                    direction={orderBy === 'usersRanked' ? order : 'asc'}
-                                                    onClick={(event) => handleRequestSort(event, 'usersRanked')}
-                                                >
-                                                    Users Ranked
-                                                    {orderBy === 'usersRanked' ? (
-                                                        <Box component="span" sx={visuallyHidden}>
-                                                            {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                        </Box>
-                                                    ) : null}
-                                                </TableSortLabel>
-                                            </TableCell>
-                                        )}
-                                        {!isSmallScreen && (
-                                            <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                                <TableSortLabel
-                                                >
-                                                    Ranking ID
-                                                </TableSortLabel>
-                                            </TableCell>
-                                        )}
-                                        <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                            <TableSortLabel
-                                            >
-                                                Ranking password
-                                            </TableSortLabel>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {visibleRows.length===0 ? (
-                                        <TableRow>
-                                        <TableCell colSpan={isSmallScreen ? 2 : 4} align="center" sx={{ color: '#424242', borderBottom: '1px solid #424242' }}>
-                                            There are no rankings
-                                        </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        visibleRows.map((row) => (
-                                        <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={`${row.id}-${row.day}`} sx={{ cursor: 'pointer', borderBottom: '1px solid #ccc' }}>
-                                            <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                            {row.name}
-                                            </TableCell>
-                                            {!isSmallScreen && (
-                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>
-                                                {row.participants.length}
-                                                </TableCell>
-                                            )}
-                                            {!isSmallScreen && (
-                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                                {row.id}
-                                                </TableCell>
-                                            )}
-                                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                            {row.password}
-                                            </TableCell>
-                                        </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                        {visibleRows.length!=0 ? (
-                            <>
-                                {isSmallScreen ? (
-                                    <TablePagination
-                                        rowsPerPageOptions={[10]}
-                                        component="div"
-                                        count={rankings.length}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        onPageChange={handleChangePage}
-                                    />
-                                ) : (
-                                    <TablePagination
-                                        rowsPerPageOptions={[5, 10, 25]}
-                                        component="div"
-                                        count={rankings.length}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        onPageChange={handleChangePage}
-                                        onRowsPerPageChange={handleChangeRowsPerPage}
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            null
-                        )}
-                    </Paper>
-                </Box>
-            </div>
+            {rankings && (
+                          <CustomTable columnsToShow={['Name','Users ranked','Ranking ID','Ranking Password','There are no rankings']} data={rankings} handleSelectEvent={handleSelectEvent} vals={['name','participants_length','id','password']}/> 
+            )}
             {selectedEvent && (
                 <div className="Modal" onClick={handleCloseModal}>
                     <div className="Modal-Content-view-exercises" onClick={(e) => e.stopPropagation()}>

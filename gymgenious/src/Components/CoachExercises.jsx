@@ -1,35 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { Box, fabClasses, useMediaQuery } from '@mui/material';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Paper from '@mui/material/Paper';
-import { visuallyHidden } from '@mui/utils';
+import { Box, useMediaQuery } from '@mui/material';
 import NewLeftBar from '../real_components/NewLeftBar';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
 import { jwtDecode } from "jwt-decode";
-import CheckIcon from '@mui/icons-material/Check';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../real_components/loader.jsx';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
+import CustomTable from '../real_components/Table3columns.jsx';
 
 export default function CoachExercises() {
-    const [order, setOrder] = useState('asc');
     const [id,setId] = useState()
-    const [orderBy, setOrderBy] = useState('name');
-    const [page, setPage] = useState(0);
-    const [dense, setDense] = useState(false);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [userMail, setUserMail] = useState('');
     const isSmallScreen = useMediaQuery('(max-width:400px)');
@@ -41,7 +24,6 @@ export default function CoachExercises() {
     const navigate = useNavigate();
     const [type, setType] = useState(null);
     const isMobileScreen = useMediaQuery('(min-height:750px)');
-    const [maxHeight, setMaxHeight] = useState('600px');
     const [editExercise, setEditExercise] = useState(false);
     const [name, setName] = useState('');
     const [desc, setDesc] = useState('');
@@ -49,9 +31,6 @@ export default function CoachExercises() {
     const[fetchImg, setImageFetch] = useState('')
     const[fetchName,setNameFetch] = useState('')
     const[fetchDes,setDescFetch] = useState('')
-    const[fetchOwner,setOwnerFetch] = useState('')
-    const[fetchExer,setExercise] = useState({});
-
     const [openSearch, setOpenSearch] = useState(false);
     const [filterExercises, setFilterExercises] = useState('');
     const [totalExercises, setTotalExercises] = useState([]);
@@ -63,22 +42,6 @@ export default function CoachExercises() {
     const handleCloseSearch = () => {
       setOpenSearch(false);
       setExercises(totalExercises);
-    };
-
-
-    const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
-    };
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
     };
 
     const handleSelectEvent = (event) => {
@@ -95,18 +58,12 @@ export default function CoachExercises() {
         setImageFetch(event.image_url);
         setNameFetch(event.name);
         setDescFetch(event.description);
-        setOwnerFetch(event.owner);
-        setExercise(event);
         setId(event.id)
     } 
 
     const handleCloseModal = () => {
         setEditExercise(false);
     };
-
-    const handleSaveChanges = () => {
-        handleCloseModal();
-    }
 
     const correctExercisesData = async (exercisesData) => {
         return exercisesData.map(element => {
@@ -119,8 +76,7 @@ export default function CoachExercises() {
             }
             return element;
         });
-    };
-    
+    };   
 
     const fetchExercises = async () => {
         setOpenCircularProgress(true);
@@ -226,7 +182,6 @@ export default function CoachExercises() {
           }
     }
 
-
     const saveExercise = async (event) => {
         event.preventDefault(); 
         handleSaveEditExer();
@@ -258,30 +213,6 @@ export default function CoachExercises() {
         fetchExercises();
     }
     }, [type]);
-
-    useEffect(() => {
-        if(isMobileScreen) {
-          setMaxHeight('700px');
-        } else {
-          setMaxHeight('600px')
-        }
-      }, [isSmallScreen, isMobileScreen])
-
-    const visibleRows = React.useMemo(
-        () =>
-          [...exercises]
-            .sort((a, b) =>
-              order === 'asc'
-                ? a[orderBy] < b[orderBy]
-                  ? -1
-                  : 1
-                : a[orderBy] > b[orderBy]
-                ? -1
-                : 1
-            )
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-        [order, orderBy, page, rowsPerPage, exercises]
-      );
 
     const fetchUser = async () => {
         try {
@@ -390,136 +321,9 @@ export default function CoachExercises() {
                             </div>
                         </div>
                     )}
-                    <div className="Table-Container">
-                    <Box sx={{ width: '100%', flexWrap: 'wrap', background: '#F5F5F5', border: '2px solid #424242', borderRadius: '10px' }}>
-                        <Paper
-                            sx={{
-                            width: '100%',
-                            backgroundColor: '#F5F5F5',
-                            borderRadius: '10px'
-                            }}
-                        >
-                            <TableContainer sx={{maxHeight: {maxHeight}, overflow: 'auto'}}>
-                                <Table
-                                    sx={{
-                                    width: '100%',
-                                    borderCollapse: 'collapse',
-                                    }}
-                                    aria-labelledby="tableTitle"
-                                    size={dense ? 'small' : 'medium'}
-                                >
-                                    <TableHead>
-                                        <TableRow sx={{ height: '5vh', width: '5vh' }}>
-                                            <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                                <TableSortLabel
-                                                active={orderBy === 'name'}
-                                                direction={orderBy === 'name' ? order : 'asc'}
-                                                onClick={(event) => handleRequestSort(event, 'name')}
-                                                >
-                                                Name
-                                                {orderBy === 'name' && (
-                                                    <Box component="span" sx={visuallyHidden}>
-                                                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                    </Box>
-                                                )}
-                                                </TableSortLabel>
-                                            </TableCell>
-                                            {!isSmallScreen650 && (
-                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
-                                                <TableSortLabel
-                                                    active={orderBy === 'description'}
-                                                    direction={orderBy === 'description' ? order : 'asc'}
-                                                    onClick={(event) => handleRequestSort(event, 'description')}
-                                                >
-                                                    Description
-                                                    {orderBy === 'description' && (
-                                                    <Box component="span" sx={visuallyHidden}>
-                                                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                    </Box>
-                                                    )}
-                                                </TableSortLabel>
-                                                </TableCell>
-                                            )}
-                                            {!isSmallScreen && (
-                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
-                                                <TableSortLabel
-                                                    active={orderBy === 'owner'}
-                                                    direction={orderBy === 'owner' ? order : 'asc'}
-                                                    onClick={(event) => handleRequestSort(event, 'owner')}
-                                                >
-                                                    Owner
-                                                    {orderBy === 'owner' && (
-                                                    <Box component="span" sx={visuallyHidden}>
-                                                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                    </Box>
-                                                    )}
-                                                </TableSortLabel>
-                                                </TableCell>
-                                            )}
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {visibleRows.length===0 ? (
-                                                <TableRow>
-                                                <TableCell colSpan={isSmallScreen650 ? 2 : 3} align="center" sx={{ color: '#424242', borderBottom: '1px solid #424242' }}>
-                                                    There are no created exercises
-                                                </TableCell>
-                                                </TableRow>
-                                            ) : (
-                                                <>
-                                                    {visibleRows.map((row) => {
-                                                        const isTransparent = row.owner==userMail;
-                                                        return (
-                                                        <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #ccc', opacity: !isTransparent ? 0.5 : 1,}}>
-                                                                <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>
-                                                                    {row.name}
-                                                                </TableCell>
-                                                            {!isSmallScreen650 && (
-                                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>
-                                                                    {row.description}
-                                                                </TableCell>
-                                                            )}
-                                                            {!isSmallScreen && (
-                                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
-                                                                    {row.owner}
-                                                                </TableCell>
-                                                            )}
-                                                        </TableRow>
-                                                    )})}
-                                                </>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                                {visibleRows.length!=0 ? (
-                                    <>
-                                        {isSmallScreen650 ? (
-                                            <TablePagination
-                                                rowsPerPageOptions={[10]}
-                                                component="div"
-                                                count={exercises.length}
-                                                rowsPerPage={rowsPerPage}
-                                                page={page}
-                                                onPageChange={handleChangePage}
-                                            />
-                                            ) : (
-                                            <TablePagination
-                                                rowsPerPageOptions={[10, 25, 50]}
-                                                component="div"
-                                                count={exercises.length}
-                                                rowsPerPage={rowsPerPage}
-                                                page={page}
-                                                onPageChange={handleChangePage}
-                                                onRowsPerPageChange={handleChangeRowsPerPage}
-                                            />
-                                        )}
-                                    </>
-                                ) : (
-                                    null
-                                )}
-                            </Paper>
-                        </Box>
-                    </div>
+                    {exercises && (
+                        <CustomTable columnsToShow={['Name','Description','Owner','There are no created exercises']} data={exercises} handleSelectEvent={handleSelectEvent} vals={['name','description','owner']}/> 
+                    )}
                     {selectedEvent && (
                         <div className="Modal" onClick={handleCloseModalEvent}>
                             <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>

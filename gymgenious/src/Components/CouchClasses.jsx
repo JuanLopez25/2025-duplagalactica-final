@@ -29,7 +29,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
-import Checkbox from '@mui/material/Checkbox';
+import CustomTable from '../real_components/Table4columns.jsx';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
@@ -87,6 +87,7 @@ function CouchClasses() {
   const [viewQualifications, setViewQualifications] = useState(false);
   const [viewInventory, setViewInventory] = useState(false)
   const [inventoryChange, setInventoryChange] = useState(false)
+  
   const ItemList = () => {
     const incrementQuantity = (itemName) => {
       setItemData((prevItems) =>
@@ -325,33 +326,10 @@ function CouchClasses() {
     }
   };
 
-  function formatDateForInput(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${year}-${month}-${day}`;
-  }
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     handleCloseSearch();
-
   };
 
   const handleCloseModal = () => {
@@ -371,7 +349,7 @@ function CouchClasses() {
       }
       
       try {
-        const response = await fetch(`http://127.0.0.1:5000/get_inventory`, {
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${authToken}`,
@@ -585,8 +563,6 @@ function CouchClasses() {
     }
   };
 
-  
-
   const validateForm = () => {
     let res = true;
     if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='' && !inventoryChange) {
@@ -773,7 +749,7 @@ function CouchClasses() {
           fecha: comment ? comment.date : null,
         };
       });
-      const response5 = await fetch(`http://localhost:5000/get_inventory`, {
+      const response5 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -805,11 +781,21 @@ function CouchClasses() {
         };
       });
 
-      console.log("Data matches actualizada:", updatedDataMatches);
+      const formattedRoutines = updatedDataMatches.map((routine) => {
+        return {
+            ...routine,
+            start: formatDate(new Date(routine.start)), 
+            dateInicioHora: new Date(new Date(routine.dateInicio).setHours(new Date(routine.dateInicio).getHours() + 3)).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+            recurrent: routine.permanent=='Si' ? 'Yes' : 'No'
+        };
+      });
+    
 
+      
+      console.log("si se ve",formattedRoutines)
 
-      setClasses(updatedDataMatches);
-      setTotalClasses(updatedDataMatches);
+      setClasses(formattedRoutines);
+      setTotalClasses(formattedRoutines);
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -837,6 +823,14 @@ function CouchClasses() {
         throw error;
     }
   };
+
+  function formatDateForInput(date) {
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${year}-${month}-${day}`;
+  }
 
   useEffect(() => {
     const newRowsList = [];
@@ -920,33 +914,6 @@ function CouchClasses() {
         console.error("Error fetching user:", error);
     }
   };
-  const compararfechaHoy = (fecha) => {
-    const fechaGuardada = new Date(fecha);
-    const fechaActual = new Date();
-    const diaGuardado = fechaGuardada.getDate();
-    const mesGuardado = fechaGuardada.getMonth(); 
-    const anioGuardado = fechaGuardada.getFullYear();
-    const diaActual = fechaActual.getDate();
-    const mesActual = fechaActual.getMonth();
-    const anioActual = fechaActual.getFullYear();
-    const coincide = (diaGuardado === diaActual) && (mesGuardado === mesActual) && (anioGuardado === anioActual);
-    return coincide
-  }
-  const visibleRows = React.useMemo(
-    () =>
-      [...newRows]
-        .sort((a, b) =>
-          order === 'asc'
-            ? a[orderBy] < b[orderBy]
-              ? -1
-              : 1
-            : a[orderBy] > b[orderBy]
-            ? -1
-            : 1
-        )
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, newRows]
-  );
 
   function ECommerce({event}) {
     return (
@@ -1037,8 +1004,6 @@ function CouchClasses() {
                         >
                           Delete class
                         </MDBBtn>
-                      {/* <button style={{marginLeft:'10px'}} onClick={()=>handleEditClass(selectedEvent)}>Edit class</button>
-                      <button style={{marginLeft:'10px'}} onClick={() => handleDeleteClass(selectedEvent.id)}>Delete class</button> */}
                   </MDBCardBody>
                 </MDBCard>
               </MDBCol>
@@ -1134,275 +1099,115 @@ function CouchClasses() {
         ) : (
             null
         )}
-        <div className="Table-Container">
-        <Box sx={{ width: '100%', flexWrap: 'wrap', background: '#F5F5F5', border: '2px solid #424242', borderRadius: '10px' }}>
-            <Paper
-                sx={{
-                width: '100%',
-                backgroundColor: '#F5F5F5',
-                borderRadius: '10px'
-                }}
-            >
-                <TableContainer sx={{maxHeight: {maxHeight}, overflow: 'auto'}}>
-                    <Table
-                        sx={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        }}
-                        aria-labelledby="tableTitle"
-                        size={dense ? 'small' : 'medium'}
-                    >
-                        <TableHead>
-                            <TableRow sx={{ height: '5vh', width: '5vh' }}>
-                                <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                        <TableSortLabel active={orderBy === 'name'} direction={orderBy === 'name' ? order : 'asc'} onClick={(event) => handleRequestSort(event, 'name')}>
-                                            Name
-                                            {orderBy === 'name' ? (
-                                                <Box component="span" sx={visuallyHidden}>
-                                                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                </Box>
-                                            ) : (
-                                                null
-                                            )}
-                                        </TableSortLabel>
-                                    </TableCell>
-                                    {!isSmallScreen500 && (
-                                    <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
-                                        <TableSortLabel
-                                        active={orderBy === 'hour'}
-                                        direction={orderBy === 'hour' ? order : 'asc'}
-                                        onClick={(event) => handleRequestSort(event, 'hour')}
-                                        >
-                                        Start time
-                                        {orderBy === 'hour' ? (
-                                            <Box component="span" sx={visuallyHidden}>
-                                            {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                            </Box>
-                                        ) : null}
-                                        </TableSortLabel>
-                                    </TableCell>
-                                    )}
-                                    {!isSmallScreen400 && (
-                                    <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
-                                        <TableSortLabel
-                                        active={orderBy === 'start'}
-                                        direction={orderBy === 'start' ? order : 'asc'}
-                                        onClick={(event) => handleRequestSort(event, 'start')}
-                                        >
-                                        Date
-                                        {orderBy === 'start' ? (
-                                            <Box component="span" sx={visuallyHidden}>
-                                            {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                            </Box>
-                                        ) : null}
-                                        </TableSortLabel>
-                                    </TableCell>
-                                    )}
-                                    {!isSmallScreen600 && (
-                                    <TableCell align="right" sx={{ borderBottom: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
-                                        <TableSortLabel
-                                        active={orderBy === 'permanent'}
-                                        direction={orderBy === 'permanent' ? order : 'asc'}
-                                        onClick={(event) => handleRequestSort(event, 'permanent')}
-                                        >
-                                        Recurrent
-                                        {orderBy === 'permanent' ? (
-                                            <Box component="span" sx={visuallyHidden}>
-                                            {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                            </Box>
-                                        ) : null}
-                                        </TableSortLabel>
-                                    </TableCell>
-                                    )}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            {visibleRows.length===0 ? (
-                              <TableRow>
-                              <TableCell colSpan={isSmallScreen500 ? 2 : 4} align="center" sx={{ color: '#424242', borderBottom: '1px solid #424242' }}>
-                                  There are no created classes
-                              </TableCell>
-                              </TableRow>
-                            ) : (
-                              <>
-                                {visibleRows.map((row) => (
-                                    <>
-                                    {row.fecha==null && compararfechaHoy(row.start) && row.BookedUsers.length>0 ? (
-                                      <>
-                                      <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
-                                      <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',backgroundColor:'#8ecae6',borderRight: '1px solid #424242', color:'black', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                          {row.name}
-                                      </TableCell>
-                                      {!isSmallScreen500 && (
-                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'#8ecae6', borderRight: '1px solid #424242', color: 'black' }}>{row.hour}</TableCell>
-                                      )}
-                                      {!isSmallScreen400 && (
-                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'#8ecae6', borderRight: '1px solid #424242', color: 'black' }}>{formatDate(new Date(row.start))}</TableCell>
-                                      )}
-                                      {!isSmallScreen600 && (
-                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242',backgroundColor:'#8ecae6', color: 'black' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
-                                      )}
-                                      </TableRow>
-                                      </> ) : 
-                                      (<>
-                                      <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={row.id} sx={{ cursor: 'pointer', borderBottom: '1px solid #424242' }}>
-                                      <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242',borderRight: '1px solid #424242', color:'#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                          {row.name}
-                                      </TableCell>
-                                      {!isSmallScreen500 && (
-                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{row.hour}</TableCell>
-                                      )}
-                                      {!isSmallScreen400 && (
-                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>{formatDate(new Date(row.start))}</TableCell>
-                                      )}
-                                      {!isSmallScreen600 && (
-                                          <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>{row.permanent === 'Si' ? 'Yes' : 'No'}</TableCell>
-                                      )}
-                                      </TableRow>
-                                      </>)
-                                    }
-                                    </>
-                                ))}
-                              </>
-                            )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    {visibleRows.length!=0 ? (
-                      <>
-                        {isSmallScreen500 ? (
-                        <TablePagination
-                            rowsPerPageOptions={[10]}
-                            component="div"
-                            count={newRows.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={handleChangePage}
-                        />
-                        ) : (
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25]}
-                            component="div"
-                            count={newRows.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                        />
-                        )}
-                      </>
-                    ) : (
-                      null
-                    )}
-                </Paper>
-                {openCheckList && (
+        {newRows && (
+              <CustomTable columnsToShow={['Name','Start time','Date','Recurrent','No classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['name','dateInicioHora','start','recurrent']}/> 
+        )}
+        {openCheckList && (
                   <div className="Modal" style={{zIndex:'1001'}}>
                   <EventQRCode selectedEvent={selectedEvent}/>
                   </div>
-                )}
-                {editClass && (
-                    <div className="Modal" style={{zIndex:'1001'}}>
-                        <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
-                            <h2>Class details</h2>
-                                <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                                    <div className="input-small-container">
-                                        <label htmlFor="hour" style={{color:'#14213D'}}>Start time:</label>
-                                        <input 
-                                        type='time'
-                                        id="hour" 
-                                        name="hour"
-                                        value={hour || fetchHour} 
-                                        onChange={(e) => setHour(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="input-small-container">
-                                        <label htmlFor="hourFin" style={{color:'#14213D'}}>End time:</label>
-                                        <input 
-                                            id="hourFin"
-                                            type='time'
-                                            name="hourFin" 
-                                            value={hourFin || selectedEvent.dateFin.split('T')[1].split(':').slice(0, 2).join(':')} 
-                                            onChange={(e) => setHourFin(e.target.value)}
-                                        />
-                                        {errorHour && (<p style={{color: 'red', margin: '0px'}}>30 minutes at least</p>)}
-                                    </div>
-                                    <div className="input-small-container">
-                                        <label htmlFor="name" style={{color:'#14213D'}}>Name:</label>
-                                        <input 
-                                        type="text" 
-                                        id="name" 
-                                        name="name" 
-                                        value={name} 
-                                        onChange={(e) => setName(e.target.value)}
-                                        placeholder={fetchName}/>
-                                    </div>
-                                </div>
-                                <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                                    <div className="input-small-container" style={{width:"100%"}}>
-                                        <label htmlFor="permanent" style={{color:'#14213D'}}>Recurrent:</label>
-                                          <select
-                                            id="permanent"
-                                            name="permanent"
-                                            value={permanent || fetchPermanent}
-                                            onChange={(e) => setPermanent(e.target.value)}
-                                          >
-                                            <option value="Si">Yes</option>
-                                            <option value="No">No</option>
-                                          </select>
-                                    </div>
-                                    <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
-                                        <label htmlFor="date" style={{color:'#14213D'}}>Date:</label>
-                                        <input 
-                                            type='date'
-                                            id='date'
-                                            name='date'
-                                            value={date || formatDateForInput(new Date(selectedEvent.dateInicio))}
-                                            onChange={(e) => setDate(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                                <div className="input-small-container">
-                                      <label htmlFor="salaAssigned" style={{ color: '#14213D' }}>Gymroom:</label>
-                                      <select
-                                          id="salaAssigned"
-                                          name="salaAssigned"
-                                          value={salaAssigned || selectedEvent.sala}
-                                          onChange={(e) => setSala(e.target.value)}
-                                          style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
-                                      >
-                                          {salas.map((sala) => (
-                                              <option style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} key={sala.id} value={sala.id}>
-                                                  {sala.nombre.length > 50 ? `${sala.nombre.substring(0, 50)}...` : sala.nombre}
-                                              </option>
-                                          ))}
-                                      </select>
-                                      {errorSala && (<p style={{color: 'red', margin: '0px'}}>Room no available</p>)}
-                                  </div>
-                                </div>
-                                <ItemList/>
-                                <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
-                                  <label htmlFor="maxNum" style={{color:'#14213D'}}>Participants:</label>
-                                  <input
-                                    type="number" 
-                                    id="maxNum" 
-                                    name="maxNum"
-                                    min='1'
-                                    max='500'
-                                    step='1'
-                                    value={maxNum || fetchCapacity} 
-                                    onChange={(e) => setMaxNum(e.target.value)}
-                                  />
-                                  {errorForm && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
-                                </div>
-                                <button onClick={saveClass} style={{width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save changes</button>
-                                <button onClick={handleEditClass} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%', marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px'}}>Cancel</button>
-                                
+        )}
+        {editClass && (
+            <div className="Modal" style={{zIndex:'1001'}}>
+                <div className="Modal-Content-class-creation" onClick={(e) => e.stopPropagation()}>
+                    <h2>Class details</h2>
+                        <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                            <div className="input-small-container">
+                                <label htmlFor="hour" style={{color:'#14213D'}}>Start time:</label>
+                                <input 
+                                type='time'
+                                id="hour" 
+                                name="hour"
+                                value={hour || fetchHour} 
+                                onChange={(e) => setHour(e.target.value)}
+                                />
+                            </div>
+                            <div className="input-small-container">
+                                <label htmlFor="hourFin" style={{color:'#14213D'}}>End time:</label>
+                                <input 
+                                    id="hourFin"
+                                    type='time'
+                                    name="hourFin" 
+                                    value={hourFin || selectedEvent.dateFin.split('T')[1].split(':').slice(0, 2).join(':')} 
+                                    onChange={(e) => setHourFin(e.target.value)}
+                                />
+                                {errorHour && (<p style={{color: 'red', margin: '0px'}}>30 minutes at least</p>)}
+                            </div>
+                            <div className="input-small-container">
+                                <label htmlFor="name" style={{color:'#14213D'}}>Name:</label>
+                                <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                value={name} 
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder={fetchName}/>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </Box>
-        </div>
+                        <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                            <div className="input-small-container" style={{width:"100%"}}>
+                                <label htmlFor="permanent" style={{color:'#14213D'}}>Recurrent:</label>
+                                  <select
+                                    id="permanent"
+                                    name="permanent"
+                                    value={permanent || fetchPermanent}
+                                    onChange={(e) => setPermanent(e.target.value)}
+                                  >
+                                    <option value="Si">Yes</option>
+                                    <option value="No">No</option>
+                                  </select>
+                            </div>
+                            <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
+                                <label htmlFor="date" style={{color:'#14213D'}}>Date:</label>
+                                <input 
+                                    type='date'
+                                    id='date'
+                                    name='date'
+                                    value={date || formatDateForInput(new Date(selectedEvent.dateInicio))}
+                                    onChange={(e) => setDate(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                        <div className="input-small-container">
+                              <label htmlFor="salaAssigned" style={{ color: '#14213D' }}>Gymroom:</label>
+                              <select
+                                  id="salaAssigned"
+                                  name="salaAssigned"
+                                  value={salaAssigned || selectedEvent.sala}
+                                  onChange={(e) => setSala(e.target.value)}
+                                  style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                              >
+                                  {salas.map((sala) => (
+                                      <option style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} key={sala.id} value={sala.id}>
+                                          {sala.nombre.length > 50 ? `${sala.nombre.substring(0, 50)}...` : sala.nombre}
+                                      </option>
+                                  ))}
+                              </select>
+                              {errorSala && (<p style={{color: 'red', margin: '0px'}}>Room no available</p>)}
+                          </div>
+                        </div>
+                        <ItemList/>
+                        <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
+                          <label htmlFor="maxNum" style={{color:'#14213D'}}>Participants:</label>
+                          <input
+                            type="number" 
+                            id="maxNum" 
+                            name="maxNum"
+                            min='1'
+                            max='500'
+                            step='1'
+                            value={maxNum || fetchCapacity} 
+                            onChange={(e) => setMaxNum(e.target.value)}
+                          />
+                          {errorForm && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
+                        </div>
+                        <button onClick={saveClass} style={{width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save changes</button>
+                        <button onClick={handleEditClass} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%', marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px'}}>Cancel</button>
+                        
+                </div>
+            </div>
+        )}
         </>
         )}
         {selectedEvent && (

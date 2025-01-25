@@ -421,6 +421,7 @@ export default function StickyHeadTable() {
                     </Paper>
                 </Box>
             </div>
+            
             {selectedEvent && (
                 <div className="Modal" onClick={handleCloseModal}>
                     <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
