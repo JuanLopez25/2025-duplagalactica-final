@@ -6,8 +6,8 @@ from services.attendanceRoutes import mark_attendance,get_coach_clients_assistan
     
 def mark_attendance_route(eventId,dateInicio,dateEnd,userMail):
     try:
-        created_attandance = mark_attendance(eventId,dateInicio,dateEnd,userMail)
-        return jsonify(created_attandance), 201
+        created_attandance_message = mark_attendance(eventId,dateInicio,dateEnd,userMail)
+        return jsonify(created_attandance_message), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

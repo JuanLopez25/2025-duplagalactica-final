@@ -20,7 +20,7 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-
+import Inventory from './InventoryCreation.jsx'
 
 const Link = ({ heading, subheading, onClick }) => {
   const ref = useRef(null);
@@ -285,6 +285,11 @@ export default function ManagingRoutines () {
                   heading="Assigments"
                   subheading="Assign routine to users"
                   onClick={() => handleLinkClick(<AssignRoutineToUser />)}
+                />
+                <Link
+                  heading="Inventory"
+                  subheading="Add inventory so then other coaches can use it"
+                  onClick={() => handleLinkClick(<Inventory />)}
                 />
               </div>
             </section>

@@ -7,21 +7,20 @@ import logging
 
 def create_routine(newRoutine):
     try:
-        class_ref = db.collection('routines').add(newRoutine)
+        db.collection('routines').add(newRoutine)
         created_routine = {**newRoutine}
         return created_routine
     except Exception as e:
-        print(f"Error al crear la rutine: {e}")
-        raise RuntimeError("No se pudo crear la rutina")
-
+        print(f"Error while creating the routine: {e}")
+        raise RuntimeError("It was not possible to create the routine")
 
 def assign_routine_to_user(newAssignRoutine):
     try:
         mails = [user['Mail'] for user in newAssignRoutine['user']]
         
-        users_ref = db.collection('assigned_routines')
+        assignes_routine_ref = db.collection('assigned_routines')
         
-        query = users_ref.where('assigner', '==', newAssignRoutine['assigner']) \
+        query = assignes_routine_ref.where('assigner', '==', newAssignRoutine['assigner']) \
                         .where('day', '==', newAssignRoutine['day']) \
                         .where('id', '==', newAssignRoutine['id'])
         docs = query.stream()
@@ -29,16 +28,15 @@ def assign_routine_to_user(newAssignRoutine):
 
         for doc in docs:
             doc_found = True  
-            doc_ref = users_ref.document(doc.id)             
+            doc_ref = assignes_routine_ref.document(doc.id)             
             doc_ref.update({
                 'users': mails
             })
 
-        print("hola llego")
         if doc_found:
             return {"message": "Actualización realizada"}
         else:            
-            new_doc_ref = users_ref.add({
+            new_doc_ref = assignes_routine_ref.add({
                 'assigner': newAssignRoutine['assigner'],
                 'day': newAssignRoutine['day'],
                 'id': newAssignRoutine['id'],
@@ -47,14 +45,9 @@ def assign_routine_to_user(newAssignRoutine):
                 'users': mails  
             })
             return new_doc_ref
-        return {"message": "Nuevo documento creado"}
     except Exception as e:
-        print(f"Error al asignar la rutina: {e}")
-        raise RuntimeError("No se pudo asignar la rutina")
-
-
-
-    
+        print(f"Error while assigning a routine: {e}")
+        raise RuntimeError("It was not possible to assign a routine")
 
 def get_routines():
     try:
@@ -63,26 +56,24 @@ def get_routines():
         routines = [{**doc.to_dict(), 'id': doc.id} for doc in docs]
         return routines
     except Exception as e:
-        print(f"Error al obtener las rutinas: {e}")
-        raise RuntimeError("No se pudo obtener las rutinas")
+        print(f"Error while getting the routines: {e}")
+        raise RuntimeError("It was not possible to get the routines")
     
 def get_assigned_routines():
     try:
-        routines_ref = db.collection('assigned_routines')
-        docs = routines_ref.stream()
+        assigned_routines_ref = db.collection('assigned_routines')
+        docs = assigned_routines_ref.stream()
         routines = [{**doc.to_dict()} for doc in docs]
         return routines
     except Exception as e:
-        print(f"Error al obtener las rutinas: {e}")
-        raise RuntimeError("No se pudo obtener las rutinas")
-
+        print(f"Error while getting the assigned routines: {e}")
+        raise RuntimeError("It was not possible to get the assigned routines")
 
 def update_routine_info(newRoutine):
     try:
-        users_ref = db.collection('routines')
-        doc_ref = users_ref.document(newRoutine['id'])
+        routines_ref = db.collection('routines')
+        doc_ref = routines_ref.document(newRoutine['id'])
         doc = doc_ref.get()
-        print("rutina nueva",newRoutine)
         if doc.exists:        
             doc_ref.update({
                 'description': newRoutine['description'],
@@ -96,13 +87,13 @@ def update_routine_info(newRoutine):
             return {"message": "No se encontró la rutina"}
 
     except Exception as e:
-        print(f"Error actualizando la rutina: {e}")
-        raise RuntimeError("No se pudo actualizar la rutina")
+        print(f"Error while updating the routine: {e}")
+        raise RuntimeError("It was not possible to update the routine")
 
 def delete_routine(event):
     try:
-        users_ref = db.collection('routines')
-        doc_ref = users_ref.document(event['id'])
+        routine_ref = db.collection('routines')
+        doc_ref = routine_ref.document(event['id'])
         doc = doc_ref.get()
         if doc.exists:
             assigned_routines = db.collection('assigned_routines')
@@ -116,5 +107,5 @@ def delete_routine(event):
             return {"message": "No se encontró la rutina"}
             
     except Exception as e:
-        print(f"Error eliminando la rutina: {e}")
-        raise RuntimeError("No se pudo eliminar la rutina")
+        print(f"Error while deleting the routine: {e}")
+        raise RuntimeError("It was not possible to delete the routine")

@@ -1,32 +1,37 @@
-import React, { useState } from "react";
-import { ReactQRScanner } from "react-qr-scanner";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef } from "react";
 
 const QrScanner = () => {
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const videoRef = useRef(null);
 
-  const handleScan = (data) => {
-    if (data) {
-      navigate(data); // Usar el contenido del QR para redirigir
-    }
-  };
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: "environment" } })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream; 
+        }
+      })
+      .catch((err) => {
+        console.error("Error al acceder a la cámara:", err);
+      });
 
-  const handleError = (err) => {
-    console.error("Error al escanear QR:", err);
-    setError("No se pudo leer el código QR.");
-  };
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+    };
+  }, []);
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
       <h1>Lector de QR</h1>
-      <ReactQRScanner
-        delay={300}
-        style={{ width: "100%" }}
-        onError={handleError}
-        onScan={handleScan}
-      />
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        style={{ width: "100%", maxWidth: "500px", borderRadius: "10px" }}
+      ></video>
     </div>
   );
 };

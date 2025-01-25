@@ -112,7 +112,8 @@ function CouchClasses() {
     };
   
     return (
-      <div style={{ width: "100%", margin: "auto" }}>
+      <div className="input-small-container">
+        <label style={{ color: '#14213D' }}>Item list:</label>
         <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
           {itemData.map((item) => (
             <li
@@ -199,6 +200,7 @@ function CouchClasses() {
       </Stack>
     );
   }
+
   const EventQRCode = ({ selectedEvent}) => {
     const [qrToken, setQrToken] = useState(null);
     useEffect(() => {
@@ -222,9 +224,9 @@ function CouchClasses() {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseCheckList}>
-          <MDBContainer>
-            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()}>
-              <MDBCol md="9" lg="7" xl="5" className="mt-5">
+          <MDBContainer style={{display:'flex'}}>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'40%'}}>
                 <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
                   <MDBCardBody className="p-4 text-black">
                     <div>
@@ -253,21 +255,26 @@ function CouchClasses() {
       </div>
     );
   };
+
   const hanldeCheckList = () => {
     setOpenCheckList(true);
   };
+
   const handleOpenSearch = () => {
     setOpenSearch(true);
   };
+
   const handleCloseSearch = () => {
     setOpenSearch(false);
     setClasses(totalClasses);
   };
+  
   const day = (dateString) => {
     const date = new Date(dateString);
     const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     return daysOfWeek[date.getDay()];
   };
+
   function formatDate(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const day = String(date.getDate()).padStart(2, '0');
@@ -275,11 +282,13 @@ function CouchClasses() {
     
     return `${year}-${month}-${day}`;
   }
+
   useEffect(() => {
     if (userMail && (maxNum || fetchCapacity)) {
       fetchSalas();
     }
   }, [userMail,maxNum,fetchCapacity]);
+
   const fetchSalas = async () => {
     setOpenCircularProgress(true);
     try {
@@ -315,6 +324,7 @@ function CouchClasses() {
         }, 3000);
     }
   };
+
   function formatDateForInput(date) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const day = String(date.getDate()).padStart(2, '0');
@@ -322,29 +332,36 @@ function CouchClasses() {
     
     return `${year}-${month}-${day}`;
   }
+
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     handleCloseSearch();
 
   };
+
   const handleCloseModal = () => {
     setSelectedEvent(null);
   };
+
   const handleCloseCheckList = () => {
     setOpenCheckList(null);
   };
+
   const fetchInventory = async () => {
     try {
       const authToken = localStorage.getItem('authToken');
@@ -354,7 +371,7 @@ function CouchClasses() {
       }
       
       try {
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
+        const response = await fetch(`http://127.0.0.1:5000/get_inventory`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${authToken}`,
@@ -399,6 +416,7 @@ function CouchClasses() {
         console.error("Error fetching user:", error);
     }
   };
+
   const handleEditClass = (selectedEvent) => {
     fetchInventory()
     setEditClass(!editClass);
@@ -422,10 +440,12 @@ function CouchClasses() {
     setErrorForm(false);
     setErrorSala(false);
   } 
+
   const timeToMinutes = (time) => {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
   }
+
   const fetchModifyClassInformation = async () => {
     setOpenCircularProgress(true);
     setErrorSala(false);
@@ -564,6 +584,9 @@ function CouchClasses() {
         setErrorSala(true);
     }
   };
+
+  
+
   const validateForm = () => {
     let res = true;
     if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='' && !inventoryChange) {
@@ -585,12 +608,14 @@ function CouchClasses() {
     }
     return res;
   }
+
   const saveClass = (event) => {
     if(validateForm()){
       event.preventDefault(); 
       fetchModifyClassInformation();
     }
   };
+
   const handleDeleteClass = async (event) => {
     setOpenCircularProgress(true);
     try {
@@ -623,6 +648,7 @@ function CouchClasses() {
       }, 3000);
     }
   };
+
   const fetchClasses = async () => {
     setOpenCircularProgress(true);
     try {
@@ -794,6 +820,7 @@ function CouchClasses() {
       }, 3000);
     }
   };
+
   const verifyToken = async (token) => {
     setOpenCircularProgress(true);
     try {
@@ -810,6 +837,7 @@ function CouchClasses() {
         throw error;
     }
   };
+
   useEffect(() => {
     const newRowsList = [];
   
@@ -919,6 +947,7 @@ function CouchClasses() {
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [order, orderBy, page, rowsPerPage, newRows]
   );
+
   function ECommerce({event}) {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,

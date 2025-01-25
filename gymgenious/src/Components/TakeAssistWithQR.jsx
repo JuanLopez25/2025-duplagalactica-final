@@ -1,51 +1,52 @@
 import '../App.css';
-import { useLocation } from "react-router-dom"; 
+import { useLocation, useNavigate } from "react-router-dom"; 
 import React, { useEffect, useState } from "react";
-import CheckIcon from '@mui/icons-material/Check';  // Este es el ícono de éxito
+import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import CircularProgress from '@mui/material/CircularProgress'; // Agregado para el cargador
-import Alert from '@mui/material/Alert'; 
-import {jwtDecode} from "jwt-decode";
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import { jwtDecode } from "jwt-decode";
 
 const MarkAttendance = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // Reemplaza useHistory por useNavigate
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [newToken,setNewToken] = useState(null)
+  const [newToken, setNewToken] = useState(null);
   const params = new URLSearchParams(location.search);
-  const [userMail,setUserMail] = useState(null);
+  const [userMail, setUserMail] = useState(null);
   const token = params.get("token");
+
   const verifyToken = async (token) => {
     try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
+      const decodedToken = jwtDecode(token);
+      setUserMail(decodedToken.email);
     } catch (error) {
-        
+      console.error("Error al decodificar el token:", error);
     }
   };
 
   useEffect(() => {
     let token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+      verifyToken(token);
     } else {
-        console.error('No token found');
+      console.error('No token found');
     }
-    
-  });
+  }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchToken = async () => {
       try {
         const tokenDataResponse = await fetch(`https://two025-duplagalactica-final.onrender.com/get_decoded_token?token=${token}`);
-        const dataToken = await tokenDataResponse.json()
-        const eventId=dataToken.eventId
-        const mailUsuario=userMail
-        const dateInicio = dataToken.start
-        const dateFin = dataToken.end
-        console.log("asi se ve la data",dataToken)
+        const dataToken = await tokenDataResponse.json();
+        const eventId = dataToken.eventId;
+        const mailUsuario = userMail;
+        const dateInicio = dataToken.start;
+        const dateFin = dataToken.end;
+        console.log("asi se ve la data", dataToken);
         const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token-userSide/${eventId}/${dateFin}/${dateInicio}/${mailUsuario}`);
         const data = await response.json();
         setNewToken(data.token);
@@ -56,7 +57,7 @@ const MarkAttendance = () => {
     if (token && userMail) {
       fetchToken();
     }
-  },[token,userMail])
+  }, [token, userMail]);
 
   useEffect(() => {
     if (newToken) {
@@ -73,6 +74,9 @@ const MarkAttendance = () => {
             if (data.message) {
               setSuccess(true);
               setLoading(false);
+              setTimeout(() => {
+                navigate("/"); 
+              }, 3000);
             }
           })
           .catch((error) => {
@@ -81,43 +85,43 @@ const MarkAttendance = () => {
             setLoading(false);
           });
       } catch (error) {
-        console.error("Error al decodificar el token:", error);
-        setError("Token inválido.");
+        console.error("Error:", error);
+        setError("Error al decodificar el token.");
+        setLoading(false);
       }
     }
-  }, [newToken]);
-
+  }, [newToken, navigate]);
 
   return (
     <div className='full-screen-image-login'>
       {loading ? (
-        <CircularProgress /> 
+        <CircularProgress />
       ) : success ? (
         <div className='alert-container'>
           <div className='alert-content'>
             <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Slide direction="up" in={success} mountOnEnter unmountOnExit >
-                  <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
-                    Assistance checked correctly
-                  </Alert>
+              <Slide direction="up" in={success} mountOnEnter unmountOnExit>
+                <Alert style={{ fontSize: '100%', fontWeight: 'bold' }} icon={<CheckIcon fontSize="inherit" />} severity="success">
+                  Assistance checked correctly
+                </Alert>
               </Slide>
             </Box>
           </div>
         </div>
       ) : error ? (
         <div className='alert-container'>
-              <div className='alert-content'>
-                  <Box sx={{ position: 'relative', zIndex: 1 }}>
-                    <Slide direction="up" in={error} mountOnEnter unmountOnExit >
-                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
-                            Error while checking assitance, please try again
-                        </Alert>
-                    </Slide>
-                  </Box>
-              </div>
+          <div className='alert-content'>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Slide direction="up" in={error} mountOnEnter unmountOnExit>
+                <Alert style={{ fontSize: '100%', fontWeight: 'bold' }} severity="error">
+                  Error while checking assistance, please try again
+                </Alert>
+              </Slide>
+            </Box>
+          </div>
         </div>
       ) : (
-        <p>Marcando asistencia...</p>  // Mensaje por defecto mientras se está procesando
+        <p>Marcando asistencia...</p>
       )}
     </div>
   );

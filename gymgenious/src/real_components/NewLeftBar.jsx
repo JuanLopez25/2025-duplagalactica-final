@@ -52,7 +52,7 @@ export default function TemporaryDrawer() {
   const goToRankings = () => navigate('/user-rankings');
   const goToAssistance = () => navigate('/assistance');
   const goToYourClients = () => navigate('/coach-clients');
-  const goToInventory = () => navigate('./inventory');
+  const goToInventory = () => navigate('/inventory');
 
   const navigateTo = (index) => {
     const routes = [

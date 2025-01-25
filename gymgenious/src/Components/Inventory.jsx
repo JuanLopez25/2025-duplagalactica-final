@@ -51,10 +51,10 @@ function CouchClasses() {
       >
         <ImageList sx={{ width: "100%", height: "auto" }} cols={4} gap={8}>
           {itemData.map((item) => (
-            <ImageListItem key={item.img}>
+            <ImageListItem key={item.image_url}>
               <img
-                srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                src={`${item.img}?w=248&fit=crop&auto=format`}
+                srcSet={`${item.image_url}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                src={`${item.image_url}?w=248&fit=crop&auto=format`}
                 alt={item.name}
                 loading="lazy"
               />
@@ -95,7 +95,7 @@ function CouchClasses() {
       }
       
       try {
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
+        const response = await fetch(`http://127.0.0.1:5000/get_inventory`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${authToken}`,
@@ -167,7 +167,7 @@ function CouchClasses() {
                         <MDBCardImage
                           style={{ width: '90px',height:'80px' }}
                           className="img-fluid rounded-circle border border-dark border-3"
-                          src={event.img}
+                          src={event.image_url}
                           alt='Generic placeholder image'
                           fluid />
                       </div>
