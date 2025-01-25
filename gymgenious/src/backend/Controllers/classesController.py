@@ -11,7 +11,6 @@ def get_classes_route():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-
 def get_assistance_route():
     try:
         classes_list = get_assistance()
@@ -34,46 +33,44 @@ def create_class_route(new_class):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-def add_assistance_route(class_assist,fecha,uid):
+def add_assistance_route(class_assist,date,uid):
     try:
-        created_class = add_assistance(class_assist,fecha,uid)
-        return jsonify(created_class), 201
+        created_assistance = add_assistance(class_assist,date,uid)
+        return jsonify(created_assistance), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    
+  
 def add_calification_route(classId,calification,commentary,userId):
     try:
-        created_class = add_calification(classId,calification,commentary,userId)
-        return jsonify(created_class), 201
+        clasification_created = add_calification(classId,calification,commentary,userId)
+        return jsonify(clasification_created), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def book_class_route(event,mail):
     try:
-        booked_class = book_class(event,mail)
-        return jsonify({"message": "Clase actualizado exitosamente"}), 200
+        book_class(event,mail)
+        return jsonify({"message": "Class booked successfull"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
 def unbook_class_route(event,mail):
     try:
-        unbooked_class = unbook_class(event,mail)
-        return jsonify({"message": "Clase desagendada exitosamente"}), 200
+        unbook_class(event,mail)
+        return jsonify({"message": "Class unbooked successfull"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def delete_class_route(event,mail):
     try:
-        deleted_class = delete_class(event,mail)
-        return jsonify({"message": "Clase eliminada exitosamente"}), 200
+        delete_class(event,mail)
+        return jsonify({"message": "Class deleted successfull"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
 def update_class_info_route(newClass):
     try:
         update_class_info(newClass)
-        return jsonify({"message": "Clase actualizada exitosamente"}), 200
+        return jsonify({"message": "Class updated successful"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

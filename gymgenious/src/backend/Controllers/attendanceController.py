@@ -11,7 +11,6 @@ def mark_attendance_route(eventId,dateInicio,dateEnd,userMail):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 def get_coach_clients_assistance_route():
     try:
         attendance_list = get_coach_clients_assistance()
