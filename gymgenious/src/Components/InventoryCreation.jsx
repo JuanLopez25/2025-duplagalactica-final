@@ -53,7 +53,7 @@ const handleCreateExersice = async () => {
           console.error('Token no disponible en localStorage');
           return;
         }
-        const response = await fetch('http://127.0.0.1:5000/create_inventory', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_inventory', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${authToken}`
