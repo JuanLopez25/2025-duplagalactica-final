@@ -20,6 +20,8 @@ import timeToMinutes from '../functions/TimeToMinutes.jsx'
 import fetchSalas from '../fetchs/fetchSalas.jsx';
 import fetchUser from '../fetchs/fetchUser.jsx'
 import fetchInventory from '../fetchs/fetchInventory.jsx';
+import validateSalas from '../fetchs/fetchValidateSalas.jsx';
+
 
 export default function CreateClass() {
   const [hour, setHour] = useState('');
@@ -67,97 +69,6 @@ export default function CreateClass() {
     );
   };
   
-  const validateSalas = async () => {
-    setValidating(true)
-    setOpenCircularProgress(true);
-    setErrorSalas(false);
-    try {
-        const salasError = []
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-            console.error('Token no disponible en localStorage');
-            return;
-        }
-        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
-        if (!response2.ok) {
-            throw new Error('Error al obtener las clases: ' + response2.statusText);
-        }
-        const data = await response2.json();
-        const isoDateString = date; 
-        const newClassStartTime = new Date(`${date}T${hour}:00Z`);
-        const newClassEndTime = new Date(`${date}T${hourFin}:00Z`);
-        const newClassStartTimeInMinutes = timeToMinutes(hour);
-        const newClassEndTimeInMinutes = timeToMinutes(hourFin);
-        const conflictingClasses = data.filter(classItem => 
-            classItem.day === day(isoDateString) 
-        );
-        if (permanent == "No") {
-          const hasPermanentConflict = conflictingClasses.filter(existingClass => 
-              existingClass.permanent == "Si" && 
-              newClassStartTime > new Date(existingClass.dateFin) &&
-              newClassEndTime > new Date(existingClass.dateInicio) &&
-              newClassEndTime > new Date(existingClass.dateFin) &&
-              newClassStartTime > new Date(existingClass.dateInicio) &&
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5))
-          );
-          const hasNonPermanentConflict = conflictingClasses.filter(existingClass =>
-              newClassStartTime < new Date(existingClass.dateFin) &&
-              newClassEndTime > new Date(existingClass.dateInicio)
-          );
-          hasNonPermanentConflict.forEach(clas => salasError.push(clas.sala))
-          hasPermanentConflict.forEach(clas => salasError.push(clas.sala))
-          
-      } 
-      else if (permanent == "Si") {
-          const hasPastPermanentConflict = conflictingClasses.filter(existingClass =>
-              existingClass.permanent == "Si" &&
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-              newClassStartTime.getFullYear()>= (new Date(existingClass.dateFin)).getFullYear() &&
-              newClassEndTime.getFullYear()>= (new Date(existingClass.dateInicio)).getFullYear() &&
-              String((newClassStartTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-              String((newClassEndTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-              String((newClassStartTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-              String((newClassEndTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-          );
-
-          const hasNonPermanentConflict = conflictingClasses.filter(existingClass =>
-            newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-            newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-            newClassStartTime.getFullYear()<= (new Date(existingClass.dateFin)).getFullYear() &&
-            newClassEndTime.getFullYear()<= (new Date(existingClass.dateInicio)).getFullYear() &&
-            String((newClassStartTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-            String((newClassEndTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-            String((newClassStartTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-            String((newClassEndTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-          );
-
-          const hasPermanentConflict = conflictingClasses.filter(existingClass =>
-            newClassStartTime < new Date(existingClass.dateFin) &&
-            newClassEndTime > new Date(existingClass.dateInicio)
-          );
-          hasNonPermanentConflict.forEach(clas => salasError.push(clas.sala))
-          hasPermanentConflict.forEach(clas => salasError.push(clas.sala))
-      }
-      setSalaNoDisponible(salasError)
-      setValidating(false)
-    } catch (error) {
-        console.error("Error al crear la clase:", error);
-        if(salaAssigned==='PmQ2RZJpDXjBetqThVna'){
-          setErrorSala1(true);
-        } else if(salaAssigned==='cuyAhMJE8Mz31eL12aPO') {
-          setErrorSala2(true);
-        } else if(salaAssigned==='jxYcsGUYhW6pVnYmjK8H') {
-          setErrorSala3(true);
-        } else if(salaAssigned==='waA7dE83alk1HXZvlbyK') {
-          setErrorSala4(true);
-        }
-        setOpenCircularProgress(false);
-    }
-  };
-
-
   const BotonShowGymRoom = ({ children, ...rest }) => {
     return (
       <button {...rest} className="draw-outline-button" onClick={handleViewRooms}>
@@ -281,71 +192,9 @@ export default function CreateClass() {
           if (!response2.ok) {
               throw new Error('Error al obtener las clases: ' + response2.statusText);
           }
-          const data = await response2.json();
           const isoDateString = date; 
           const newClassStartTime = new Date(`${date}T${hour}:00Z`);
           const newClassEndTime = new Date(`${date}T${hourFin}:00Z`);
-          const newClassStartTimeInMinutes = timeToMinutes(hour);
-          const newClassEndTimeInMinutes = timeToMinutes(hourFin);
-          const conflictingClasses = data.filter(classItem => 
-              classItem.sala === salaAssigned &&
-              classItem.day === day(isoDateString) 
-          );
-          if (permanent == "No") {
-            const hasPermanentConflict = conflictingClasses.some(existingClass => 
-                existingClass.permanent == "Si" && 
-                newClassStartTime > new Date(existingClass.dateFin) &&
-                newClassEndTime > new Date(existingClass.dateInicio) &&
-                newClassEndTime > new Date(existingClass.dateFin) &&
-                newClassStartTime > new Date(existingClass.dateInicio) &&
-                newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-                newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5))
-            );
-            const hasNonPermanentConflict = conflictingClasses.some(existingClass =>
-                newClassStartTime < new Date(existingClass.dateFin) &&
-                newClassEndTime > new Date(existingClass.dateInicio)
-            );
-            if (hasNonPermanentConflict || hasPermanentConflict) {
-                console.error('Conflicto de horario con clases existentes en esta sala.');
-                setOpenCircularProgress(false);
-                throw new Error('Error al crear la clase: Conflicto de horario con clases existentes en esta sala.');
-            }
-        } 
-        else if (permanent == "Si") {
-            const hasPastPermanentConflict = conflictingClasses.some(existingClass =>
-                existingClass.permanent == "Si" &&
-                newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-                newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-                newClassStartTime.getFullYear()>= (new Date(existingClass.dateFin)).getFullYear() &&
-                newClassEndTime.getFullYear()>= (new Date(existingClass.dateInicio)).getFullYear() &&
-                String((newClassStartTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-                String((newClassEndTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-                String((newClassStartTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-                String((newClassEndTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-            );
-
-            const hasNonPermanentConflict = conflictingClasses.some(existingClass =>
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-              newClassStartTime.getFullYear()<= (new Date(existingClass.dateFin)).getFullYear() &&
-              newClassEndTime.getFullYear()<= (new Date(existingClass.dateInicio)).getFullYear() &&
-              String((newClassStartTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-              String((newClassEndTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-              String((newClassStartTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-              String((newClassEndTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-            );
-
-            const hasPermanentConflict = conflictingClasses.some(existingClass =>
-              newClassStartTime < new Date(existingClass.dateFin) &&
-              newClassEndTime > new Date(existingClass.dateInicio)
-            );
-            if (hasPastPermanentConflict || hasPermanentConflict || hasNonPermanentConflict) {
-                console.error('Ya existe una clase permanente en esta sala para este horario.');
-                setOpenCircularProgress(false);
-                throw new Error('Error al crear la clase: Ya existe una clase permanente en esta sala para este horario.');
-            }
-        }
-
           const itemsReservados = [];
           itemData.forEach((item) => {
             if (item.cantidad > 0) {
@@ -422,7 +271,7 @@ export default function CreateClass() {
   const handleViewRooms = () => {
     if(validateForm()){
       setSalaNoDisponible([])
-      validateSalas()
+      validateSalas(setValidating,setOpenCircularProgress,setErrorSalas,setSalaNoDisponible,setErrorSala1,setErrorSala2,setErrorSala3,setErrorSala4,date,hour,hourFin,permanent,salaAssigned)
       setTimeout(() => {
         if( !validating ){
           setShowSalas(true);
