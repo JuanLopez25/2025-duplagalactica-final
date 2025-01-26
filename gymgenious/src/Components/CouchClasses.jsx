@@ -784,7 +784,7 @@ function CouchClasses() {
       const formattedRoutines = updatedDataMatches.map((routine) => {
         return {
             ...routine,
-            start: formatDate(new Date(routine.start)), 
+            startDisplay: formatDate(new Date(routine.start)), 
             dateInicioHora: new Date(new Date(routine.dateInicio).setHours(new Date(routine.dateInicio).getHours() + 3)).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
             recurrent: routine.permanent=='Si' ? 'Yes' : 'No'
         };
@@ -928,7 +928,7 @@ function CouchClasses() {
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
                       <div className="d-flex align-items-center justify-content-between mb-3">
                         <p className="small mb-0" style={{color: '#424242' }}><AccessAlarmsIcon sx={{ color: '#48CFCB'}} />{event.dateInicio.split('T')[1].split(':').slice(0, 2).join(':')} - {event.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.start))}</p>
+                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{event.startDisplay}</p>
                       </div>
                     </div>
                     <div className="d-flex align-items-center mb-4">
@@ -984,7 +984,7 @@ function CouchClasses() {
                         >
                           Edit class
                         </MDBBtn>
-                        {event.fecha==null && new Date(event.start).getDate() == new Date().getDate() && event.BookedUsers.length>0? (
+                        {new Date(event.start).getDate() == new Date().getDate() && event.BookedUsers.length>0? (
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -1100,7 +1100,7 @@ function CouchClasses() {
             null
         )}
         {newRows && (
-              <CustomTable columnsToShow={['Name','Start time','Date','Recurrent','No classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['name','dateInicioHora','start','recurrent']}/> 
+              <CustomTable columnsToShow={['Name','Start time','Date','Recurrent','No classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['name','dateInicioHora','startDisplay','recurrent']}/> 
         )}
         {openCheckList && (
                   <div className="Modal" style={{zIndex:'1001'}}>
