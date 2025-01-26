@@ -28,6 +28,7 @@ function AllRoutines() {
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const [type, setType] = useState(null);
+  
   const navigate = useNavigate();
   const [viewExercises, setViewExercises] = useState(false);
   const [filterRoutines, setFilterRoutines] = useState('');
@@ -39,7 +40,7 @@ function AllRoutines() {
     setOpenSearch(false);
     setRoutines(totalRoutines);
   };
-  
+
   const handleViewExercises = () => {
     setViewExercises(!viewExercises);
   };
