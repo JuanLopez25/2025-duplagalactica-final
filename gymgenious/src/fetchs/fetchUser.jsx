@@ -24,6 +24,8 @@ const fetchUser = async (setType,setOpenCircularProgress,userMail,navigate) => {
         }
     } catch (error) {
         console.error("Error fetching user:", error);
+    } finally {
+      setOpenCircularProgress(false)
     }
 };
 

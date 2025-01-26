@@ -9,24 +9,17 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import Popper from '@mui/material/Popper';
-import {jwtDecode} from "jwt-decode";
 import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
-
-
-
-
-
-
-
-
-
-
-
-
+import verifyToken from '../fetchs/verifyToken.jsx'
+import ItemList from '../real_components/ItemList.jsx';
+import day from '../functions/DateToString.jsx'
+import timeToMinutes from '../functions/TimeToMinutes.jsx'
+import fetchSalas from '../fetchs/fetchSalas.jsx';
+import fetchUser from '../fetchs/fetchUser.jsx'
+import fetchInventory from '../fetchs/fetchInventory.jsx';
 
 export default function CreateClass() {
   const [hour, setHour] = useState('');
@@ -35,7 +28,7 @@ export default function CreateClass() {
   const [date, setDate] = useState('');
   const [salas, setSalas] = useState([]);
   const [showSalas, setShowSalas] = useState(false);
-  const [warningFetchingRoutines, setWarningFetchingRoutines] = useState(false);
+  const [warningFetchingSalas, setWarningFetchingSalas] = useState(false);
   const [salaAssigned, setSala] = useState(null); 
   const [name, setName] = useState('');
   const [maxNum,setMaxNum] = useState(1);
@@ -43,8 +36,6 @@ export default function CreateClass() {
   const [userMail,setUserMail] = useState('')
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState(false);
-  const [failure, setFailure] = useState(false);
-  const [failureErrors, setFailureErrors] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
@@ -65,105 +56,8 @@ export default function CreateClass() {
   const [errorDateStart, setErrorDateStart] = useState(false);
   const [salaNoDisponible, setSalaNoDisponible] = useState(['1'])
   const [itemData,setItemData] = useState([])
-  const day = (dateString) => {
-    const date = new Date(dateString);
-    const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado','Domingo'];
-    return daysOfWeek[date.getDay()];
-  };
-  
-  const ItemList = () => {
-    const incrementQuantity = (itemName) => {
-      setItemData((prevItems) =>
-        prevItems.map((item) =>
-          item.name === itemName && (item.total - item.totalReservado - item.cantidad > 0)
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        )
-      );
-    };
-  
-    const decrementQuantity = (itemName) => {
-      setItemData((prevItems) =>
-        prevItems.map((item) =>
-          item.name === itemName
-            ? { ...item, cantidad: Math.max(item.cantidad - 1, 0) }
-            : item
-        )
-      );
-    };
-  
-    return (
-      <div style={{ width: "100%", margin: "auto" }}>
-        <label style={{color:'#424242'}}>Items for the class:</label>
-        <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
-          {itemData.map((item) => (
-            <li
-              key={item.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "10px",
-                border: "1px solid #ccc",
-                padding: "10px",
-                borderRadius: "5px",
-                color: "#424242",
-              }}
-            >
-              <span>
-                {item.name} ({item.id})
-              </span>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                {item.cantidad > 0 && (
-                  <button
-                    onClick={() => decrementQuantity(item.name)}
-                    style={{
-                      padding: "5px 10px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                      border: "none",
-                      backgroundColor: "white",
-                      color: "#424242",
-                    }}
-                  >
-                    -
-                  </button>
-                )}
-                <span
-                  style={{
-                    fontSize: "16px",
-                    minWidth: "20px",
-                    textAlign: "center",
-                    color: "#424242",
-                  }}
-                >
-                  {item.cantidad}
-                </span>
-                {(item.total - item.totalReservado - item.cantidad) > 0 && (
-                  <button
-                    onClick={() => incrementQuantity(item.name)}
-                    style={{
-                      padding: "5px 10px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                      border: "none",
-                      backgroundColor: "white",
-                      color: "#424242",
-                    }}
-                  >
-                    +
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-  
-  
 
+  
 
   const ComponenteBotonShowGymRoom = () => {
     return (
@@ -369,10 +263,6 @@ export default function CreateClass() {
       setErrors(errors);
       return errors.length === 0;
   }
-  const timeToMinutes = (time) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  }
 
   const handleCreateClass = async () => {
     if(validateForm()) {
@@ -530,117 +420,16 @@ export default function CreateClass() {
   }
 
   const handleViewRooms = () => {
-    console.log(itemData)
     if(validateForm()){
       setSalaNoDisponible([])
       validateSalas()
       setTimeout(() => {
         if( !validating ){
           setShowSalas(true);
-          fetchSalas();
+          fetchSalas(setOpenCircularProgress,setSalas,setWarningFetchingSalas,maxNum)
         }
         setOpenCircularProgress(false)
       }, 3000);
-    }
-  };
-
-  const fetchSalas = async () => {
-    setOpenCircularProgress(true);
-    try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
-        }
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_salas`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener las rutinas: ' + response.statusText);
-        }
-        const data = await response.json();
-        const dataFinal = data.map(room => {
-          return {
-              ...room,
-              opacity: parseInt(room.capacidad) >= maxNum ? 1 : 0.5
-          };
-      });
-        setSalas(dataFinal);
-    } catch (error) {
-        console.error("Error fetching rutinas:", error);
-        setOpenCircularProgress(false);
-        setWarningFetchingRoutines(true);
-        setTimeout(() => {
-            setWarningFetchingRoutines(false);
-        }, 3000);
-    }
-  };
-
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
-
-
-  const fetchInventory = async () => {
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      
-      try {
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
-        }
-        const data = await response.json();
-        const itemsWithQuantities = data.map((item) => ({
-          ...item,
-          cantidad: 0, 
-          totalReservado: 0, 
-        }));
-        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
-        if (!response2.ok) {
-          throw new Error('Error al obtener las clases: ' + response2.statusText);
-        }
-        const data2 = await response2.json();
-        data2.forEach((clase) => {
-          clase.reservations.forEach((objeto) => {
-            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
-            if (item) {
-              item.totalReservado += objeto.cantidad;
-            }
-          });
-        });
-        setItemData(itemsWithQuantities);
-        console.log("Lista de items actualizada con total reservado:", itemsWithQuantities);
-      
-      } catch (error) {
-        console.error("Error:", error.message);
-      }
-      
-    } catch (error) {
-        console.error("Error fetching user:", error);
     }
   };
 
@@ -648,7 +437,7 @@ export default function CreateClass() {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
     } else {
         navigate('/');
         console.error('No token found');
@@ -657,14 +446,14 @@ export default function CreateClass() {
 
   useEffect(() => {
     if (userMail) {
-      fetchUser();
+      fetchUser(setType,setOpenCircularProgress,userMail,navigate)
     }
   }, [userMail]);
 
 
   useEffect(() => {
     if(type==='coach' && userMail!=null){
-        fetchInventory();
+        fetchInventory(setItemData,setOpenCircularProgress)
     }
   }, [type])
 
@@ -676,33 +465,7 @@ export default function CreateClass() {
     }
   }, [isSmallScreen]);
 
-  const fetchUser = async () => {
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setType(data.type);
-        if(data.type!='coach'){
-          navigate('/');
-        }
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
-
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [openHourRequirements, setOpenHourRequirements] = useState(false);
   const handleOpenHourRequirements = (event) => {
@@ -712,18 +475,11 @@ export default function CreateClass() {
         setAnchorEl(event.currentTarget);
     }
     setOpenHourRequirements(!openHourRequirements);
-};
+  };
   const id = 'simple-popper';
-
   const handleCloseHourRequirements = () => {
     setOpenHourRequirements(false);
   }
-
-
-
-  
-
-
 
   return (
     <div className='full-screen-image-2'>
@@ -836,7 +592,9 @@ export default function CreateClass() {
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                         <div className="input-small-container">
-                          <ItemList/>
+                          {itemData.length>0 && 
+                            <ItemList data={itemData} setItemData={setItemData}/>
+                          }
                         </div>
                       </div>
                         <ComponenteBotonShowGymRoom/>
@@ -1118,35 +876,12 @@ export default function CreateClass() {
             ) : (
                 null
             )}
-            { failureErrors ? (
+            { warningFetchingSalas ? (
                 <div className='alert-container'>
                     <div className='alert-content'>
                     <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                        <div>
-                            <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                            Error creating class!
-                            </Alert>
-                            {errors.length > 0 && errors.map((error, index) => (
-                            <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                                <li>{error}</li>
-                            </Alert>
-                            ))}
-                        </div>
-                        </Slide>
-                    </Box>
-                    </div>
-                </div>
-              
-            ) : (
-                null
-            )}
-            { failure ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failure} mountOnEnter unmountOnExit >
-                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>Error creating class. Try again!</Alert>
+                        <Slide direction="up" in={warningFetchingSalas} mountOnEnter unmountOnExit >
+                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>Error fetching salas!</Alert>
                         </Slide>
                     </Box>
                 </div>
