@@ -86,7 +86,6 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
         });
         setRoutines(routinesWithAssignedCountAndExerciseLength);
         setTotalRoutines(routinesWithAssignedCountAndExerciseLength);
-        setOpenCircularProgress(false);
     } catch (error) {
         console.error("Error fetching rutinas:", error);
         setOpenCircularProgress(false);
@@ -94,6 +93,9 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
         setTimeout(() => {
             setWarningConnection(false);
         }, 3000);
+    }
+    finally {
+        setOpenCircularProgress(false);
     }
 };
 

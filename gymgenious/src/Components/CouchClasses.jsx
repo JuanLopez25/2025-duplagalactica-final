@@ -1,24 +1,20 @@
 import React, {useState, useEffect} from 'react';
-import PropTypes from 'prop-types';
 import { Box, useMediaQuery } from '@mui/material';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
 import { QRCodeCanvas } from "qrcode.react";
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Paper from '@mui/material/Paper';
-import { visuallyHidden } from '@mui/utils';
 import NewLeftBar from '../real_components/NewLeftBar'
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
+import Searcher from '../real_components/searcher.jsx';
+import fetchSalas from '../fetchs/fetchSalas.jsx'
+import fetchInventory from '../fetchs/fetchInventory.jsx'
+import timeToMinutes from '../functions/TimeToMinutes.jsx'
+import day from '../functions/DateToString.jsx'
+import formatDate from '../functions/formatDate.jsx'
+import ItemList from '../real_components/ItemList.jsx'
+import fetchUser from '../fetchs/fetchUser.jsx'
+import verifyToken from '../fetchs/verifyToken.jsx';
 import Loader from '../real_components/loader.jsx';
 import moment from 'moment';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
@@ -26,48 +22,32 @@ import EmailIcon from '@mui/icons-material/Email';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import CloseIcon from '@mui/icons-material/Close';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
-import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography } from 'mdb-react-ui-kit';
 import CustomTable from '../real_components/Table4columns.jsx';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
 function CouchClasses() {
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('name');
-  const [page, setPage] = useState(0);
+  const [warningFetchingSalas,setWarningFetchingSalas] = useState(false)
   const [maxNum,setMaxNum] = useState(null);
   const [salas, setSalas] = useState([]);
-  const [warningFetchingRoutines, setWarningFetchingRoutines] = useState(false);
   const [salaAssigned, setSala] = useState(null);
-  const [dense, setDense] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editClass, setEditClass] = useState(false);
   const [userMail,setUserMail] = useState(null)
-  const [userAccount, setUser] = useState(null)
-  const isSmallScreen400 = useMediaQuery('(max-width:400px)');
-  const isSmallScreen500 = useMediaQuery('(max-width:500px)');
-  const isSmallScreen600 = useMediaQuery('(max-width:600px)');
-  const [classes,setClasses]=useState([])
   const [hour, setHour] = useState('');
   const [hourFin, setHourFin] = useState('');
   const [permanent, setPermanent] = useState('');
   const [date, setDate] = useState('');
   const [name, setName] = useState('');
-  const navigate = useNavigate();
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
-  const isMobileScreen = useMediaQuery('(min-height:750px)');
-  const [maxHeight, setMaxHeight] = useState('600px');
   const [type, setType] = useState(null);
   const [errorSala, setErrorSala] = useState(false);
   const [errorHour, setErrorHour] = useState(false);
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [newRows, setNewRows] = useState([]);
-
   const [fetchId,setFetchId] = useState('');
   const [fetchDateFin,setFetchDateFin]= useState('');
   const [fetchDateInicio,setFetchDateInicio]=useState('');
@@ -75,7 +55,6 @@ function CouchClasses() {
   const [fetchName,setFetchName]=useState('');
   const [fetchHour,setFetchHour]=useState('');
   const [fetchPermanent,setFetchPermanent]=useState('');
-  const [fetchClass,setFetchClass]=useState({});
   const [fetchSala,setFetchSala] = useState('')
   const [fetchCapacity, setFetchCapacity] = useState('')
   const [errorForm, setErrorForm] = useState(false);
@@ -86,102 +65,7 @@ function CouchClasses() {
   const [openCheckList, setOpenCheckList] = useState(false);
   const [viewQualifications, setViewQualifications] = useState(false);
   const [viewInventory, setViewInventory] = useState(false)
-  const [inventoryChange, setInventoryChange] = useState(false)
   
-  const ItemList = () => {
-    const incrementQuantity = (itemName) => {
-      setItemData((prevItems) =>
-        prevItems.map((item) =>
-          item.name === itemName && (item.total - item.totalReservado - item.cantidad > 0)
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        )
-      );
-      console.log("asi se ve el inventario",itemData)
-      setInventoryChange(true)
-    };
-  
-    const decrementQuantity = (itemName) => {
-      setItemData((prevItems) =>
-        prevItems.map((item) =>
-          item.name === itemName
-            ? { ...item, cantidad: Math.max(item.cantidad - 1, 0) }
-            : item
-        )
-      );
-      setInventoryChange(true)
-    };
-  
-    return (
-      <div className="input-small-container">
-        <label style={{ color: '#14213D' }}>Item list:</label>
-        <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
-          {itemData.map((item) => (
-            <li
-              key={item.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "10px",
-                border: "1px solid #ccc",
-                padding: "10px",
-                borderRadius: "5px",
-                color: "#424242",
-              }}
-            >
-              <span>
-                {item.name} ({item.id})
-              </span>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                {item.cantidad > 0 && (
-                  <button
-                    onClick={() => decrementQuantity(item.name)}
-                    style={{
-                      padding: "5px 10px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                      border: "none",
-                      backgroundColor: "white",
-                      color: "#424242",
-                    }}
-                  >
-                    -
-                  </button>
-                )}
-                <span
-                  style={{
-                    fontSize: "16px",
-                    minWidth: "20px",
-                    textAlign: "center",
-                    color: "#424242",
-                  }}
-                >
-                  {item.cantidad}
-                </span>
-                {(item.total - item.totalReservado - item.cantidad) > 0 && (
-                  <button
-                    onClick={() => incrementQuantity(item.name)}
-                    style={{
-                      padding: "5px 10px",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                      border: "none",
-                      backgroundColor: "white",
-                      color: "#424242",
-                    }}
-                  >
-                    +
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-
   const handleViewQualifications = () => {
     setViewQualifications(!viewQualifications)
   }
@@ -267,65 +151,13 @@ function CouchClasses() {
 
   const handleCloseSearch = () => {
     setOpenSearch(false);
-    setClasses(totalClasses);
   };
   
-  const day = (dateString) => {
-    const date = new Date(dateString);
-    const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    return daysOfWeek[date.getDay()];
-  };
-
-  function formatDate(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${year}-${month}-${day}`;
-  }
-
   useEffect(() => {
     if (userMail && (maxNum || fetchCapacity)) {
-      fetchSalas();
+      fetchSalas(setOpenCircularProgress,setSalas,setWarningFetchingSalas,maxNum)
     }
   }, [userMail,maxNum,fetchCapacity]);
-
-  const fetchSalas = async () => {
-    setOpenCircularProgress(true);
-    try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
-        }
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_salas`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener las rutinas: ' + response.statusText);
-        }
-        const data = await response.json();
-        let dataFinal=[]
-        if(maxNum!=null){
-          dataFinal = data.filter((sala)=>parseInt(sala.capacidad)>=maxNum)
-        } else {
-          dataFinal = data.filter((sala)=>parseInt(sala.capacidad)>=fetchCapacity)
-        }
-        setSalas(dataFinal);
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error("Error fetching rutinas:", error);
-        setOpenCircularProgress(false);
-        setWarningFetchingRoutines(true);
-        setTimeout(() => {
-            setWarningFetchingRoutines(false);
-        }, 3000);
-    }
-  };
-
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -340,63 +172,8 @@ function CouchClasses() {
     setOpenCheckList(null);
   };
 
-  const fetchInventory = async () => {
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      
-      try {
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
-        }
-        const data = await response.json();
-        
-        const itemsWithQuantities = data.map((item) => {
-          const matchingReservation = selectedEvent.reservations.find(
-            (reservation) => reservation.item === item.id
-          );
-          return {
-            ...item,
-            cantidad: matchingReservation ? matchingReservation.cantidad : 0, 
-            totalReservado: 0,
-          };
-        });
-
-        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
-        if (!response2.ok) {
-          throw new Error('Error al obtener las clases: ' + response2.statusText);
-        }
-        const data2 = await response2.json();
-        data2.forEach((clase) => {
-          clase.reservations.forEach((objeto) => {
-            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
-            if (item && clase.id!=selectedEvent.id) {
-              item.totalReservado += objeto.cantidad;
-            }
-          });
-        });
-        setItemData(itemsWithQuantities);
-      
-      } catch (error) {
-        console.error("Error:", error.message);
-      }
-      
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
-
   const handleEditClass = (selectedEvent) => {
-    fetchInventory()
+    fetchInventory(setItemData,setOpenCircularProgress)
     setEditClass(!editClass);
     setFetchId(selectedEvent.id)
     setFetchDateFin(selectedEvent.dateFin)
@@ -405,7 +182,6 @@ function CouchClasses() {
     setFetchName(selectedEvent.name)
     setFetchHour(selectedEvent.hour)
     setFetchPermanent(selectedEvent.permanent)
-    setFetchClass(selectedEvent)
     setFetchSala(selectedEvent.sala)
     setFetchCapacity(selectedEvent.capacity)
     setHour('');
@@ -418,11 +194,6 @@ function CouchClasses() {
     setErrorForm(false);
     setErrorSala(false);
   } 
-
-  const timeToMinutes = (time) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  }
 
   const fetchModifyClassInformation = async () => {
     setOpenCircularProgress(true);
@@ -565,7 +336,7 @@ function CouchClasses() {
 
   const validateForm = () => {
     let res = true;
-    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='' && !inventoryChange) {
+    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='') {
         setErrorForm(true);
         res = false;
     } else {
@@ -789,12 +560,6 @@ function CouchClasses() {
             recurrent: routine.permanent=='Si' ? 'Yes' : 'No'
         };
       });
-    
-
-      
-      console.log("si se ve",formattedRoutines)
-
-      setClasses(formattedRoutines);
       setTotalClasses(formattedRoutines);
       setOpenCircularProgress(false);
     } catch (error) {
@@ -806,31 +571,6 @@ function CouchClasses() {
       }, 3000);
     }
   };
-
-  const verifyToken = async (token) => {
-    setOpenCircularProgress(true);
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setOpenCircularProgress(false);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
-  function formatDateForInput(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${year}-${month}-${day}`;
-  }
 
   useEffect(() => {
     const newRowsList = [];
@@ -856,64 +596,28 @@ function CouchClasses() {
   
     setNewRows(newRowsList);
   }, [filterClasses, totalClasses]);
+
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
   }, []);
+
   useEffect(() => {
     if (userMail) {
-        fetchUser();
+        fetchUser(setType,setOpenCircularProgress,userMail);
     }
-}, [userMail]);
+  }, [userMail]);
+
   useEffect(() => {
     if(type==='coach'){
         fetchClasses();
     }
   }, [type])
-  useEffect(() => {
-    if(isSmallScreen400 || isSmallScreen500) {
-      setRowsPerPage(10);
-    } else {
-      setRowsPerPage(5)
-    }
-    if(isMobileScreen) {
-      setMaxHeight('700px');
-    } else {
-      setMaxHeight('600px')
-    }
-  }, [isSmallScreen400, isSmallScreen500, isMobileScreen])
-  const fetchUser = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setType(data.type);
-        setUser(data)
-        if(data.type!='coach'){
-          navigate('/');
-        }
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
+  
 
   function ECommerce({event}) {
     return (
@@ -1025,43 +729,7 @@ function CouchClasses() {
         ) : (
           <>
         <NewLeftBar/>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-              <div className='input-small-container'>
-                {openSearch ? (
-                    <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search..."
-                    style={{
-                      position: 'absolute',
-                      borderRadius: '10px',
-                      padding: '0 10px',
-                      transition: 'all 0.3s ease',
-                    }}
-                    id={filterClasses}
-                    onChange={(e) => setFilterClasses(e.target.value)} 
-                  />
-                ) : (
-                  <Button onClick={handleOpenSearch}
-                  style={{
-                    backgroundColor: '#48CFCB',
-                    position: 'absolute',
-                    borderRadius: '50%',
-                    width: '5vh',
-                    height: '5vh',
-                    minWidth: '0',
-                    minHeight: '0',
-                    padding: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <SearchIcon sx={{ color: '#424242' }} />
-                </Button>
-                )}
-                </div>
-          </div>
+        <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen700} searchingParameter={'class name'}/>
         {openCircularProgress ? (
             <Backdrop open={openCircularProgress} sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}>
                 <Loader></Loader>
@@ -1163,7 +831,7 @@ function CouchClasses() {
                                     type='date'
                                     id='date'
                                     name='date'
-                                    value={date || formatDateForInput(new Date(selectedEvent.dateInicio))}
+                                    value={date || formatDate(new Date(selectedEvent.dateInicio))}
                                     onChange={(e) => setDate(e.target.value)}
                                 />
                             </div>
@@ -1187,7 +855,9 @@ function CouchClasses() {
                               {errorSala && (<p style={{color: 'red', margin: '0px'}}>Room no available</p>)}
                           </div>
                         </div>
-                        <ItemList/>
+                        {itemData.length>0 && 
+                            <ItemList data={itemData} setItemData={setItemData}/>
+                        }
                         <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
                           <label htmlFor="maxNum" style={{color:'#14213D'}}>Participants:</label>
                           <input
@@ -1253,6 +923,21 @@ function CouchClasses() {
           </div>
         </div>
       )}
+      {warningFetchingSalas ? (
+          <div className='alert-container'>
+            <div className='alert-content'>
+              <Box sx={{ position: 'relative', zIndex: 1 }}>
+                <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                  <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                    Error while fetching classes
+                  </Alert>
+                </Slide>
+              </Box>
+            </div>
+          </div>
+        ) : (
+          null
+        )}
         {viewQualifications && (
         <div className="Modal" onClick={handleViewQualifications}>
           <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
