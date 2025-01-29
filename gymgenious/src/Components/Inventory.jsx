@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
 import Loader from '../real_components/loader.jsx';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import ImageList from '@mui/material/ImageList';
@@ -13,27 +12,24 @@ import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import IconButton from '@mui/material/IconButton';
 import InfoIcon from '@mui/icons-material/Info';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography } from 'mdb-react-ui-kit';
 import CloseIcon from '@mui/icons-material/Close';
-
-
+import fetchInventory from '../fetchs/fetchInventory.jsx'
+import fetchUser from '../fetchs/fetchUser.jsx';
+import verifyToken from '../fetchs/verifyToken.jsx';
 
 
 
 function CouchClasses() {
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [userMail,setUserMail] = useState(null)
-  const isSmallScreen400 = useMediaQuery('(max-width:400px)');
-  const isSmallScreen500 = useMediaQuery('(max-width:500px)');
-  const isSmallScreen600 = useMediaQuery('(max-width:600px)');
   const navigate = useNavigate();
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
-  const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [type, setType] = useState(null);
   const [selectedEvent,setSelectedEvent] = useState(null);
   const [itemData,setItemData] = useState([])
+
   function calculateRemainingAmount(item) {
     const sumOfSublistValues = item.reservas.reduce((acc, obj) => acc + obj.cantidad, 0);
     return item.total - sumOfSublistValues;
@@ -78,77 +74,9 @@ function CouchClasses() {
     );
   }
   
-
   const handleCloseModal = () => {
     setSelectedEvent(null);
   };
-  
-
-
-  const fetchInventory = async () => {
-    setOpenCircularProgress(true)
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      
-      try {
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
-        }
-        const data = await response.json();
-        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
-        if (!response2.ok) {
-          throw new Error('Error al obtener las clases: ' + response2.statusText);
-        }
-        const data2 = await response2.json();
-        const itemsWithQuantities = data.map((item) => ({
-          ...item,
-          cantidad: 0, 
-          totalReservado: 0, 
-          reservas: []
-        }));
-        data2.forEach((clase) => {
-          clase.reservations.forEach((objeto) => {
-            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
-            if (item) {
-              item.reservas.push({'name':clase.name,'cantidad': objeto.cantidad})
-            }
-          });
-        })
-        data2.forEach((clase) => {
-          clase.reservations.forEach((objeto) => {
-            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
-            if (item) {
-              item.totalReservado += objeto.cantidad;
-            }
-          });
-        });
-        setItemData(itemsWithQuantities);
-        console.log("Lista de items actualizada con total reservado:", itemsWithQuantities);
-      
-      } catch (error) {
-        console.error("Error:", error.message);
-      }
-      
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-    setOpenCircularProgress(false)
-  };
-
-  
-    
-  
-  
   
   function ImageData({event}) {
     return (
@@ -198,29 +126,11 @@ function CouchClasses() {
       </div>
     );
   }
-
-  const verifyToken = async (token) => {
-    setOpenCircularProgress(true);
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setOpenCircularProgress(false);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
   
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
@@ -228,54 +138,15 @@ function CouchClasses() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser();
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate)
     }
   }, [userMail]);
 
-
   useEffect(() => {
     if(type==='coach' && userMail!=null){
-        fetchInventory();
+        fetchInventory(setItemData,setOpenCircularProgress)
     }
   }, [type])
-
-
-  useEffect(() => {
-    if(isSmallScreen400 || isSmallScreen500) {
-      setRowsPerPage(10);
-    } else {
-      setRowsPerPage(5)
-    }
-  }, [isSmallScreen400, isSmallScreen500, isMobileScreen])
-
-  const fetchUser = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setType(data.type);
-        if(data.type!='coach'){
-          navigate('/');
-        }
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
-
 
   return (
     <div className="App">

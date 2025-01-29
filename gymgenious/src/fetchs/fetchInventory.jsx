@@ -21,7 +21,8 @@ const fetchInventory = async ( setItemData,setOpenCircularProgress) => {
         const itemsWithQuantities = data.map((item) => ({
           ...item,
           cantidad: 0, 
-          totalReservado: 0, 
+          totalReservado: 0,
+          reservas: []
         }));
         const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
         if (!response2.ok) {
@@ -32,10 +33,19 @@ const fetchInventory = async ( setItemData,setOpenCircularProgress) => {
           clase.reservations.forEach((objeto) => {
             const item = itemsWithQuantities.find((i) => i.id === objeto.item);
             if (item) {
+              item.reservas.push({'name':clase.name,'cantidad': objeto.cantidad})
+            }
+          });
+        })
+        data2.forEach((clase) => {
+          clase.reservations.forEach((objeto) => {
+            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
+            if (item) {
               item.totalReservado += objeto.cantidad;
             }
           });
         });
+        
         setItemData(itemsWithQuantities);
         console.log("Lista de items actualizada con total reservado:", itemsWithQuantities);
       
