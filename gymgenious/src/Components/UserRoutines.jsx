@@ -11,7 +11,7 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import { useState, useEffect } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
-import { jwtDecode } from "jwt-decode";
+import verifyToken from '../fetchs/verifyToken.jsx';
 import NewLeftBar from '../real_components/NewLeftBar';
 import ColorToggleButton from '../real_components/ColorToggleButton.jsx';
 import Backdrop from '@mui/material/Backdrop';
@@ -23,6 +23,7 @@ import Slide from '@mui/material/Slide';
 import Loader from '../real_components/loader.jsx';
 
 export default function StickyHeadTable() {
+
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [orderBy, setOrderBy] = useState('name');
@@ -43,6 +44,34 @@ export default function StickyHeadTable() {
     const [warningFetchingUserRoutines, setWarningFetchingUserRoutines] = useState(false);
     const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [maxHeight, setMaxHeight] = useState('600px');
+
+
+    const fetchUser = async () => {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('Token no disponible en localStorage');
+            return;
+        }
+        const encodedUserMail = encodeURIComponent(userMail);
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+        method: 'GET', 
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        }
+    });
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+        }
+        const data = await response.json();
+        setType(data.type);
+        if(data.type!='client'){
+            navigate('/');
+        }
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+    };
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -179,25 +208,10 @@ export default function StickyHeadTable() {
         }
     };
     
-
-    const verifyToken = async (token) => {
-        try {
-            const decodedToken = jwtDecode(token);
-            setUserMail(decodedToken.email);
-        } catch (error) {
-            console.error('Error al verificar el token:', error);
-            setErrorToken(true);
-            setTimeout(() => {
-              setErrorToken(false);
-            }, 3000);
-            throw error;
-        }
-      };
-
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token);
+            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
         } else {
             navigate('/');
             console.error('No token found');
@@ -205,44 +219,18 @@ export default function StickyHeadTable() {
         }
       }, []);
 
-      useEffect(() => {
+    useEffect(() => {
         if (userMail) {
             fetchUser();
         }
     }, [userMail]);
 
-      useEffect(() => {
-        if(type==='client'){
-            fetchRoutines();
-        }
-      }, [type])
-    
-      const fetchUser = async () => {
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-          const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-            }
-            const data = await response.json();
-            setType(data.type);
-            if(data.type!='client'){
-              navigate('/');
-            }
-        } catch (error) {
-            console.error("Error fetching user:", error);
-        }
-      };
+    useEffect(() => {
+    if(type==='client'){
+        fetchRoutines();
+    }
+    }, [type])
+
 
     useEffect(() => {
         if (selectedDay) {

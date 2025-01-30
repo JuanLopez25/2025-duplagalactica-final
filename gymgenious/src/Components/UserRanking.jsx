@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Paper, useMediaQuery} from '@mui/material';
+import { Paper, useMediaQuery, Box} from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -7,7 +7,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useState, useEffect } from 'react';
-import { jwtDecode } from "jwt-decode";
+import verifyToken from '../fetchs/verifyToken.jsx';
+import Alert from '@mui/material/Alert';
+import Slide from '@mui/material/Slide';
+import fetchUser from '../fetchs/fetchUser.jsx';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import NewLeftBar from '../real_components/NewLeftBar';
 import Backdrop from '@mui/material/Backdrop';
@@ -24,7 +27,8 @@ export default function StickyHeadTable() {
     const isSmallScreen = useMediaQuery('(max-width:700px)');
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigate();    
+    const [errorToken,setErrorToken] = useState(false);
     const [type, setType] = useState(null);
     const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [viewCreateRanking, setViewCreateRanking] = useState(false);
@@ -274,20 +278,11 @@ export default function StickyHeadTable() {
         };
     };
     
-    const verifyToken = async (token) => {
-        try {
-            const decodedToken = jwtDecode(token);
-            setUserMail(decodedToken.email);
-        } catch (error) {
-            console.error('Error al verificar el token:', error);
-            throw error;
-        }
-      };
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token);
+            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
         } else {
             navigate('/');
             console.error('No token found');
@@ -297,7 +292,7 @@ export default function StickyHeadTable() {
 
     useEffect(() => {
     if (userMail) {
-        fetchUser();
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate);
     }
     }, [userMail]);
 
@@ -307,32 +302,6 @@ export default function StickyHeadTable() {
     }
     }, [type])
     
-      const fetchUser = async () => {
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-          const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-            }
-            const data = await response.json();
-            setType(data.type);
-            if(data.type!='client'){
-              navigate('/');
-            }
-        } catch (error) {
-            console.error("Error fetching user:", error);
-        }
-      };
 
     return (
         <div className="App">
@@ -522,6 +491,21 @@ export default function StickyHeadTable() {
                 <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={openCircularProgress}>
                     <Loader></Loader>
                 </Backdrop>
+            )}
+            {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
             )}
             </>
         )}

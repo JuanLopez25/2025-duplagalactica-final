@@ -13,14 +13,14 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import { jwtDecode } from "jwt-decode";
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import Loader from '../real_components/loader.jsx';
-import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
+import Searcher from '../real_components/searcher.jsx'
+import verifyToken from '../fetchs/verifyToken.jsx'
+import fetchRoutines from '../fetchs/fetchAllRoutines.jsx';
 import CustomTable from '../real_components/Table4columns.jsx';
 
 function BarAnimation({ routines, isSmallScreen }) {
@@ -86,7 +86,7 @@ function BarAnimation({ routines, isSmallScreen }) {
         </Box>
       </Box>
     );
-  }
+}
 
 function TopRoutines() {
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -101,10 +101,6 @@ function TopRoutines() {
   const [openSearch, setOpenSearch] = useState(false);
   const [filterRoutines, setFilterRoutines] = useState('');
   const [totalRoutines, setTotalRoutines] = useState([]);
-
-  const handleOpenSearch = () => {
-    setOpenSearch(true);
-  };
 
   const handleCloseSearch = () => {
     setOpenSearch(false);
@@ -125,105 +121,6 @@ function TopRoutines() {
     setViewExercises(!viewExercises);
   };
 
-  const fetchRoutines = async () => {
-    setOpenCircularProgress(true);
-    try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-            console.error('Token no disponible en localStorage');
-            return;
-        }
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_routines`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener las rutinas: ' + response.statusText);
-        }
-        const routines = await response.json();
-        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response2.ok) {
-            throw new Error('Error al obtener las rutinas asignadas: ' + response2.statusText);
-        }
-        const assignedRoutines = await response2.json();
-        const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response3.ok) {
-            throw new Error('Error al obtener los ejercicios: ' + response3.statusText);
-        }
-        const exercisesData = await response3.json();
-        const response4 = await fetch('https://train-mate-api.onrender.com/api/exercise/get-all-exercises', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${authToken}` 
-            }
-        });
-        if (!response4.ok) {
-            throw new Error('Error al obtener los ejercicios de Train Mate: ' + response4.statusText);
-        }
-        const exercisesDataFromTrainMate = await response4.json();
-        const routinesWithExercisesData = routines.map((routine) => {
-            const updatedExercises = routine.excercises.map((exercise) => {
-                let matchedExercise = exercisesData.find((ex) => ex.id === exercise.id);
-                
-                if (!matchedExercise && Array.isArray(exercisesDataFromTrainMate.exercises)) {
-                    matchedExercise = exercisesDataFromTrainMate.exercises.find((ex) => ex.id === exercise.id);
-                }
-                if (matchedExercise) {
-                    return {
-                        ...exercise,
-                        name: matchedExercise.name,
-                        description: matchedExercise.description,
-                    };
-                }
-
-                return exercise; 
-            });
-
-            return {
-                ...routine,
-                excercises: updatedExercises,
-            };
-        });
-
-
-        const routinesWithAssignedCount = routinesWithExercisesData.map((routine) => {
-            const assignedForRoutine = assignedRoutines.filter((assigned) => assigned.id === routine.id);
-            const totalAssignedUsers = assignedForRoutine.reduce((acc, assigned) => {
-                return acc + (assigned.users ? assigned.users.length : 0);
-            }, 0);
-
-            return {
-                ...routine,
-                cant_asignados: totalAssignedUsers,
-                exercises_length: routine.excercises ? routine.excercises.length : 0 
-            };
-        });
-
-        setRoutines(routinesWithAssignedCount);
-        setTotalRoutines(routinesWithAssignedCount);
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error("Error fetching rutinas:", error);
-        setOpenCircularProgress(false);
-        setWarningConnection(true);
-        setTimeout(() => {
-            setWarningConnection(false);
-        }, 3000);
-    }
-  };
-
   useEffect(() => {
     if(filterRoutines!=''){
       const filteredRoutinesSearcher = totalRoutines.filter(item => 
@@ -235,27 +132,10 @@ function TopRoutines() {
     }
   }, [filterRoutines]);
 
-  const verifyToken = async (token) => {
-    setOpenCircularProgress(true);
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setOpenCircularProgress(false);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
   useEffect(() => {
       const token = localStorage.getItem('authToken');
       if (token) {
-          verifyToken(token);
+          verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
       } else {
           navigate('/');
           console.error('No token found');
@@ -265,7 +145,7 @@ function TopRoutines() {
     
   useEffect(() => {
       if (userMail) {
-          fetchRoutines();
+          fetchRoutines(setOpenCircularProgress,setTotalRoutines,setRoutines,setWarningConnection);
       }
   }, [userMail]);
 
@@ -279,43 +159,7 @@ function TopRoutines() {
         ) : (
           <>
             <NewLeftBar/>
-            <div className='input-container' style={{marginLeft: isSmallScreen ? '60px' : '50px', width: isSmallScreen ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
-                        <div className='input-small-container'>
-                            {openSearch ? (
-                                <input
-                                type="text"
-                                className="search-input"
-                                placeholder="Search..."
-                                style={{
-                                position: 'absolute',
-                                borderRadius: '10px',
-                                padding: '0 10px',
-                                transition: 'all 0.3s ease',
-                                }}
-                                id={filterRoutines}
-                                onChange={(e) => setFilterRoutines(e.target.value)} 
-                            />
-                            ) : (
-                            <Button onClick={handleOpenSearch}
-                            style={{
-                                backgroundColor: '#48CFCB',
-                                position: 'absolute',
-                                borderRadius: '50%',
-                                width: '5vh',
-                                height: '5vh',
-                                minWidth: '0',
-                                minHeight: '0',
-                                padding: '0',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                            >
-                            <SearchIcon sx={{ color: '#424242' }} />
-                            </Button>
-                            )}
-                            </div>
-                    </div>
+            <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
             <div>
               {routines && (
                           <CustomTable columnsToShow={['Name','Owner','Exercises','Users','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','exercises_length','cant_asignados']}/> 
