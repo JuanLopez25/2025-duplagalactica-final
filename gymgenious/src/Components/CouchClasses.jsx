@@ -2,13 +2,11 @@ import React, {useState, useEffect} from 'react';
 import { Box, useMediaQuery } from '@mui/material';
 import { QRCodeCanvas } from "qrcode.react";
 import NewLeftBar from '../real_components/NewLeftBar'
-import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
 import Searcher from '../real_components/searcher.jsx';
 import fetchSalas from '../fetchs/fetchSalas.jsx'
-import fetchInventory from '../fetchs/fetchInventory.jsx'
 import timeToMinutes from '../functions/TimeToMinutes.jsx'
 import day from '../functions/DateToString.jsx'
 import formatDate from '../functions/formatDate.jsx'
@@ -37,12 +35,14 @@ function CouchClasses() {
   const [userMail,setUserMail] = useState(null)
   const [hour, setHour] = useState('');
   const [hourFin, setHourFin] = useState('');
+  const [errorCapacity,setErrorCapacity] = useState(false)
   const [permanent, setPermanent] = useState('');
   const [date, setDate] = useState('');
   const [name, setName] = useState('');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
+  const [fetchedInventory,setFetchInventory] = useState([])
   const [type, setType] = useState(null);
   const [errorSala, setErrorSala] = useState(false);
   const [errorHour, setErrorHour] = useState(false);
@@ -59,13 +59,13 @@ function CouchClasses() {
   const [fetchCapacity, setFetchCapacity] = useState('')
   const [errorForm, setErrorForm] = useState(false);
   const [itemData,setItemData] = useState([])
-  const [openSearch, setOpenSearch] = useState(false);
+  const [salaInfo,setSalaInfo] = useState([])
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
   const [openCheckList, setOpenCheckList] = useState(false);
   const [viewQualifications, setViewQualifications] = useState(false);
   const [viewInventory, setViewInventory] = useState(false)
-  
+
   const handleViewQualifications = () => {
     setViewQualifications(!viewQualifications)
   }
@@ -145,14 +145,6 @@ function CouchClasses() {
     setOpenCheckList(true);
   };
 
-  const handleOpenSearch = () => {
-    setOpenSearch(true);
-  };
-
-  const handleCloseSearch = () => {
-    setOpenSearch(false);
-  };
-  
   useEffect(() => {
     if (userMail && (maxNum || fetchCapacity)) {
       fetchSalas(setOpenCircularProgress,setSalas,setWarningFetchingSalas,maxNum)
@@ -161,7 +153,6 @@ function CouchClasses() {
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
-    handleCloseSearch();
   };
 
   const handleCloseModal = () => {
@@ -172,9 +163,67 @@ function CouchClasses() {
     setOpenCheckList(null);
   };
 
+  const fetchInventory = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos del inventario: ' + response.statusText);
+        }
+        const data = await response.json();
+        
+        const itemsWithQuantities = data.map((item) => {
+          const matchingReservation = selectedEvent.reservations.find(
+            (reservation) => reservation.item === item.id
+          );
+          return {
+            ...item,
+            cantidad: matchingReservation ? matchingReservation.cantidad : 0, 
+            totalReservado: 0,
+          };
+        });
+
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
+        if (!response2.ok) {
+          throw new Error('Error al obtener las clases: ' + response2.statusText);
+        }
+        const data2 = await response2.json();
+        data2.forEach((clase) => {
+          clase.reservations.forEach((objeto) => {
+            const item = itemsWithQuantities.find((i) => i.id === objeto.item);
+            if (item && clase.id!=selectedEvent.id) {
+              item.totalReservado += objeto.cantidad;
+            }
+          });
+        });
+        setItemData(itemsWithQuantities);
+      
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+      
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }finally {
+      setOpenCircularProgress(false)
+    }
+  };
+  
   const handleEditClass = (selectedEvent) => {
-    fetchInventory(setItemData,setOpenCircularProgress)
+    fetchInventory()
     setEditClass(!editClass);
+    setFetchInventory(selectedEvent.reservations)
     setFetchId(selectedEvent.id)
     setFetchDateFin(selectedEvent.dateFin)
     setFetchDateInicio(selectedEvent.dateInicio)
@@ -193,6 +242,7 @@ function CouchClasses() {
     setSala(null);
     setErrorForm(false);
     setErrorSala(false);
+    setErrorHour(false)
   } 
 
   const fetchModifyClassInformation = async () => {
@@ -211,17 +261,14 @@ function CouchClasses() {
         }
         const data2 = (await response2.json()).filter((res)=> res.id!=fetchId);
         const isoDateString = date.toString() || fetchDateInicio.split('T')[0]; 
-
         const newPreviousDate = fetchDateInicio ? fetchDateInicio.split('T')[0] : null;
         const newPreviousDateFin = fetchDateFin ? fetchDateFin.split('T')[0] : null;
         const newPreviousHour = fetchDateInicio ? fetchDateInicio.split('T')[1].split('Z')[0] : "00:00:00";
         const newPreviousHourFin = fetchDateFin ? fetchDateFin.split('T')[1].split('Z')[0] : "00:00:00";
-
         const finalDateStart = date || newPreviousDate;
         const finalHourStart = hour || newPreviousHour;
         const finalDateEnd = date || newPreviousDateFin;
         const finalHourEnd = hourFin || newPreviousHourFin;
-
         const newClassStartTime = new Date(`${finalDateStart}T${finalHourStart}Z`);
         const newClassEndTime = new Date(`${finalDateEnd}T${finalHourEnd}Z`);
         const newClassStartTimeInMinutes = timeToMinutes(finalHourStart);
@@ -335,14 +382,27 @@ function CouchClasses() {
   };
 
   const validateForm = () => {
+    let matchedItems = itemData
+    .map(item => {
+      let matchedItem = fetchedInventory.find(invItem => invItem.item === item.id);
+      if (matchedItem) {
+        return {
+          id: item.id,
+          cantidad1: item.cantidad,
+          cantidad2: matchedItem.cantidad
+        };
+      }
+      return null; 
+    })
+    .filter(item => item !== null);
     let res = true;
-    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned===null && maxNum===null && permanent==='') {
+    let allMatch = matchedItems.every((item)=>item.cantidad1==item.cantidad2);
+    if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned==null && maxNum===null && permanent==='' && allMatch) {
         setErrorForm(true);
         res = false;
     } else {
         setErrorForm(false);
     }
-
     const format= "HH:mm";
     const hourFinForm = hourFin || fetchDateFin.split('T')[1].split(':').slice(0, 2).join(':');
     const hourForm = hour || fetchHour;
@@ -356,13 +416,13 @@ function CouchClasses() {
     return res;
   }
 
-  const saveClass = (event) => {
-    if(validateForm()){
-      event.preventDefault(); 
+  const saveClass = async (event) => {
+    event.preventDefault(); 
+    const salaInfoValida = await fetchSalaInfo(salaAssigned || fetchSala);
+    if (salaInfoValida && validateForm()) {
       fetchModifyClassInformation();
     }
-  };
-
+};
   const handleDeleteClass = async (event) => {
     setOpenCircularProgress(true);
     try {
@@ -396,6 +456,50 @@ function CouchClasses() {
     }
   };
 
+  const fetchSalaInfo = async (sala) => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return false;  
+      }
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_salas`, {
+          method: 'GET', 
+          headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      if (!response.ok) {
+          throw new Error('Error al obtener las rutinas: ' + response.statusText);
+      }
+      const data = await response.json();
+      const dataFinal = data.filter(room => room.id == sala);
+      
+      console.log("data final", dataFinal);
+      console.log("capacidad", (maxNum || fetchCapacity));
+      if (dataFinal.length === 0) {
+        console.error("No se encontró la sala.");
+        setErrorCapacity(true);
+        return false; 
+      }
+      setSalaInfo(dataFinal);
+      const capacidadSala = dataFinal[0]?.capacidad || 0;
+      if (parseInt(capacidadSala) < (maxNum || fetchCapacity)) {
+        setErrorCapacity(true);
+        return false;
+      } else {
+        setErrorCapacity(false);
+        return true;
+      }
+    } catch (error) {
+      console.error("Error fetching salas:", error);
+      setWarningConnection(true);
+      setTimeout(() => setWarningConnection(false), 3000);
+      return false; 
+    } finally {
+      setOpenCircularProgress(false);
+    }
+};
+
   const fetchClasses = async () => {
     setOpenCircularProgress(true);
     try {
@@ -426,7 +530,6 @@ function CouchClasses() {
           salaInfo, 
         };
       });
-
       const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
@@ -472,9 +575,6 @@ function CouchClasses() {
           if (nextStartDate < today) {
             const dayOfWeek = CorrectStarDate.getDay();
             let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
-            if (daysUntilNextClass === 0 && today > CorrectStarDate) {
-              daysUntilNextClass = 7;
-            }
             nextStartDate.setDate(today.getDate() + daysUntilNextClass);
             nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
           }
@@ -501,25 +601,6 @@ function CouchClasses() {
           });
         }
       });
-      const response4 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assistance', {
-        method: 'GET'
-      });
-      if (!response4.ok) {
-        throw new Error('Error al obtener las salas: ' + response4.statusText);
-      }
-      const assistance_references = await response4.json();
-      console.log(calendarEvents)
-      const dataMatches = calendarEvents.map(evento => {
-        const fechaEvento = new Date(new Date(evento.start).setHours(new Date(evento.start).getHours() - 3));
-        const comment = assistance_references.find(c => 
-          (c.cid === evento.id) && 
-          (fechaEvento.toISOString().split('T')[0] === new Date(c.date).toISOString().split('T')[0])
-        );
-        return {
-          ...evento,
-          fecha: comment ? comment.date : null,
-        };
-      });
       const response5 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
         method: 'GET',
         headers: {
@@ -536,7 +617,7 @@ function CouchClasses() {
         mapData5.set(item.id, { name: item.name, img: item.img }); 
       });
 
-      const updatedDataMatches = dataMatches.map(match => {
+      const updatedDataMatches = calendarEvents.map(match => {
         const updatedReservations = match.reservations.map(reservation => {
           const matchedData = mapData5.get(reservation.item);
           return {
@@ -560,6 +641,7 @@ function CouchClasses() {
             recurrent: routine.permanent=='Si' ? 'Yes' : 'No'
         };
       });
+      console.log("estas son las clases", formattedRoutines)
       setTotalClasses(formattedRoutines);
       setOpenCircularProgress(false);
     } catch (error) {
@@ -574,7 +656,7 @@ function CouchClasses() {
 
   useEffect(() => {
     const newRowsList = [];
-  
+    const clasesAgregadas = [];
     const filteredClassesSearcher = filterClasses
       ? totalClasses.filter(item =>
           item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
@@ -582,18 +664,12 @@ function CouchClasses() {
       : totalClasses;
   
     filteredClassesSearcher.forEach(row => {
-      if (
-        (row.permanent === 'No' &&
-          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
-        (row.permanent === 'Si' &&
-          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
-      ) {
+      if (!clasesAgregadas.includes(row.cid)){
+        clasesAgregadas.push(row.cid)
         newRowsList.push(row);
       }
     });
-  
+    console.log("new rows",newRowsList)
     setNewRows(newRowsList);
   }, [filterClasses, totalClasses]);
 
@@ -856,7 +932,7 @@ function CouchClasses() {
                           </div>
                         </div>
                         {itemData.length>0 && 
-                            <ItemList data={itemData} setItemData={setItemData}/>
+                            <ItemList data={itemData} setItemData={setItemData} />
                         }
                         <div className="input-small-container" style={{ flex: 3, textAlign: 'left' }}>
                           <label htmlFor="maxNum" style={{color:'#14213D'}}>Participants:</label>
@@ -871,6 +947,7 @@ function CouchClasses() {
                             onChange={(e) => setMaxNum(e.target.value)}
                           />
                           {errorForm && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
+                          {errorCapacity && (<p style={{color: 'red', margin: '0px'}}>The room is not big enough</p>)}
                         </div>
                         <button onClick={saveClass} style={{width: isSmallScreen700 ? '70%' : '30%'}} className='button_login'>Save changes</button>
                         <button onClick={handleEditClass} className='button_login' style={{width: isSmallScreen700 ? '70%' : '30%', marginTop: isSmallScreen700 ? '10px' : '', marginLeft: isSmallScreen700 ? '' : '10px'}}>Cancel</button>
