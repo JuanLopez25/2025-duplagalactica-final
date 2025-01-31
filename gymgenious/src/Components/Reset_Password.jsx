@@ -14,15 +14,14 @@ import Loader from '../real_components/loader.jsx';
 
 export default function ResetPassword() {
     const [email, setEmail] = useState('');
-    const [showNotMatchEmail, setShowNoMatchEmail] = useState(false);
     const navigate = useNavigate();
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const [success, setSuccess] = useState(false);
     const [failure, setFailure] = useState(false);
     const [warningResettingPassword, setWarningResettingPassword] = useState(false);
     const isSmallScreen = useMediaQuery('(max-width:700px)');
-
     const auth = getAuth();
+    
     const handleSubmit = async (e) => {
         setOpenCircularProgress(true);
         e.preventDefault();

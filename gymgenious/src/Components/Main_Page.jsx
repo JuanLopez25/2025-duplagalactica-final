@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useMediaQuery } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress, { circularProgressClasses } from '@mui/material/CircularProgress';
+import { circularProgressClasses } from '@mui/material/CircularProgress';
 import NewLeftBar from '../real_components/NewLeftBar.jsx';
-import {jwtDecode} from "jwt-decode";
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import Slide from '@mui/material/Slide';
-import CheckIcon from '@mui/icons-material/Check';
+import verifyToken from '../fetchs/verifyToken.jsx';
 import Calendar from '../real_components/Calendar.jsx';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import EnhancedTable from '../real_components/TableClasses.jsx';
@@ -19,24 +14,27 @@ import SuccessAlert from '../real_components/SuccessAlert.jsx';
 import EmailIcon from '@mui/icons-material/Email';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
+import fetchUser from '../fetchs/fetchUser.jsx'
 import CloseIcon from '@mui/icons-material/Close';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography } from 'mdb-react-ui-kit';
 import Loader from '../real_components/loader.jsx'
 import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import DiamondIcon from '@mui/icons-material/Diamond';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
+import { useNavigate } from 'react-router-dom';
+import formatDate from '../functions/formatDate.jsx'
+import Searcher from '../real_components/searcher.jsx';
 
 export default function Main_Page() {
   const [classes, setClasses] = useState([]);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showCalendar, setShowCalendar] = useState(true);
-  const [leftBarOption, setLeftBarOption] = useState('');
+  const navigate = useNavigate();
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [userMail,setUserMail] = useState(null);
   const [warningConnection, setWarningConnection] = useState(false);
@@ -58,7 +56,13 @@ export default function Main_Page() {
   const [newRows, setNewRows] = useState([]);
   const [errorStars, setErrorStars] = useState(false);
   const [errorComment, setErrorComment] = useState(false);
-
+  const [membership, setMembership] = useState([])
+  const [userAccount, setUserAccount] = useState([])
+  const [changingStars,setChangingStars] = useState(false)
+  const [changingComment,setChangingComment] = useState(false)
+  const currentDate = new Date();
+  const [notifications,setCantidadNotifications] = useState(0);
+  const [viewQualifications, setViewQualifications] = useState(false)
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -72,18 +76,6 @@ export default function Main_Page() {
       }, 450);
   }
   
-  const [membership, setMembership] = useState([])
-  const [userAccount, setUserAccount] = useState([])
-  const [amountClasses,setAmountClasses] = useState(0)
-  const [changingStars,setChangingStars] = useState(false)
-  const [changingComment,setChangingComment] = useState(false)
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-  const day = String(currentDate.getDate()).padStart(2, '0');
-  const formattedDate = `${year}-${month}-${day}`;
-  const [notifications,setCantidadNotifications] = useState(0);
-  const [viewQualifications, setViewQualifications] = useState(false)
   
   const handleChangeCalifyModal = () => {
     setComment(selectedEvent.comentario)
@@ -101,23 +93,11 @@ export default function Main_Page() {
     setStars(newStars);
   }
 
-  const handleOpenSearch = () => {
-    setOpenSearch(true);
-  };
-
   const handleCloseSearch = () => {
     setOpenSearch(false);
     setClasses(totalClasses);
   };
-  
-  function formatDate(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${year}-${month}-${day}`;
-  }
-
+ 
   function HalfRating() {
     return (
       <Stack spacing={1}>
@@ -143,7 +123,6 @@ export default function Main_Page() {
 
   useEffect(() => {
     const newRowsList = [];
-  
     const filteredClassesSearcher = filterClasses
       ? totalClasses.filter(item =>
           item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
@@ -738,24 +717,10 @@ export default function Main_Page() {
     }
   };
 
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
   useEffect(() => {
     let token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
@@ -772,7 +737,7 @@ export default function Main_Page() {
 
   useEffect(() => {
     if (userMail) {
-      fetchUser();
+      fetchUser(setType,setOpenCircularProgress,userMail,navigate);
     }
   }, [userMail, showCalendar]);
 
@@ -847,7 +812,6 @@ export default function Main_Page() {
       }
     }
   }
-
 
   const fetchMissions = async () =>{
     try {
@@ -951,59 +915,6 @@ export default function Main_Page() {
     }
   }
 
-  const fetchUser = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-          method: 'GET', 
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-      });
-      if (!response.ok) {
-          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-      }
-      const data = await response.json();
-      setUserAccount(data)
-      setType(data.type);
-      
-      const response3 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memb_user`, {
-          method: 'GET', 
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-      });
-      if (!response3.ok) {
-          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-      }
-      const data3 = await response3.json();
-      const membershipsOfUser = data3.filter(memb => memb.userId == data.uid)
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const formattedDate = `${year}-${month}-${day}`;
-      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
-      const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
-      const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memberships`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        },
-      });
-      const membresia = await response2.json();
-      const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
-      setMembership(firstFiler)
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
   
   return (
     <div className="App">
@@ -1059,60 +970,6 @@ export default function Main_Page() {
         </>
       ):(
       <>
-      {type==='coach' ? (
-        <>
-        {notifications>0 ? (
-        <>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
-            <Button
-              style={{
-                  backgroundColor: '#48CFCB',
-                  position: 'absolute',
-                  borderRadius: '25%',
-                  width: '5vh',
-                  height: '5vh',
-                  minWidth: '0',
-                  minHeight: '0',
-                  padding: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-              }}
-              >
-              <NotificationsActiveIcon sx={{ color: 'red' }} />
-              <p style={{color:'red'}}>{notifications}</p>
-            </Button>
-          </div>
-        </div>
-        </>
-        ) :
-        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
-            <Button
-              style={{
-                  backgroundColor: '#48CFCB',
-                  position: 'absolute',
-                  borderRadius: '50%',
-                  width: '5vh',
-                  height: '5vh',
-                  minWidth: '0',
-                  minHeight: '0',
-                  padding: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-              }}
-              >
-              <NotificationsIcon sx={{ color: '#424242' }} />
-            </Button>
-          </div>
-        </div></>)
-        }
-        </>
-      ):
-      (<></>)
-      }
       </>)
       }
       {visibleDrawerAchievements && type === 'client' && (
@@ -1201,97 +1058,23 @@ export default function Main_Page() {
         </div>
         ) : (
           <>
-            <div className='input-container-buttons' style={{left: isSmallScreen700 ? '60px' : '50px', position: 'absolute', top: '0.5%', paddingRight: '0px'}}>
-              <div className='input-small-container-buttons'>
-                {openSearch ? (
-                    <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search..."
-                    style={{
-                      borderRadius: '10px',
-                      padding: '0 10px',
-                      transition: 'all 0.3s ease',
-                      height: '5vh',
-                      width: isSmallScreen700 ? '125px' : '300px'
-                    }}
-                    id={filterClasses}
-                    onChange={(e) => setFilterClasses(e.target.value)} 
-                  />
-                ) : (
-                  <Button onClick={handleOpenSearch}
-                  style={{
-                    backgroundColor: '#48CFCB',
-                    borderRadius: '50%',
-                    width: '5vh',
-                    height: '5vh',
-                    minWidth: '0',
-                    minHeight: '0',
-                    padding: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <SearchIcon sx={{ color: '#424242' }} />
-                </Button>
-                )}
-                </div>
-          </div>
-          <div className="Table-Container">
+           <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen} searchingParameter={'class name'}/>
+           <div className="Table-Container">
             <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
         </>
       )}
       </>
-  ) : (
-    <>
-    <div className='leftBar' style={{zIndex:'1000'}}>
-      {openSearch ? (
-          <input
-          type="text"
-          className="search-input"
-          placeholder="Search..."
-          style={{
-            position: 'absolute',
-            top: '0.5vh',
-            left: '7vh',
-            width: '60vh',
-            height: '5vh',
-            borderRadius: '10px',
-            padding: '0 10px',
-            transition: 'all 0.3s ease',
-          }}
-          id={filterClasses}
-          onChange={(e) => setFilterClasses(e.target.value)} 
-        />
-      ) : (
-        <Button onClick={handleOpenSearch}
-        style={{
-          backgroundColor: '#48CFCB',
-          position: 'absolute',
-          borderRadius: '50%',
-          top: '0.5vh',
-          left: '7vh ',
-          width: '5vh',
-          height: '5vh',
-          minWidth: '0',
-          minHeight: '0',
-          padding: '0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <SearchIcon sx={{ color: '#424242' }} />
-      </Button>
-      )}
-  </div>
-  <div className="Table-Container">
-    <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
-  </div>
-</>
-  )}
+    ) : (
+      <>
+      <div className='leftBar' style={{zIndex:'1000'}}>
+      <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen} searchingParameter={'class name'}/>
+    </div>
+    <div className="Table-Container">
+      <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
+    </div>
+  </>
+    )}
   {selectedEvent && (
     <ECommerce event={selectedEvent}/>
   )}
@@ -1314,16 +1097,6 @@ export default function Main_Page() {
             <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                 <div className="input-small-container">
                      <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
-                    {/*<input 
-                    type="number" 
-                    id="stars" 
-                    name="stars"
-                    value={stars}
-                    min="1"
-                    step='1'
-                    max="5"
-                    onChange={handleStarsChange}
-                    /> */}
                     <HalfRating/>
                     {errorStars && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Select stars</p>)}
                 </div>

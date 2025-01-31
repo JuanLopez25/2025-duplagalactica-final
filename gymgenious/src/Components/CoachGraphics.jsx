@@ -1,32 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import { motion } from "framer-motion";
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Paper from '@mui/material/Paper';
-import { visuallyHidden } from '@mui/utils';
 import NewLeftBar from '../real_components/NewLeftBar';
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import { jwtDecode } from "jwt-decode";
+import fetchUser from '../fetchs/fetchUser.jsx'
+import verifyToken from '../fetchs/verifyToken.jsx'
 import { BarChart } from '@mui/x-charts/BarChart';
 import Loader from '../real_components/loader.jsx';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
+import {MDBTypography} from 'mdb-react-ui-kit';
 
 function TopRoutines({ routines, isSmallScreen }) {
     const [itemNb, setItemNb] = React.useState(5);
-
     const orderedRoutines = routines.sort((a, b) => b.cant_asignados - a.cant_asignados);
-  
     const routineNames = orderedRoutines?.map(routine => routine.name);
     const routineData = orderedRoutines?.map(routine => routine.cant_asignados);
   
@@ -60,9 +48,9 @@ function TopRoutines({ routines, isSmallScreen }) {
       </Box>
     </>
     );
-  }
+}
 
-  function TopClasses({classes, isSmallScreen}) {
+function TopClasses({classes, isSmallScreen}) {
     const [itemNb, setItemNb] = React.useState(5);
 
     const orderedClasses = classes.sort((a, b) => b.BookedUsers.length - a.BookedUsers.length);
@@ -95,9 +83,9 @@ function TopRoutines({ routines, isSmallScreen }) {
           />
       </Box>
     );
-  }
+}
 
-  function ExercisesVsUsers({exersCoachUsers, isSmallScreen}) {
+function ExercisesVsUsers({exersCoachUsers, isSmallScreen}) {
     const [itemNb, setItemNb] = React.useState(5);
     const orderedClasses = exersCoachUsers.sort((a, b) => b.count - a.count);
     const classesNames = orderedClasses?.map(clase => clase.exercise);
@@ -129,15 +117,9 @@ function TopRoutines({ routines, isSmallScreen }) {
         />
     </Box>
   );
-  }
+}
 
 function CoachGraphics() {
-  const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState('cant_asignados');
-  const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail,setUserMail] = useState(null)
   const isSmallScreen = useMediaQuery('(max-width:700px)');
   const [routines, setRoutines] = useState([]);
@@ -146,34 +128,10 @@ function CoachGraphics() {
   const [errorToken,setErrorToken] = useState(false);
   const navigate = useNavigate();
   const isMobileScreen = useMediaQuery('(min-height:750px)');
-  const [maxHeight, setMaxHeight] = useState('600px');
-  const [viewExercises, setViewExercises] = useState(false);
   const [type, setType] = useState(null);
-  const step = 0;
-  const [activeStep, setActiveStep] = React.useState(step);
-  const [skipped, setSkipped] = React.useState(new Set());
-  const steps = ['Top routines', 'Top classes', 'Users vs. Exercises'];
   const [classes, setClasses] = useState([]);
   const [exersCoachUsers,setExersCoachUsers] = useState([])
 
-    const isStepSkipped = (step) => {
-        return skipped.has(step);
-    };
-
-    const handleNext = () => {
-    let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-    newSkipped = new Set(newSkipped.values());
-    newSkipped.delete(activeStep);
-    }
-
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
-    };
-
-    const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
 
   const fetchRoutines = async () => {
     setOpenCircularProgress(true);
@@ -374,109 +332,20 @@ function CoachGraphics() {
     }
 };
 
-
-  const verifyToken = async (token) => {
-    setOpenCircularProgress(true);
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setOpenCircularProgress(false);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
   
-  const [activeComponent, setActiveComponent] = useState(null);
-  const handleLinkClick = (component) => {
-    setActiveComponent(component);
-  };
-  
-  const DURATION = 0.25;
-  const STAGGER = 0.065;
-  // const FlipLink = ({ children, onClick }) => {
-  //   return (
-  //     <motion.a
-  //       initial="initial"
-  //       whileHover="hovered"
-  //       onClick={onClick}
-  //       className="custom-flip-link"
-  //       style={{
-  //         lineHeight: 0.75,
-  //         position: 'relative', 
-  //       }}
-  //     >
-  //       <div className="text-container">
-  //         {children.split("").map((l, i) => (
-  //           <motion.span
-  //             variants={{
-  //               initial: {
-  //                 y: 0,
-  //               },
-  //               hovered: {
-  //                 y: "-110%",
-  //               },
-  //             }}
-  //             transition={{
-  //               duration: DURATION,
-  //               ease: "easeInOut",
-  //               delay: STAGGER * i,
-  //             }}
-  //             className="inline-block"
-  //             key={i}
-  //           >
-  //             {l}
-  //           </motion.span>
-  //         ))}
-  //       </div>
-  //       <div className="text-container">
-  //         {children.split("").map((l, i) => (
-  //           <motion.span
-  //             variants={{
-  //               initial: {
-  //                 y: "100%", 
-  //               },
-  //               hovered: {
-  //                 y: "-100%",
-  //               },
-  //             }}
-  //             transition={{
-  //               duration: DURATION,
-  //               ease: "easeInOut",
-  //               delay: STAGGER * i,
-  //             }}
-  //             className="inline-block"
-  //             key={i}
-  //           >
-  //             {l}
-  //           </motion.span>
-  //         ))}
-  //       </div>
-  //     </motion.a>
-  //   );
-  // };
-  
-  
-  
-  
-
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token);
+            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
         } else {
             navigate('/');
             console.error('No token found');
         }
       }, []);
     
-      useEffect(() => {
+    useEffect(() => {
         if (userMail) {
-            fetchUser();
+            fetchUser(setType,setOpenCircularProgress,userMail,navigate)
         }
     }, [userMail]);
 
@@ -490,47 +359,7 @@ function CoachGraphics() {
             }, 3000)
         }
     }, [userMail]);
-
-      useEffect(() => {
-        if(isSmallScreen) {
-          setRowsPerPage(10);
-        } else {
-          setRowsPerPage(5)
-        }
-        if(isMobileScreen) {
-          setMaxHeight('700px');
-        } else {
-          setMaxHeight('600px')
-        }
-      }, [isSmallScreen, isMobileScreen])
     
-      const fetchUser = async () => {
-        setOpenCircularProgress(true);
-        try {
-          const authToken = localStorage.getItem('authToken');
-          if (!authToken) {
-            console.error('Token no disponible en localStorage');
-            return;
-          }
-          const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-            }
-            const data = await response.json();
-            setType(data.type);
-            if(data.type!='coach'){
-              navigate('/');
-            }
-        } catch (error) {
-            console.error("Error fetching user:", error);
-        }
-      };
 
     return (
       <div className="App">

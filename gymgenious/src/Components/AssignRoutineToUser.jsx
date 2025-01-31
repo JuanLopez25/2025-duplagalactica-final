@@ -3,68 +3,34 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UsserAssignment from './UsersAssignment.jsx';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx'
+import fetchRoutines from '../fetchs/fetchAllRoutines.jsx';
+import verifyToken from '../fetchs/verifyToken.jsx';
 
 export default function RoutineCreation() {
     const [routineAssigned, setRoutine] = useState(''); 
     const [userMail,setUserMail] = useState(null);
     const [users, setUsers] = useState([]);
     const [routines, setRoutines] = useState([]);
-    const navigate = useNavigate();
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const [success, setSuccess] = useState(false);
     const [failure, setFailure] = useState(false);
     const [warningFetchingRoutines, setWarningFetchingRoutines] = useState(false);
-    const [errors, setErrors] = useState([]);
-    const [failureErrors, setFailureErrors] = useState(false);
-    const [fetchAttempt, setFetchAttempt] = useState(0);
     const [day, setDay] = useState('');
     const [usersChanged, setUsersChanged] = useState(false);
     const [errorDaySelected, setErrorDaySelected] = useState(false);
     const [errorRoutineSelected, setErrorRoutineSelected] = useState(false);
-
-
-    const fetchRoutines = async () => {
-        setOpenCircularProgress(true);
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-            const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_routines`, {
-                method: 'GET', 
-                headers: {
-                  'Authorization': `Bearer ${authToken}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Error al obtener las rutinas: ' + response.statusText);
-            }
-            const data = await response.json();
-            setRoutines(data);
-            setOpenCircularProgress(false);
-        } catch (error) {
-            console.error("Error fetching rutinas:", error);
-            setOpenCircularProgress(false);
-            setWarningFetchingRoutines(true);
-            setTimeout(() => {
-                setWarningFetchingRoutines(false);
-            }, 3000);
-        }
-    };
+    const [errorToken,setErrorToken] = useState(false);
 
     useEffect(() => {
       const token = localStorage.getItem('authToken');
       if (token) {
-          verifyToken(token);
+          verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
       } else {
           console.error('No token found');
       }
@@ -72,22 +38,9 @@ export default function RoutineCreation() {
 
     useEffect(() => {
         if (userMail) {
-            fetchRoutines();
+            fetchRoutines(setOpenCircularProgress,setRoutines,setRoutines,setWarningFetchingRoutines);
         }
-      }, [userMail]);
-
-    const verifyToken = async (token) => {
-        setOpenCircularProgress(true);
-        try {
-            const decodedToken = jwtDecode(token);
-            setUserMail(decodedToken.email);
-            setOpenCircularProgress(false);
-        } catch (error) {
-            console.error('Error al verificar el token:', error);
-            setOpenCircularProgress(false);
-            throw error;
-        }
-    };
+    }, [userMail]);
 
     const validateForm = () => {
         let errors = [];
@@ -263,29 +216,7 @@ export default function RoutineCreation() {
             ) : (
                 null
             )}
-            { failureErrors ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                        <div>
-                            <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                            Error assigning routine!
-                            </Alert>
-                            {errors.length > 0 && errors.map((error, index) => (
-                            <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                                <li>{error}</li>
-                            </Alert>
-                            ))}
-                        </div>
-                        </Slide>
-                    </Box>
-                    </div>
-                </div>
-              
-            ) : (
-                null
-            )}
+            
             { warningFetchingRoutines ? (
                 <div className='alert-container'>
                     <div className='alert-content'>
@@ -315,6 +246,21 @@ export default function RoutineCreation() {
                 </div>
             ) : (
                 null
+            )}
+            {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
             )}
         </div>
     );

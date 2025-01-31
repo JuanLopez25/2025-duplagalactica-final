@@ -1,15 +1,12 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMediaQuery } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
-import { Button } from '@mui/material';
+import verifyToken from '../fetchs/verifyToken.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx';
 
@@ -18,14 +15,13 @@ export default function ExerciseCreation() {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [image, setImage] = useState(null);
-  const navigate = useNavigate();
   const [userMail,setUserMail] = useState(null);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
   const [errors, setErrors] = useState([]);
   const [failureErrors, setFailureErrors] = useState(false);
-  const isSmallScreen = useMediaQuery('(max-width:700px)');
+  const [errorToken,setErrorToken] = useState(false);
 
   const validateForm = () => {
     let errors = [];
@@ -100,21 +96,12 @@ export default function ExerciseCreation() {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
   }, []);
 
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        throw error;
-    }
-  };
 
   return (
     <div className='exercise-creation-container'>
@@ -238,6 +225,21 @@ export default function ExerciseCreation() {
           </div>
       ) : (
           null
+      )}
+      {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
       )}
     </div>
   );

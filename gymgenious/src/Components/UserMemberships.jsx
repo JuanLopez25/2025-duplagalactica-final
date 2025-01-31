@@ -2,31 +2,24 @@ import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LeftBar from '../real_components/NewLeftBar.jsx';
-import moment from 'moment'
 import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
 import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
-import CloseIcon from '@mui/icons-material/Close';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SchoolIcon from '@mui/icons-material/School';
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
+import verifyToken from '../fetchs/verifyToken.jsx';
 
 export default function UserMemberships() {
   const [plan, setPlan] = useState('');
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
-  const [errors, setErrors] = useState([]);
-  const [success, setSuccess] = useState(false);
-  const [failure, setFailure] = useState(false);
-  const [failureErrors, setFailureErrors] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(true);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
@@ -35,15 +28,12 @@ export default function UserMemberships() {
   const [membership, setMembership] = useState([]);
   const [errorAquire, setErrorAquire] = useState(false);
   const [upgrade, setUpgrade] = useState(false);
-
-  
   const [memberships,setMemberships] = useState([])
 
   const hanldeChangeUpgrade = () => {
     setUpgrade(!upgrade);
     setErrorAquire(false);
   }
-
 
   const fetchMembership = async () => {
     setOpenCircularProgress(true);
@@ -145,32 +135,10 @@ export default function UserMemberships() {
     );
   };
 
-  const validateForm = () => {
-      let errors = [];
-      
-
-      setErrors(errors);
-      return errors.length === 0;
-  }
-
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         navigate('/');
         console.error('No token found');
@@ -392,57 +360,7 @@ export default function UserMemberships() {
                 <Loader></Loader>
                 </Backdrop>
             ) : null}
-            { success ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={success} mountOnEnter unmountOnExit >
-                          <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
-                              Class successfully created!
-                          </Alert>
-                          </Slide>
-                        </Box>
-                    </div>
-                </div>
-            ) : (
-                null
-            )}
-            { failureErrors ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                        <div>
-                            <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                            Error creating class!
-                            </Alert>
-                            {errors.length > 0 && errors.map((error, index) => (
-                            <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                                <li>{error}</li>
-                            </Alert>
-                            ))}
-                        </div>
-                        </Slide>
-                    </Box>
-                    </div>
-                </div>
-              
-            ) : (
-                null
-            )}
-            { failure ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failure} mountOnEnter unmountOnExit >
-                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>Error creating class. Try again!</Alert>
-                        </Slide>
-                    </Box>
-                </div>
-            </div>
-            ) : (
-                null
-            )}
+           
             { errorToken ? (
                 <div className='alert-container'>
                     <div className='alert-content'>

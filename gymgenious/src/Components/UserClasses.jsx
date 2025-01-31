@@ -1,46 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { Box, useMediaQuery } from '@mui/material';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Paper from '@mui/material/Paper';
-import { visuallyHidden } from '@mui/utils';
 import NewLeftBar from '../real_components/NewLeftBar';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import { jwtDecode } from "jwt-decode";
 import CheckIcon from '@mui/icons-material/Check';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../real_components/loader.jsx';
-import moment from 'moment';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import EmailIcon from '@mui/icons-material/Email';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import CloseIcon from '@mui/icons-material/Close';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
-import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography } from 'mdb-react-ui-kit';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import CustomTable from '../real_components/Table4columns.jsx'
+import Searcher from '../real_components/searcher.jsx';
+import verifyToken from '../fetchs/verifyToken.jsx';
+import formatDate from '../functions/formatDate.jsx'
 
 function UsserClasses() {
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userMail, setUserMail] = useState('');
   const [userAccount, setUserAccount] = useState([])
-  const isSmallScreen400 = useMediaQuery('(max-width:360px)');
-  const isSmallScreen500 = useMediaQuery('(max-width:500px)');
-  const isSmallScreen700 = useMediaQuery('(max-width:700px)');
+  const isSmallScreen = useMediaQuery('(max-width:700px)');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken, setErrorToken] = useState(false);
   const [warningFetchingClasses, setWarningFetchingClasses] = useState(false);
@@ -48,7 +33,6 @@ function UsserClasses() {
   const [warningUnbookingClass, setWarningUnbookingClass] = useState(false);
   const navigate = useNavigate();
   const [type, setType] = useState(null);
-  const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [califyModal, setCalifyModal] = useState(false);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
@@ -61,6 +45,36 @@ function UsserClasses() {
   const [errorComment, setErrorComment] = useState(false);
   const [newRows, setNewRows] = useState([]);
   const [viewQualifications, setViewQualifications] = useState(false);
+
+  const fetchUser = async () => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const encodedUserMail = encodeURIComponent(userMail);
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+    });
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+        }
+        const data = await response.json();
+        setUserAccount(data)
+        setType(data.type);
+        if(data.type!='client'){
+          navigate('/');
+        }
+        setOpenCircularProgress(false);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  };
 
   function HalfRatingCoach() {
     return (
@@ -114,15 +128,6 @@ function UsserClasses() {
     setChangingStars(true)
     setStars(newStars);
   }
-
-  function formatDate(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${year}-${month}-${day}`;
-  }
-
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -365,27 +370,10 @@ function UsserClasses() {
     }
   }
   
-  const verifyToken = async (token) => {
-    setOpenCircularProgress(true);
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setOpenCircularProgress(false);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
   useEffect(() => {
       const token = localStorage.getItem('authToken');
       if (token) {
-          verifyToken(token);
+          verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
       } else {
           navigate('/');
           console.error('No token found');
@@ -394,7 +382,7 @@ function UsserClasses() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser();
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate);
     }
   }, [userMail]);
 
@@ -403,36 +391,6 @@ function UsserClasses() {
         fetchClasses();
     }
   }, [type,userAccount])
-
-  const fetchUser = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-    });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setUserAccount(data)
-        setType(data.type);
-        if(data.type!='client'){
-          navigate('/');
-        }
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
 
   function ECommerce({event}) {
     return (
@@ -485,7 +443,7 @@ function UsserClasses() {
                           zIndex: '2',
                           position: 'absolute', 
                           top: '1%',
-                          left: isSmallScreen700 ? '88%' : '90%',
+                          left: isSmallScreen? '88%' : '90%',
                         }}
                       >
                         <CloseIcon sx={{ color: '#F5F5F5' }} />
@@ -531,43 +489,7 @@ function UsserClasses() {
         ) : (
           <>
       <NewLeftBar />
-      <div className='input-container' style={{marginLeft: isSmallScreen700 ? '60px' : '50px', width: isSmallScreen700 ? '150px' : '300px', position: 'absolute', top: '0.5%'}}>
-              <div className='input-small-container'>
-                {openSearch ? (
-                    <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search..."
-                    style={{
-                      position: 'absolute',
-                      borderRadius: '10px',
-                      padding: '0 10px',
-                      transition: 'all 0.3s ease',
-                    }}
-                    id={filterClasses}
-                    onChange={(e) => setFilterClasses(e.target.value)} 
-                  />
-                ) : (
-                  <Button onClick={handleOpenSearch}
-                  style={{
-                    backgroundColor: '#48CFCB',
-                    position: 'absolute',
-                    borderRadius: '50%',
-                    width: '5vh',
-                    height: '5vh',
-                    minWidth: '0',
-                    minHeight: '0',
-                    padding: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <SearchIcon sx={{ color: '#424242' }} />
-                </Button>
-                )}
-                </div>
-        </div>
+      <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen} searchingParameter={'classes name'}/>
       {newRows && (
               <CustomTable columnsToShow={['Name','Start time','Date','Recurren','There are no booked classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['name','dateInicioHora','startFecha','recurrent']}/> 
       )}

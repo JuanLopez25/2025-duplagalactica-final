@@ -2,33 +2,19 @@ import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LeftBar from '../real_components/NewLeftBar.jsx';
-import moment from 'moment'
-import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import CheckIcon from '@mui/icons-material/Check';
-import Slide from '@mui/material/Slide';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import Popper from '@mui/material/Popper';
-import {jwtDecode} from "jwt-decode";
-import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
-import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
-import CloseIcon from '@mui/icons-material/Close';
-
+import fetchMembership from '../fetchs/fetchMembershipsTemplates.jsx';
+import fetchUser from '../fetchs/fetchUser.jsx'
+import verifyToken from '../fetchs/verifyToken.jsx'
 
 export default function CoachMemberships() {
-  const [permanent, setPermanent] = useState('');
-  const [name, setName] = useState('');
-  const [userAccount,setUserAccount] = useState()
-  const [maxNum,setMaxNum] = useState(1);
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
-  const isSmallScreen = useMediaQuery('(max-width:768px)');
   const [type, setType] = useState(null);
   const [memberships,setMemberships] = useState([])
   const [price1, setPrice1] = useState(0.00);
@@ -69,33 +55,6 @@ export default function CoachMemberships() {
     }
   }
 
-
-  const fetchMembership = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_membership_template', {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Error al obtener las salas: ' + response.statusText);
-      }
-      const data = await response.json();
-      console.log("asi se ve",data)
-      setMemberships(data)
-      setOpenCircularProgress(false);
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  }
-
   const handleEditPrice2 = () => {
     savePrice(price2,'Monthly')
     setEditPrice2(!editPrice2);
@@ -105,24 +64,11 @@ export default function CoachMemberships() {
     setEditPrice3(!editPrice3);
   }
 
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         navigate('/');
         console.error('No token found');
@@ -130,48 +76,16 @@ export default function CoachMemberships() {
   }, []);
 
   useEffect ( () => {
-    if (userAccount) {
-      fetchMembership()
+    if (userMail) {
+      fetchMembership(setMemberships,setOpenCircularProgress)
     }
-  },[userAccount])
+  },[userMail])
 
   useEffect(() => {
     if (userMail) {
-      fetchUser();
+      fetchUser(setType,setOpenCircularProgress,userMail,navigate)
     }
   }, [userMail]);
-
-  const fetchUser = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-      //const response = await fetch(`http://127.0.0.1:5000/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setUserAccount(data)
-        setType(data.type);
-        if(data.type!='coach'){
-          navigate('/');
-        }
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error("Error fetching user:", error);
-        setOpenCircularProgress(false);
-    }
-  };
 
   return (
     <div className='full-screen-image-2'>

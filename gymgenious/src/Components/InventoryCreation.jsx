@@ -1,15 +1,12 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMediaQuery } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
-import { Button } from '@mui/material';
+import verifyToken from '../fetchs/verifyToken.jsx';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx';
 
@@ -25,67 +22,67 @@ export default function ExerciseCreation() {
   const [failure, setFailure] = useState(false);
   const [errors, setErrors] = useState([]);
   const [failureErrors, setFailureErrors] = useState(false);
-  const isSmallScreen = useMediaQuery('(max-width:700px)');
+  const [errorToken,setErrorToken] = useState(false);
 
-const validateForm = () => {
-    let errors = [];
-    
-    if (name === '') {
-        errors.push('Please assign a name to the exercise.');
-    }
+  const validateForm = () => {
+      let errors = [];
+      
+      if (name === '') {
+          errors.push('Please assign a name to the exercise.');
+      }
 
-    setErrors(errors);
-    return errors.length===0;
-}
-
-const handleCreateExersice = async () => {
-    setOpenCircularProgress(true);
-    if(validateForm()){
-      try {
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('total', total);
-        if (image) {
-            formData.append('image', image);
-        }
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
-        }
-        const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_inventory', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al crear ejercicio');
-        }
-        setOpenCircularProgress(false);
-        setSuccess(true);
-        setTimeout(() => {
-            setSuccess(false);
-            window.location.reload()
-        }, 3000);
-      } catch (error) {
-        console.error("Error al crear el ejercicio:", error);
-        setOpenCircularProgress(false);
-        setFailure(true);
-        setTimeout(() => {
-            setFailure(false);
-        }, 3000);
-    }
-  } else {
-    setOpenCircularProgress(false);
-    setFailureErrors(true);
-    setTimeout(() => {
-        setFailureErrors(false);
-        }, 3000);
+      setErrors(errors);
+      return errors.length===0;
   }
-} 
+
+  const handleCreateExersice = async () => {
+      setOpenCircularProgress(true);
+      if(validateForm()){
+        try {
+          const formData = new FormData();
+          formData.append('name', name);
+          formData.append('total', total);
+          if (image) {
+              formData.append('image', image);
+          }
+          const authToken = localStorage.getItem('authToken');
+          if (!authToken) {
+            console.error('Token no disponible en localStorage');
+            return;
+          }
+          const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_inventory', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error('Error al crear ejercicio');
+          }
+          setOpenCircularProgress(false);
+          setSuccess(true);
+          setTimeout(() => {
+              setSuccess(false);
+              window.location.reload()
+          }, 3000);
+        } catch (error) {
+          console.error("Error al crear el ejercicio:", error);
+          setOpenCircularProgress(false);
+          setFailure(true);
+          setTimeout(() => {
+              setFailure(false);
+          }, 3000);
+      }
+    } else {
+      setOpenCircularProgress(false);
+      setFailureErrors(true);
+      setTimeout(() => {
+          setFailureErrors(false);
+          }, 3000);
+    }
+  } 
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -95,21 +92,11 @@ const handleCreateExersice = async () => {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
   }, []);
-
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        throw error;
-    }
-  };
 
   return (
     <div className='exercise-creation-container'>
@@ -228,6 +215,21 @@ const handleCreateExersice = async () => {
           </div>
       ) : (
           null
+      )}
+      {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
       )}
     </div>
   );

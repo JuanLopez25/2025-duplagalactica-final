@@ -4,26 +4,26 @@ import NewLeftBar from '../real_components/NewLeftBar';
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import { jwtDecode } from "jwt-decode";
+import verifyToken from '../fetchs/verifyToken.jsx'
 import { useNavigate } from 'react-router-dom';
 import Loader from '../real_components/loader.jsx';
-import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
+import Searcher from '../real_components/searcher.jsx';
 import CustomTable from '../real_components/Table3columns.jsx';
+import fetchExercises from '../fetchs/fetchExercises.jsx'
+import fetchUser from '../fetchs/fetchUser.jsx'
 
 export default function CoachExercises() {
     const [id,setId] = useState()
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [userMail, setUserMail] = useState('');
-    const isSmallScreen = useMediaQuery('(max-width:400px)');
     const isSmallScreen650 = useMediaQuery('(max-width:650px)');
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const [errorToken, setErrorToken] = useState(false);
     const [warningConnection, setWarningConnection] = useState(false);
     const [exercises, setExercises] = useState([]);
     const navigate = useNavigate();
+    const isSmallScreen = useMediaQuery('(max-width:700px)');
     const [type, setType] = useState(null);
-    const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [editExercise, setEditExercise] = useState(false);
     const [name, setName] = useState('');
     const [desc, setDesc] = useState('');
@@ -31,22 +31,11 @@ export default function CoachExercises() {
     const[fetchImg, setImageFetch] = useState('')
     const[fetchName,setNameFetch] = useState('')
     const[fetchDes,setDescFetch] = useState('')
-    const [openSearch, setOpenSearch] = useState(false);
     const [filterExercises, setFilterExercises] = useState('');
     const [totalExercises, setTotalExercises] = useState([]);
   
-    const handleOpenSearch = () => {
-      setOpenSearch(true);
-    };
-  
-    const handleCloseSearch = () => {
-      setOpenSearch(false);
-      setExercises(totalExercises);
-    };
-
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
-        handleCloseSearch();
     };
 
     const handleCloseModalEvent = () => {
@@ -78,46 +67,6 @@ export default function CoachExercises() {
         });
     };   
 
-    const fetchExercises = async () => {
-        setOpenCircularProgress(true);
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-            const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_excersices`, {
-                method: 'GET', 
-                headers: {
-                  'Authorization': `Bearer ${authToken}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Error al obtener los ejercicios: ' + response.statusText);
-            }
-            const exercisesData = await response.json();
-            const response2 = await fetch(`https://train-mate-api.onrender.com/api/exercise/get-all-exercises`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                }
-            });
-            const exercisesDataFromTrainMate = await response2.json();
-            const totalExercises = exercisesData.concat(exercisesDataFromTrainMate.exercises)
-            const totalExercisesCorrected = await correctExercisesData(totalExercises);
-            setExercises(totalExercisesCorrected);
-            setTotalExercises(totalExercisesCorrected);
-            setOpenCircularProgress(false);
-        } catch (error) {
-            console.error("Error fetching users:", error);
-            setOpenCircularProgress(false);
-            setWarningConnection(true);
-            setTimeout(() => {
-                setWarningConnection(false);
-            }, 3000);
-        }
-    };
-
     useEffect(() => {
         if(filterExercises!=''){
           const filteredExercisesSearcher = totalExercises.filter(item => 
@@ -130,19 +79,6 @@ export default function CoachExercises() {
     
       }, [filterExercises]);
 
-    const verifyToken = async (token) => {
-        try {
-            const decodedToken = jwtDecode(token);
-            setUserMail(decodedToken.email);
-        } catch (error) {
-            console.error('Error al verificar el token:', error);
-            setErrorToken(true);
-            setTimeout(() => {
-                setErrorToken(false);
-            }, 3000);
-            throw error;
-        }
-    };
 
     const handleSaveEditExer = async () => {
         try {
@@ -189,13 +125,13 @@ export default function CoachExercises() {
         setTimeout(() => {
           setOpenCircularProgress(false);
         }, 7000);
-        await fetchExercises();
+        await fetchExercises(setOpenCircularProgress,setWarningConnection,setExercises,setTotalExercises,correctExercisesData);
     }
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token);
+            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
         } else {
             navigate('/');
             console.error('No token found');
@@ -204,42 +140,16 @@ export default function CoachExercises() {
     
     useEffect(() => {
         if (userMail) {
-            fetchUser();
+            fetchUser(setType,setOpenCircularProgress,userMail,navigate)
         }
     }, [userMail]);
 
     useEffect(() => {
     if(type==='coach'){
-        fetchExercises();
+        fetchExercises(setOpenCircularProgress,setWarningConnection,setExercises,setTotalExercises,correctExercisesData);
     }
     }, [type]);
 
-    const fetchUser = async () => {
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-            const encodedUserMail = encodeURIComponent(userMail);
-            const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-                method: 'GET', 
-                headers: {
-                  'Authorization': `Bearer ${authToken}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-            }
-            const data = await response.json();
-            setType(data.type);
-            if(data.type!='coach'){
-                navigate('/');
-            }
-        } catch (error) {
-            console.error("Error fetching user:", error);
-        }
-    };
 
     return (
         <div className="App">
@@ -253,43 +163,7 @@ export default function CoachExercises() {
             ) : (
                 <>
                     <NewLeftBar />
-                    <div className='input-container' style={{marginLeft: isSmallScreen650 ? '60px' : '50px', width: isSmallScreen650 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-                        <div className='input-small-container'>
-                            {openSearch ? (
-                                <input
-                                type="text"
-                                className="search-input"
-                                placeholder="Search..."
-                                style={{
-                                position: 'absolute',
-                                borderRadius: '10px',
-                                padding: '0 10px',
-                                transition: 'all 0.3s ease',
-                                }}
-                                id={filterExercises}
-                                onChange={(e) => setFilterExercises(e.target.value)} 
-                            />
-                            ) : (
-                            <Button onClick={handleOpenSearch}
-                            style={{
-                                backgroundColor: '#48CFCB',
-                                position: 'absolute',
-                                borderRadius: '50%',
-                                width: '5vh',
-                                height: '5vh',
-                                minWidth: '0',
-                                minHeight: '0',
-                                padding: '0',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                            >
-                            <SearchIcon sx={{ color: '#424242' }} />
-                            </Button>
-                            )}
-                            </div>
-                    </div>
+                    <Searcher filteredValues={filterExercises} setFilterValues={setFilterExercises} isSmallScreen={isSmallScreen} searchingParameter={'exercise name'}/>
                     {openCircularProgress && (
                         <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={openCircularProgress}>
                             <Loader></Loader>
@@ -372,13 +246,6 @@ export default function CoachExercises() {
                                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                                         <div className="input-small-container">
                                             <label htmlFor="desc" style={{color:'#14213D'}}>Desc:</label>
-                                            {/* <input 
-                                            type="text" 
-                                            id="desc" 
-                                            name="desc" 
-                                            value={desc || selectedEvent.description}
-                                            onChange={(e) => setDesc(e.target.value)} 
-                                            /> */}
                                             <textarea 
                                                 onChange={(e) => setDesc(e.target.value)}
                                                 name="desc"
