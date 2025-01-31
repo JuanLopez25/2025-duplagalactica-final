@@ -14,7 +14,6 @@ import SuccessAlert from '../real_components/SuccessAlert.jsx';
 import EmailIcon from '@mui/icons-material/Email';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
-import fetchUser from '../fetchs/fetchUser.jsx'
 import CloseIcon from '@mui/icons-material/Close';
 import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography } from 'mdb-react-ui-kit';
 import Loader from '../real_components/loader.jsx'
@@ -60,9 +59,62 @@ export default function Main_Page() {
   const [userAccount, setUserAccount] = useState([])
   const [changingStars,setChangingStars] = useState(false)
   const [changingComment,setChangingComment] = useState(false)
-  const currentDate = new Date();
-  const [notifications,setCantidadNotifications] = useState(0);
   const [viewQualifications, setViewQualifications] = useState(false)
+
+
+  const fetchUser = async () => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const encodedUserMail = encodeURIComponent(userMail);
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data = await response.json();
+      setUserAccount(data)
+      setType(data.type);
+      
+      const response3 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memb_user`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response3.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data3 = await response3.json();
+      const membershipsOfUser = data3.filter(memb => memb.userId == data.uid)
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
+      const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
+      const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memberships`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const membresia = await response2.json();
+      const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+      setMembership(firstFiler)
+    } catch (error) {
+        console.error("Error fetching user:", error);
+    }
+  };
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -450,6 +502,7 @@ export default function Main_Page() {
   
       const calendarEvents = [];
       const today = new Date();
+      console.log("today",today)
       today.setHours(0, 0, 0, 0);
       const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_comments');
       if (!response3.ok) {
@@ -497,9 +550,6 @@ export default function Main_Page() {
           if (nextStartDate < today) {
             const dayOfWeek = CorrectStarDate.getDay();
             let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
-            if (daysUntilNextClass === 0 && today > CorrectStarDate) {
-              daysUntilNextClass = 7;
-            }
             nextStartDate.setDate(today.getDate() + daysUntilNextClass);
             nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
           }
@@ -517,38 +567,16 @@ export default function Main_Page() {
           }
         } else {
           if(startDate >= today)
-          calendarEvents.push({
-            title: clase.name,
-            start: new Date(CorrectStarDate),
-            end: new Date(CorrectEndDate),
-            allDay: false,
-            ...clase,
-          });
+            calendarEvents.push({
+              title: clase.name,
+              start: new Date(CorrectStarDate),
+              end: new Date(CorrectEndDate),
+              allDay: false,
+              ...clase,
+            });
         }
       });
-      const response4 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assistance', {
-        method: 'GET'
-      });
-      if (!response4.ok) {
-        throw new Error('Error al obtener las salas: ' + response4.statusText);
-      }
-      const assistance_references = await response4.json();
-      console.log(assistance_references)
-      const assitance_buscadas = assistance_references.filter(asis=>asis.uid==userAccount.uid)
-      const clases_del_profesor = calendarEvents.filter(clas => clas.owner==userMail)
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const formattedToday = `${year}-${month}-${day}`;
-      const clases_hoy = clases_del_profesor.filter(clas => {
-        const classDate = new Date(clas.start);
-        const formattedClassDate = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}-${String(classDate.getDate()).padStart(2, '0')}`;
-        
-        return formattedClassDate === formattedToday;
-      });
-      const clases_que_se_toma_asistencia = clases_hoy.filter(clas=> clas.BookedUsers.length>0)
-      setCantidadNotifications(clases_que_se_toma_asistencia.length-assitance_buscadas.length)
-      console.log(calendarEvents)
+      console.log("Calendar events",calendarEvents)
       setEvents(calendarEvents);
       setOpenCircularProgress(false)
       setClasses(calendarEvents);
@@ -737,7 +765,7 @@ export default function Main_Page() {
 
   useEffect(() => {
     if (userMail) {
-      fetchUser(setType,setOpenCircularProgress,userMail,navigate);
+      fetchUser();
     }
   }, [userMail, showCalendar]);
 
@@ -924,9 +952,9 @@ export default function Main_Page() {
       <WarningConnectionAlert warningConnection={warningConnection}/>
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
-      {type==='client' ? (
+      {type==='client' && showCalendar ? (
         <>
-        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '186px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container-buttons' style={{left: isSmallScreen700 ? '6vh' : '8vh', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container-buttons' onClick={handleViewAchievements}>
             <Button onClick={handleViewAchievements}
               style={{
@@ -946,7 +974,7 @@ export default function Main_Page() {
             </Button>
           </div>
         </div>
-        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '114px' : openSearch ? '235px' : '168px' : showCalendar ? '96px' : openSearch ? '406px' :'142px', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container-buttons' style={{left: isSmallScreen700? '12vh' : '16vh', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container-buttons'>
             <Button
               style={{
