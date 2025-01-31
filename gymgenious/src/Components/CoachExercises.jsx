@@ -26,8 +26,9 @@ export default function CoachExercises() {
     const [type, setType] = useState(null);
     const [editExercise, setEditExercise] = useState(false);
     const [name, setName] = useState('');
+    const [errorNoChange,setErrorNoChange] = useState(false)
     const [desc, setDesc] = useState('');
-    const [image, setImage] = useState();
+    const [image, setImage] = useState(null);
     const[fetchImg, setImageFetch] = useState('')
     const[fetchName,setNameFetch] = useState('')
     const[fetchDes,setDescFetch] = useState('')
@@ -35,6 +36,7 @@ export default function CoachExercises() {
     const [totalExercises, setTotalExercises] = useState([]);
   
     const handleSelectEvent = (event) => {
+        console.log("evento",event)
         setSelectedEvent(event);
     };
 
@@ -80,48 +82,68 @@ export default function CoachExercises() {
       }, [filterExercises]);
 
 
+    const validateForm = () => {
+        let res = true
+        console.log("name",name)
+        console.log("fetchedName",fetchName)
+        console.log("desc",desc)
+        console.log("fetchedDesc",fetchDes)
+        console.log("image",image)
+        if ((name==fetchName || name=='') && (desc==fetchDes || desc=='') && (!image || image==fetchImg)) {
+            res = false
+            setErrorNoChange(true)
+        } else {
+            setErrorNoChange(false)
+        }
+
+        return res
+    }
+
     const handleSaveEditExer = async () => {
-        try {
-            const formData = new FormData();
-            formData.append('name', name || fetchName);
-            formData.append('description', desc || fetchDes);
-            formData.append('image_url', fetchImg);
-            formData.append('id',id);
-            formData.append('image', image);
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-            const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_exer_info', {
-                method: 'PUT', 
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: formData,
-            });
-            if (!response.ok) {
-                throw new Error('Error al actualizar la rutina: ' + response.statusText);
-            }
-            setTimeout(() => {
+        if (validateForm()) {
+            try {
+                const formData = new FormData();
+                formData.append('name', name || fetchName);
+                formData.append('description', desc || fetchDes);
+                formData.append('image_url', fetchImg);
+                formData.append('id',id);
+                formData.append('image', image);
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                console.error('Token no disponible en localStorage');
+                return;
+                }
+                const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_exer_info', {
+                    method: 'PUT', 
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData,
+                });
+                if (!response.ok) {
+                    throw new Error('Error al actualizar la rutina: ' + response.statusText);
+                }
+                setTimeout(() => {
+                    setOpenCircularProgress(false);
+                }, 2000);
+                window.location.reload();
+            } catch (error) {
+                console.error("Error actualizarndo la rutina:", error);
                 setOpenCircularProgress(false);
-              }, 2000);
-            window.location.reload();
-          } catch (error) {
-            console.error("Error actualizarndo la rutina:", error);
-            setOpenCircularProgress(false);
-            setWarningConnection(true);
-            setTimeout(() => {
-              setWarningConnection(false);
-            }, 3000);
-            setEditExercise(!editExercise);
-          }
+                setWarningConnection(true);
+                setTimeout(() => {
+                setWarningConnection(false);
+                }, 3000);
+                setEditExercise(!editExercise);
+            } finally {
+                setEditExercise(!editExercise);
+            }
+        }
     }
 
     const saveExercise = async (event) => {
         event.preventDefault(); 
         handleSaveEditExer();
-        setEditExercise(!editExercise);
         setTimeout(() => {
           setOpenCircularProgress(false);
         }, 7000);
@@ -230,7 +252,7 @@ export default function CoachExercises() {
                         <div className="Modal-edit-routine" onClick={handleCloseModal}>
                             <div className="Modal-Content-edit-routine" onClick={(e) => e.stopPropagation()}>
                                 <form autoComplete='off' onSubmit={saveExercise}>
-                                    <h2>Routine details</h2>
+                                    <h2>Exercise details</h2>
                                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                                         <div className="input-small-container">
                                         <label htmlFor="name" style={{color:'#14213D'}}>Name:</label>
@@ -238,7 +260,8 @@ export default function CoachExercises() {
                                             type="text" 
                                             id="name" 
                                             name="name" 
-                                            value={name || selectedEvent.name} 
+                                            value={name} 
+                                            placeholder={fetchName}
                                             onChange={(e) => setName(e.target.value)} 
                                         />
                                         </div>
@@ -251,7 +274,8 @@ export default function CoachExercises() {
                                                 name="desc"
                                                 id="desc"
                                                 rows={4}
-                                                value={desc || selectedEvent.description}
+                                                value={desc}
+                                                placeholder={fetchDes}
                                                 maxLength={300}
                                                 style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}} />
                                         </div>
@@ -270,6 +294,7 @@ export default function CoachExercises() {
                                         />
                                         </div>
                                     </div>
+                                    {errorNoChange && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
                                     <button type="submit" className='button_login' style={{width: isSmallScreen650 ? '70%' : '30%'}}>Save</button>                            
                                     <button onClick={handleCloseModal} className='button_login' style={{marginTop: isSmallScreen650 ? '10px' : '', marginLeft: isSmallScreen650 ? '' : '10px', width: isSmallScreen650 ? '70%' : '30%'}}>Cancel</button>
                                 </form>

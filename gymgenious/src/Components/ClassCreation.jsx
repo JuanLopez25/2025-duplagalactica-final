@@ -16,7 +16,6 @@ import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import verifyToken from '../fetchs/verifyToken.jsx'
 import ItemList from '../real_components/ItemList.jsx';
 import day from '../functions/DateToString.jsx'
-import timeToMinutes from '../functions/TimeToMinutes.jsx'
 import fetchSalas from '../fetchs/fetchSalas.jsx';
 import fetchUser from '../fetchs/fetchUser.jsx'
 import fetchInventory from '../fetchs/fetchInventory.jsx';
