@@ -280,7 +280,6 @@ export default function CreateAccount() {
                                     onChange={(e) => setDate(e.target.value)}
                                     disabled={isDisabled}
                                 />
-                                {errorForm && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
                             </div>
                         </MDBCol>
                     </MDBRow>
@@ -297,7 +296,8 @@ export default function CreateAccount() {
                                     type='text'
                                     placeholder={emailFetch}
                                     disabled={true}
-                                />
+                                />                                
+                                {errorForm && (<p style={{color: 'red', margin: '0px'}}>There are no changes</p>)}
                             </div>
                         </MDBCol>
                     </MDBRow>

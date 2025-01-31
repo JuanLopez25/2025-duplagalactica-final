@@ -16,8 +16,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineSharpIcon from '@mui/icons-material/AddCircleOutlineSharp';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx';
-import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
 import fetchExercises from '../fetchs/fetchExercises.jsx'
 
 export default function RoutineCreation() {
@@ -28,11 +26,14 @@ export default function RoutineCreation() {
     const [userMail,setUserMail] = useState(null);
     const [exercises, setExercises] = useState([]);
     const [routineExercises, setRoutineExercises] = useState([]);
-    const navigate = useNavigate();
+    const [errorTiming,setErrorTiming] = useState(false)
+    const [errorNumRepes,setErrorNumbRepes] = useState(false)
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const [success, setSuccess] = useState(false);
     const [failure, setFailure] = useState(false);
-    const [errors, setErrors] = useState([]);
+    const [errorName,setErrorName] = useState(false)
+    const [errorDesc,setErrorDesc] = useState(false)
+    const [errorExer,setErrorExers] = useState(false)
     const [failureErrors, setFailureErrors] = useState(false);
     const [warningFetchingExercises, setWarningFetchingExercises] = useState(false);
     const [openAdvise, setOpenAdvise] = useState(false);
@@ -42,16 +43,11 @@ export default function RoutineCreation() {
     const [reps, setReps] = useState(Array(series).fill(''));
     const [timing, setTiming] = useState(0);
     const [errorAddExercise, setErrorAddExercise] = useState(false);
-    const [openSearch, setOpenSearch] = useState(false);
     const [filterExercises, setFilterExercises] = useState('');
     const [totalExercises, setTotalExercises] = useState([]);
   
-    const handleOpenSearch = () => {
-      setOpenSearch(true);
-    };
   
     const handleCloseSearch = () => {
-      setOpenSearch(false);
       setExercises(totalExercises);
     };
 
@@ -70,13 +66,31 @@ export default function RoutineCreation() {
     };
 
     const validateExerciseData = () => {
-      let res=false;
-      console.log(reps)
-      if(reps.some(item => item === '')) {
+      let res = true;
+      if (!Array.isArray(reps)) {
+        console.error("Error: reps no es un array válido", reps);
+        return;
+      }
+      const parsedReps = reps.map((item) => Number(item));
+      if (reps.some((item) => item === null || item === "")) {
+        res=false
         setErrorAddExercise(true);
-      } else {
-        res=true;
+        setErrorNumbRepes(false);
+      } 
+      else if (parsedReps.some((item) => isNaN(item))) {
+        res=false
+        setErrorNumbRepes(true);
         setErrorAddExercise(false);
+      }
+      else {
+        setErrorAddExercise(false);
+        setErrorNumbRepes(false);
+      }
+      if (timing==0) {
+        res=false
+        setErrorTiming(true)
+      } else {
+        setErrorTiming(false)
       }
       return res
     }
@@ -172,28 +186,36 @@ export default function RoutineCreation() {
         );
         setExercises(filteredExercisesSearcher);
       } else {
-          setExercises(totalExercises);
+        setExercises(totalExercises);
       }
   
     }, [filterExercises]);
 
     const validateForm = () => {
-      let errors = [];
-      
+      let res = true
       if (name === '') {
-          errors.push('Please assign a name to the routine.');
+        setErrorName(true)
+        res = false
+      } else {
+        setErrorName(false)
       }
 
       if (desc === '') {
-        errors.push('Please assign a description to the routine.');
+        setErrorDesc(true)
+        res = false
+      } else {
+        setErrorDesc(false)
       }
       
-      if (exercises === '') {
-        errors.push('Please select at least one exercise to assign the routine.');
+      if (routineExercises.length==0) {
+        setErrorExers(true)
+        res = false
+      } else {
+
+        setErrorExers(false)
       }
 
-      setErrors(errors);
-      return errors.length===0;
+      return res;
     }
 
     const handleCreateRoutine = async () => {
@@ -234,6 +256,10 @@ export default function RoutineCreation() {
           console.error("Error al crear la rutina:", error);
           setOpenCircularProgress(false);
           setFailure(true);
+          setFailureErrors(true);
+          setTimeout(() => {
+              setFailureErrors(false);
+              }, 3000);
           setTimeout(() => {
               setFailure(false);
               window.location.reload()
@@ -241,10 +267,6 @@ export default function RoutineCreation() {
         };
       } else {
           setOpenCircularProgress(false);
-          setFailureErrors(true);
-          setTimeout(() => {
-              setFailureErrors(false);
-              }, 3000);
         }
     }
 
@@ -303,6 +325,7 @@ export default function RoutineCreation() {
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 
                 />
+                {errorName && (<p style={{color: 'red', margin: '0px'}}>There is no name</p>)}
               </div>
             </div>
             <div className="input-create-routine-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -316,45 +339,30 @@ export default function RoutineCreation() {
                     value={desc}
                     maxLength={300}
                     style={{maxHeight: '100px', width: '100%', borderRadius: '8px'}} />
+                  
+                {errorDesc && (<p style={{color: 'red', margin: '0px'}}>There is no description</p>)}
                 </div>
             </div>
             <div className="'grid-transfer-container" style={{display:'flex', justifyContent: 'space-between'}}>
               <div className="input-small-container">
                   <div style={{flexDirection: 'column', display: 'flex'}}>
                   <label htmlFor="users" style={{ color: '#424242' }}>Exercises:</label>
-                  {openSearch ? (
-                                  <input
-                                  type="text"
-                                  className="search-input"
-                                  placeholder="Search..."
-                                  style={{
-                                  borderRadius: '10px',
-                                  transition: 'all 0.3s ease',
-                                  marginBottom: isSmallScreen ? '3%' : '1%',
-                                  width: isSmallScreen ? '60%' : '30%'
-                                  }}
-                                  id={filterExercises}
-                                  onChange={(e) => setFilterExercises(e.target.value)} 
-                              />
-                              ) : (
-                              <Button onClick={handleOpenSearch}
-                              style={{
-                                  backgroundColor: '#48CFCB',  
-                                  marginBottom: isSmallScreen ? '3%' : '1%',
-                                  borderRadius: '50%',
-                                  width: '5vh',
-                                  height: '5vh',
-                                  minWidth: '0',
-                                  minHeight: '0',
-                                  padding: '0',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                              }}
-                              >
-                              <SearchIcon sx={{ color: '#424242' }} />
-                              </Button>
-                              )}
+                  <div className='input-container'>
+                    <div className='input-small-container'>
+                        <input
+                        type="text"
+                        placeholder={`Search by exercise name....`}
+                        style={{
+                        borderRadius: '10px',
+                        left: '3%',
+                        transition: 'all 0.3s ease',
+                        }}
+                        id={filterExercises}
+                        onChange={(e) => setFilterExercises(e.target.value)} 
+                        />
+                        </div>
+                    </div>
+                    {errorExer && (<p style={{color: 'red', margin: '0px'}}>There is no selected exercises</p>)}
                   </div>
                   {exercises.length!=0 ? (
                     <Grid className='grid-transfer-content' item>{customList(exercises)}</Grid>
@@ -397,7 +405,7 @@ export default function RoutineCreation() {
                         value={series}
                         max="8"
                         min="1"
-                        onInput={(e) => e.target.value = e.target.value.replace(/^0+/, '')} // Elimina ceros iniciales
+                        onInput={(e) => e.target.value = e.target.value.replace(/^0+/, '')} 
                         onChange={handleSeriesChange}
   />
                   </div>
@@ -413,6 +421,7 @@ export default function RoutineCreation() {
                       step='1'
                       onChange={(e) => setTiming(e.target.value)}
                       />
+                      {errorTiming && (<p style={{color: 'red', margin: '0px'}}>Timing must be grater than 0</p>)}
                   </div>
               </div>
               <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -429,6 +438,7 @@ export default function RoutineCreation() {
                       />
                   ))}
                   {errorAddExercise && (<p style={{color: 'red', margin: '0px'}}>Complete all fields</p>)}
+                  {errorNumRepes && (<p style={{color: 'red', margin: '0px'}}>The fields must be numbers</p>)}
                 </div>
               </div>
               <button onClick={() => handleAddExercise(selectedExercise)} style={{width: isSmallScreen ? '70%' : '30%'}}>Add exercise</button>
@@ -517,11 +527,6 @@ export default function RoutineCreation() {
                           <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
                           Error creating routine.
                           </Alert>
-                          {errors.length > 0 && errors.map((error, index) => (
-                          <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                              <li>{error}</li>
-                          </Alert>
-                          ))}
                       </div>
                       </Slide>
                   </Box>

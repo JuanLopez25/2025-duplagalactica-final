@@ -20,19 +20,36 @@ export default function ExerciseCreation() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
-  const [errors, setErrors] = useState([]);
   const [failureErrors, setFailureErrors] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
+  const [errorName,setErrorName] = useState(false)
+  const [errorDesc,setErrorDesc] = useState(false)
+  const [errorImage,setErrorImage] = useState(false)
 
   const validateForm = () => {
-      let errors = [];
-      
+      let res = true
       if (name === '') {
-          errors.push('Please assign a name to the exercise.');
+        setErrorName(true)
+        res = false
+      } else {
+        setErrorName(false)
+      }
+  
+      if (total==0) {
+        setErrorDesc(true)
+        res = false
+      } else {
+        setErrorDesc(false)
+      }
+  
+      if (!image) {
+        setErrorImage(true);
+        res = false
+      } else {
+        setErrorImage(false)
       }
 
-      setErrors(errors);
-      return errors.length===0;
+      return res
   }
 
   const handleCreateExersice = async () => {
@@ -74,13 +91,14 @@ export default function ExerciseCreation() {
           setTimeout(() => {
               setFailure(false);
           }, 3000);
+          
+          setFailureErrors(true);
+          setTimeout(() => {
+              setFailureErrors(false);
+              }, 3000);
       }
     } else {
       setOpenCircularProgress(false);
-      setFailureErrors(true);
-      setTimeout(() => {
-          setFailureErrors(false);
-          }, 3000);
     }
   } 
 
@@ -119,6 +137,7 @@ export default function ExerciseCreation() {
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
               />
+              {errorName && (<p style={{color: 'red', margin: '0px'}}>There is no name</p>)}
             </div>
           </div>
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -128,12 +147,13 @@ export default function ExerciseCreation() {
                     type="number" 
                     id="total" 
                     name="total"
-                    min='1'
+                    min='0'
                     max='500'
                     step='1'
                     value={total} 
                     onChange={(e) => setTotal(e.target.value)} 
                   />
+                  {errorDesc && (<p style={{color: 'red', margin: '0px'}}>Total cannot be 0</p>)}
               </div>
           </div>
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -148,6 +168,7 @@ export default function ExerciseCreation() {
                 onChange={(e) => setImage(e.target.files[0])                  
                 }  
               />
+              {errorImage && (<p style={{color: 'red', margin: '0px'}}>There are images uploaded</p>)}
             </div>
           </div>
           <button type="submit" className='button_login'>
@@ -187,11 +208,6 @@ export default function ExerciseCreation() {
                       <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
                       Error creating exercise!
                       </Alert>
-                      {errors.length > 0 && errors.map((error, index) => (
-                      <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                          <li>{error}</li>
-                      </Alert>
-                      ))}
                   </div>
                   </Slide>
               </Box>
