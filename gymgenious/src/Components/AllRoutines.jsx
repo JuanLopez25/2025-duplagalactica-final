@@ -7,11 +7,9 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import Loader from '../real_components/loader.jsx';
 import CustomTable from '../real_components/Table4columns.jsx'
 import TableBody from '@mui/material/TableBody';
-import EmailIcon from '@mui/icons-material/Email';
 import CloseIcon from '@mui/icons-material/Close';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
@@ -21,7 +19,7 @@ import Table from '@mui/material/Table';
 import fetchRoutines from '../fetchs/fetchAllRoutines.jsx';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Searcher from '../real_components/searcher.jsx';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography,MDBBadge } from 'mdb-react-ui-kit';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardBody, MDBTypography } from 'mdb-react-ui-kit';
 import fetchUser from '../fetchs/fetchUser.jsx';
 import verifyToken from '../fetchs/verifyToken.jsx';
 
