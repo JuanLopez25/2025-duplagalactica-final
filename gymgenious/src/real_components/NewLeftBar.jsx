@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import CheckIcon from '@mui/icons-material/Check';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import SportsIcon from '@mui/icons-material/Sports';
@@ -161,7 +162,7 @@ export default function TemporaryDrawer() {
                 {index === 4 && <SportsIcon sx={{ color: '#48CFCB' }} />}
                 {index === 5 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
                 {index === 6 && <ShoppingCartIcon sx={{ color: '#48CFCB' }} />}
-                {index === 7 && <ShoppingCartIcon sx={{ color: '#48CFCB' }} />}
+                {index === 7 && <QrCodeScannerIcon sx={{ color: '#48CFCB' }} />}
                 {index === 8 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />

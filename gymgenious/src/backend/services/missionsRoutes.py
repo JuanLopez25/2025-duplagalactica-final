@@ -95,39 +95,46 @@ def get_missions_template():
 
 def add_mission_progress(missions, uid):
     try:
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-
+        res = True
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         missions = missions.split(',')
         print("Este es el uid:", uid)
-
         mis_ref = db.collection('missionsProgress')
         user_doc = db.collection('users').where('uid', '==', uid).get()
         if not user_doc:
             raise ValueError("User not found")
-
         userMail = user_doc[0].to_dict().get('Mail', '').strip()
         if not userMail:
             raise ValueError("User email not found")
         assistance_ref = db.collection('assistedClasses').where('MailAlumno', '==', userMail)
         assistance_docs = assistance_ref.stream()
-
         for assistance_doc in assistance_docs:
             assistance_data = assistance_doc.to_dict()
             start_date_str = assistance_data.get('Inicio')
-
             if not start_date_str:
                 continue
             start_date = datetime.fromisoformat(start_date_str.replace('Z', ''))
-            start_day_name = start_date.strftime('%A').capitalize()  
-            mission_docs = mis_ref.where('uid', '==', uid).where('Day', '==', start_day_name).stream()
-
+            start_day_name = start_date.strftime('%A')
+            day_of_week_no_accent = start_day_name.replace('Saturday', 'Sabado') \
+                                      .replace('Monday', 'Lunes') \
+                                      .replace('Tuesday', 'Martes') \
+                                      .replace('Wednesday', 'Miercoles') \
+                                      .replace('Thursday', 'Jueves') \
+                                      .replace('Friday', 'Viernes') \
+                                      .replace('Sunday', 'Domingo')
+            mission_docs = mis_ref.where('uid', '==', uid).where('Day', '==', day_of_week_no_accent).stream()
             for doc in mission_docs:
                 mission_data = doc.to_dict()
                 current_progress = mission_data.get('progress', 0)
-                mis_ref.document(doc.id).update({'progress': current_progress + 1})
-            db.collection('assistedClasses').document(assistance_doc.id).delete()
-            print(f"Asistencia con ID {assistance_doc.id} eliminada correctamente.")
+                new_progress = current_progress + 1
+                if current_progress != new_progress:
+                    mis_ref.document(doc.id).update({'progress': new_progress})
+                    res = False
+                    db.collection('assistedClasses').document(assistance_doc.id).delete()
 
+
+            print(f"Asistencia con ID {assistance_doc.id} eliminada correctamente.")
+        return res
     except Exception as e:
         print(f"Error while adding progress and deleting assistance: {e}")
         raise RuntimeError("It was not possible to complete the operation")

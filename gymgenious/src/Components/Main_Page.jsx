@@ -835,16 +835,20 @@ export default function Main_Page() {
       formData.append('uid',userAccount.uid)
       if (missionsIds.length!=0) {
         console.log("entre al mission progress")
-        const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/add_mission_progress', {
+        const response5 = await fetch('http://127.0.0.1:5000/add_mission_progress', {
           method: 'DELETE', 
           headers: {
             'Authorization': `Bearer ${authToken}`
           },
           body: formData
         });
+        console.log("es la respuesta",response5)
         if (!response5.ok) {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
+        const data = await response5.json();
+        const missionProgress = data.progress;
+        console.log("datiña",data)
       } 
     } catch (e) {
 
