@@ -835,7 +835,7 @@ export default function Main_Page() {
       formData.append('uid',userAccount.uid)
       if (missionsIds.length!=0) {
         console.log("entre al mission progress")
-        const response5 = await fetch('http://127.0.0.1:5000/add_mission_progress', {
+        const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/add_mission_progress', {
           method: 'DELETE', 
           headers: {
             'Authorization': `Bearer ${authToken}`
