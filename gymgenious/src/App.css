@@ -920,6 +920,21 @@ iframe {
   visibility: hidden;
 }
 
+.buttons-formated {
+  background-color: #48CFCB;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  align-items: center;
+}
+
+.buttons-formated:hover{
+  background-color: #424242;
+}
+
+
 .Modal-Content button {
   background-color: #48CFCB;
   color: white;

@@ -111,6 +111,10 @@ export default function RoutineCreation() {
                 setTimeout(() => {
                     setSuccess(false);
                 }, 3000);
+                setTimeout(() => {
+                    setFailure(false);
+                    window.location.reload()
+                }, 3000);
             } catch (error) {
                 console.error("Error al asignar la rutina:", error);
                 setOpenCircularProgress(false);

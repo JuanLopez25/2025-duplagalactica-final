@@ -7,16 +7,21 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
+import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import Loader from '../real_components/loader.jsx';
 import CustomTable from '../real_components/Table4columns.jsx'
 import TableBody from '@mui/material/TableBody';
+import EmailIcon from '@mui/icons-material/Email';
+import CloseIcon from '@mui/icons-material/Close';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Table from '@mui/material/Table';
 import fetchRoutines from '../fetchs/fetchAllRoutines.jsx';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import Searcher from '../real_components/searcher.jsx';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography,MDBBadge } from 'mdb-react-ui-kit';
 import fetchUser from '../fetchs/fetchUser.jsx';
 import verifyToken from '../fetchs/verifyToken.jsx';
 
@@ -33,10 +38,8 @@ function AllRoutines() {
   const [filterRoutines, setFilterRoutines] = useState('');
   const [totalRoutines, setTotalRoutines] = useState([]);
   const isSmallScreen = useMediaQuery('(max-width:700px)');
-  const [openSearch, setOpenSearch] = useState(false);
  
   const handleCloseSearch = () => {
-    setOpenSearch(false);
     setRoutines(totalRoutines);
   };
 
@@ -67,7 +70,7 @@ function AllRoutines() {
     
   useEffect(() => {
       if (userMail) {
-          fetchUser(setType,setOpenCircularProgress,userMail,navigate)
+          fetchUser(setType,()=>{},userMail,navigate)
           fetchRoutines(setOpenCircularProgress, setTotalRoutines, setRoutines,setWarningConnection);
       }
   }, [userMail]);
@@ -76,6 +79,73 @@ function AllRoutines() {
   setSelectedEvent(event);
   handleCloseSearch();
   };
+
+
+  function ECommerce({event}) {
+    
+    return (
+      <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
+        visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
+          <MDBContainer style={{display:'flex'}}>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'20%'}}>
+                <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
+                  <MDBCardBody className="p-4 text-black">
+                    <div>
+                      <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{selectedEvent.name}</MDBTypography>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-center mb-4" style={{ alignItems: 'center' }}>
+                      <div className="position-relative d-inline-block" style={{ width: '10vh', height: '10vh' }}>                        
+                        <FavoriteIcon sx={{ color: 'red', width: '10vh', height: '10vh' }} />
+                        <p
+                          className="position-absolute top-50 start-50 translate-middle"
+                          style={{
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold',
+                            backgroundColor: 'red',
+                            color: 'white',
+                            fontWeight:'bold',
+                            padding: '0.4rem 0.8rem',
+                            borderRadius: '50%',
+                            minWidth: '2rem',
+                            textAlign: 'center',
+                          }}
+                        >
+                          {selectedEvent.cant_asignados}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex-grow-1 ms-3 text-center">
+                      <div className="d-flex flex-row align-items-center justify-content-center mb-2">
+                        <p className="mb-0 me-2" style={{ color: '#424242' }}>
+                          {selectedEvent.description}
+                        </p>
+                      </div>
+                    </div>
+                    <hr />
+                    <div style={{justifyContent:'center',display:'flex'}}>
+                      <button onClick={handleViewExercises} className='buttons-formated'>View exercises</button>
+                    </div>
+                    <button 
+                      onClick={handleCloseModal}
+                      className="custom-button-go-back-managing"
+                      style={{
+                        zIndex: '2',
+                        position: 'absolute', 
+                        top: '1%',
+                        left: isSmallScreen ? '78%' : '80%',
+                      }}
+                    >
+                      <CloseIcon sx={{ color: '#F5F5F5' }} />
+                    </button>
+                  </MDBCardBody>
+                </MDBCard>
+              </MDBCol>
+            </MDBRow>
+          </MDBContainer>
+      </div>
+    );
+  }
   const handleCloseModal = () => {
       setSelectedEvent(null);
       setViewExercises(false);
@@ -92,22 +162,10 @@ function AllRoutines() {
             <NewLeftBar/>
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
             {routines && (
-              <CustomTable columnsToShow={['Name','Owner','Excercises','Likes','No routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','exercise_length','likes']}/> 
-            )}
+              <CustomTable columnsToShow={['Name','Owner','Excercises','Likes','There are no routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','exercise_length','cant_asignados']}/> 
+            )}  
             {selectedEvent && (
-              <div className="Modal" onClick={handleCloseModal}>
-                <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
-                  <h2>Routine details</h2>
-                  <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Name:</strong> {selectedEvent.name}</p>
-                  <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Description:</strong> {selectedEvent.description}</p>
-                  <p><strong>Exercises:</strong> {selectedEvent.excercises.length}</p>
-                  <p><strong>Users:</strong> {selectedEvent.cant_asignados}</p>
-                  <p><strong>Likes:</strong> {5}</p>
-                  <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Owner:</strong> {selectedEvent.owner}</p>
-                  <button onClick={handleViewExercises} style={{width: isSmallScreen ? '70%' : '40%'}}>View exercises</button>
-                  <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '40%'}}>Close</button>
-                </div>
-              </div>
+              <ECommerce event={selectedEvent}/>
             )}
             {viewExercises && (
                 <div className="Modal" onClick={handleViewExercises}>
