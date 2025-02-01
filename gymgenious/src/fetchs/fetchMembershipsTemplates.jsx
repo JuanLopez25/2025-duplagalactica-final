@@ -1,4 +1,4 @@
-const fetchMembership = async (setMemberships,setOpenCircularProgress) => {
+const fetchMembership = async (setMemberships,setOpenCircularProgress,setPrice1,setPrice2,setPrice3) => {
     setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
@@ -16,6 +16,9 @@ const fetchMembership = async (setMemberships,setOpenCircularProgress) => {
         throw new Error('Error al obtener las salas: ' + response.statusText);
       }
       const data = await response.json();
+      setPrice1(data.find(membership => membership.type === 'Class')?.price)
+      setPrice2(data.find(membership => membership.type === 'Monthly')?.price)
+      setPrice3(data.find(membership => membership.type === 'Yearly')?.price)
       setMemberships(data)
       setOpenCircularProgress(false);
     } catch (error) {

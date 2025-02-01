@@ -1,6 +1,5 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
@@ -19,24 +18,36 @@ export default function ExerciseCreation() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
-  const [errors, setErrors] = useState([]);
   const [failureErrors, setFailureErrors] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
+  const [errorName,setErrorName] = useState(false)
+  const [errorDesc,setErrorDesc] = useState(false)
+  const [errorImage,setErrorImage] = useState(false)
 
   const validateForm = () => {
-    let errors = [];
-    
+    let res = true
     if (name === '') {
-        errors.push('Please assign a name to the exercise.');
+      setErrorName(true)
+      res = false
+    } else {
+      setErrorName(false)
     }
 
     if (desc === '') {
-      errors.push('Please assign a description to the exercise.');
+      setErrorDesc(true)
+      res = false
+    } else {
+      setErrorDesc(false)
     }
 
-    setErrors(errors);
-    return errors.length===0;
-}
+    if (!image) {
+      setErrorImage(true);
+      res = false
+    } else {
+      setErrorImage(false)
+    }
+    return res
+  }
 
   const handleCreateExersice = async () => {
     setOpenCircularProgress(true);
@@ -74,17 +85,17 @@ export default function ExerciseCreation() {
       } catch (error) {
         console.error("Error al crear el ejercicio:", error);
         setOpenCircularProgress(false);
-        setFailure(true);
+        setFailure(true);        
+        setFailureErrors(true);
+        setTimeout(() => {
+          setFailureErrors(false);
+        }, 3000);
         setTimeout(() => {
             setFailure(false);
         }, 3000);
     }
   } else {
     setOpenCircularProgress(false);
-    setFailureErrors(true);
-    setTimeout(() => {
-        setFailureErrors(false);
-        }, 3000);
   }
 } 
 
@@ -124,18 +135,12 @@ export default function ExerciseCreation() {
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
               />
+              {errorName && (<p style={{color: 'red', margin: '0px'}}>There is no name</p>)}
             </div>
           </div>
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
               <div className="input-small-container">
                   <label htmlFor="desc" style={{color:'#14213D'}}>Desc:</label>
-                  {/* <input 
-                  type="text" 
-                  id="desc" 
-                  name="desc" 
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)} 
-                  /> */}
                   <textarea 
                   onChange={(e) => setDesc(e.target.value)}
                   name="desc"
@@ -144,6 +149,7 @@ export default function ExerciseCreation() {
                   value={desc}
                   maxLength={300}
                   style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}} />
+                  {errorDesc && (<p style={{color: 'red', margin: '0px'}}>There is no description</p>)}
               </div>
           </div>
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -158,6 +164,7 @@ export default function ExerciseCreation() {
                 onChange={(e) => setImage(e.target.files[0])                  
                 }  
               />
+              {errorImage && (<p style={{color: 'red', margin: '0px'}}>There are images uploaded</p>)}
             </div>
           </div>
           <button type="submit" className='button_login'>
@@ -197,11 +204,6 @@ export default function ExerciseCreation() {
                       <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
                       Error creating exercise!
                       </Alert>
-                      {errors.length > 0 && errors.map((error, index) => (
-                      <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                          <li>{error}</li>
-                      </Alert>
-                      ))}
                   </div>
                   </Slide>
               </Box>

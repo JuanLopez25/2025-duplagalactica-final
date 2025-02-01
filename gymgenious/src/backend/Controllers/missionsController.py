@@ -32,8 +32,8 @@ def delete_missions_route(misiones):
 
 def add_mission_progress_route(misiones):
     try:
-        add_mission_progress(misiones)
-        return jsonify({"message": "Progress added to mission successfuly"}), 200
+        mission_progress = get_missions_progress()
+        return jsonify(mission_progress), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

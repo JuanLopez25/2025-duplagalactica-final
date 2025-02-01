@@ -97,7 +97,7 @@ function CouchClasses() {
             null
         )}
         {newRows && (
-              <CustomTable columnsToShow={['Name','Start time','Student','There are users that take assist to your classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['className','fecha','MailAlumno']}/> 
+              <CustomTable columnsToShow={['Assisted class','Assisted date','Student','There are users that take assist to your classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['className','fecha','MailAlumno']}/> 
         )}
         </>
         )}

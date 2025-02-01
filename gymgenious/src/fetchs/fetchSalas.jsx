@@ -31,6 +31,9 @@ const fetchSalas = async (setOpenCircularProgress,setSalas,setWarningFetchingRou
             setWarningFetchingRoutines(false);
         }, 3000);
     }
+    finally {
+        setOpenCircularProgress(false)
+    }
 };
 
 export default fetchSalas

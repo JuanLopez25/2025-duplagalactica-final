@@ -16,8 +16,6 @@ import ListItemText from '@mui/material/ListItemText';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineSharpIcon from '@mui/icons-material/AddCircleOutlineSharp';
 import Loader from '../real_components/loader.jsx';
-import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
 import CustomTable from '../real_components/Table3columns.jsx';
 import fetchRoutines from '../fetchs/fetchAllRoutines.jsx';
 import Searcher from '../real_components/searcher.jsx';
@@ -33,6 +31,8 @@ function CoachRoutines() {
   const isSmallScreen = useMediaQuery('(max-width:700px)');
   const [fetchName,setNameFetch] = useState('');
   const [descFetch,setDescFetch]= useState('');
+  const [errorTiming,setErrorTiming] = useState(false)
+  const [errorNumRepes,setErrorNumbRepes] = useState(false)
   const [exersFetch,setExersFetch]= useState([]);
   const [routineFetch,setRoutine] = useState({});
   const [name, setName] = useState('');
@@ -48,28 +48,22 @@ function CoachRoutines() {
   const [openAddExercise, setOpenAddExercise] = useState(false);
   const [series, setSeries] = useState(4);
   const [reps, setReps] = useState(Array(series).fill(''));
+  const [errorExer,setErrorExers] = useState(false)
   const [timing, setTiming] = useState(0);
   const [errorAddExercise, setErrorAddExercise] = useState(false);
   const [errorEditRoutine, setErrorEditRoutine] = useState(false);
-  const [openSearch, setOpenSearch] = useState(false);
   const [filterRoutines, setFilterRoutines] = useState('');
-  const [openSearchExercises, setOpenSearchExercises] = useState(false);
   const [filterExercises, setFilterExercises] = useState('');
   const [totalExercises, setTotalExercises] = useState([]);
   const [totalRoutines, setTotalRoutines] = useState([]);
 
 
   const handleCloseSearch = () => {
-    setOpenSearch(false);
     setRoutines(totalRoutines);
   };
 
-  const handleOpenSearchExercises = () => {
-    setOpenSearchExercises(true);
-  };
 
   const handleCloseSearchExercises = () => {
-    setOpenSearchExercises(false);
     setExercises(totalExercises);
   };
 
@@ -87,14 +81,46 @@ function CoachRoutines() {
     setReps(newReps);
   };
 
-  const validateExerciseData = () => {
-    let res=false;
-    console.log(reps)
-    if(reps.some(item => item === '')) {
-      setErrorAddExercise(true);
+
+  const validateForm = () => {
+    let res = true
+    
+    if (routineExercises.length==0) {
+      setErrorExers(true)
+      res = false
     } else {
-      res=true;
+      setErrorExers(false)
+    }
+
+    return res;
+  }
+
+  const validateExerciseData = () => {
+    let res = true;
+    if (!Array.isArray(reps)) {
+      console.error("Error: reps no es un array válido", reps);
+      return;
+    }
+    const parsedReps = reps.map((item) => Number(item));
+    if (reps.some((item) => item === null || item === "")) {
+      res=false
+      setErrorAddExercise(true);
+      setErrorNumbRepes(false);
+    } 
+    else if (parsedReps.some((item) => isNaN(item))) {
+      res=false
+      setErrorNumbRepes(true);
       setErrorAddExercise(false);
+    }
+    else {
+      setErrorAddExercise(false);
+      setErrorNumbRepes(false);
+    }
+    if (timing==0) {
+      res=false
+      setErrorTiming(true)
+    } else {
+      setErrorTiming(false)
     }
     return res
   }
@@ -201,43 +227,50 @@ function CoachRoutines() {
   };
 
   const handleSaveEditRoutine = async () => {
-    try {
-        const updatedRoutines = {
-            ...routineFetch,
-            rid: id,
-            description: desc || descFetch,
-            excers: routineExercises || exersFetch,
-            name: name || fetchName,
-        };
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
+    setOpenCircularProgress(true)
+    if (validateForm()){
+      try {
+          const updatedRoutines = {
+              ...routineFetch,
+              rid: id,
+              description: desc || descFetch,
+              excers: routineExercises || exersFetch,
+              name: name || fetchName,
+          };
+          const authToken = localStorage.getItem('authToken');
+          if (!authToken) {
+            console.error('Token no disponible en localStorage');
+            return;
+          }
+          const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_routine_info', {
+              method: 'PUT', 
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${authToken}`
+              },
+              body: JSON.stringify({ newRoutine: updatedRoutines })
+          });
+          if (!response.ok) {
+              throw new Error('Error al actualizar la rutina: ' + response.statusText);
+          }
+          setTimeout(() => {
+              setOpenCircularProgress(false);
+            }, 2000);
+          
+        } catch (error) {
+          console.error("Error actualizarndo la rutina:", error);
+          setOpenCircularProgress(false);
+          setWarningConnection(true);
+          setTimeout(() => {
+            setWarningConnection(false);
+          }, 3000);
+          setEditClass(!editClass);
+        } finally {
+          window.location.reload()
         }
-        const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_routine_info', {
-            method: 'PUT', 
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ newRoutine: updatedRoutines })
-        });
-        if (!response.ok) {
-            throw new Error('Error al actualizar la rutina: ' + response.statusText);
-        }
-        setTimeout(() => {
-            setOpenCircularProgress(false);
-          }, 2000);
-        
-      } catch (error) {
-        console.error("Error actualizarndo la rutina:", error);
-        setOpenCircularProgress(false);
-        setWarningConnection(true);
-        setTimeout(() => {
-          setWarningConnection(false);
-        }, 3000);
-        setEditClass(!editClass);
-      }
+    } else {
+      setOpenCircularProgress(false)
+    }
   }
 
   const validateEditRoutine = () => {
@@ -249,6 +282,8 @@ function CoachRoutines() {
       } else {
         setErrorEditRoutine(false);
       }
+    } else {
+      setErrorEditRoutine(false)
     }
     return res
   }
@@ -257,9 +292,6 @@ function CoachRoutines() {
     if(validateEditRoutine()){
       event.preventDefault(); 
       handleSaveEditRoutine();
-      setEditClass(!editClass);
-      await fetchRoutines();
-      window.location.reload()
     }
   }
 
@@ -295,7 +327,7 @@ function CoachRoutines() {
       if (!response.ok) {
         throw new Error('Error al eliminar la rutina: ' + response.statusText);
       }
-      await fetchRoutines();
+      await fetchRoutines(()=>{},setAllRoutines,setAllRoutines,setWarningConnection);
       setOpenCircularProgress(false);
       handleCloseModalEvent();
     } catch (error) {
@@ -371,8 +403,9 @@ function CoachRoutines() {
 
   useEffect(() => {
       const token = localStorage.getItem('authToken');
+      setOpenCircularProgress(true)
       if (token) {
-          verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
+          verifyToken(token,()=>{},setUserMail,setErrorToken);
       } else {
           navigate('/');
           console.error('No token found');
@@ -380,8 +413,9 @@ function CoachRoutines() {
   }, []);
     
   useEffect(() => {
+    setOpenCircularProgress(true)
     if (userMail) {
-        fetchUser(setType,setOpenCircularProgress,userMail,navigate);
+        fetchUser(setType,()=>{},userMail,navigate);
     }
   }, [userMail]);
 
@@ -410,9 +444,8 @@ function CoachRoutines() {
 
           setTimeout(() => {
               setOpenCircularProgress(false); 
-          }, 500); 
+          }, 1000); 
       } else {
-          setOpenCircularProgress(false); 
       }
   }, [allRoutines, userMail]);
 
@@ -457,9 +490,11 @@ function CoachRoutines() {
                         type="text" 
                         id="name" 
                         name="name" 
-                        value={name || fetchName} 
+                        value={name}
+                        placeholder={fetchName}
                         onChange={(e) => setName(e.target.value)}
                         />
+                        
                       </div>
                     </div>
                     <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginBottom: '0px'}}>
@@ -471,7 +506,8 @@ function CoachRoutines() {
                           name="desc"
                           id="desc"
                           rows={4}
-                          value={desc || descFetch}
+                          value={desc}
+                          placeholder={descFetch}
                           maxLength={300}
                           style={{maxHeight: '100px', width: '100%', borderRadius: '8px'}} />
                       </div>
@@ -481,39 +517,21 @@ function CoachRoutines() {
                           
                           <div style={{flexDirection: 'column', display: 'flex'}}>
                           <label htmlFor="users" style={{ color: '#14213D' }}>Exercises:</label>
-                          {openSearchExercises ? (
+                          <div className='input-container'>
+                              <div className='input-small-container'>
                                 <input
                                 type="text"
-                                className="search-input"
-                                placeholder="Search..."
+                                placeholder={`Search by exercise name....`}
                                 style={{
                                 borderRadius: '10px',
+                                left: '3%',
                                 transition: 'all 0.3s ease',
-                                width: isSmallScreen ? '60%' : '30%',
-                                marginBottom: isSmallScreen ? '3%' : '1%',
                                 }}
                                 id={filterExercises}
                                 onChange={(e) => setFilterExercises(e.target.value)} 
-                            />
-                            ) : (
-                            <Button onClick={handleOpenSearchExercises}
-                            style={{
-                                backgroundColor: '#48CFCB',  
-                                marginBottom: isSmallScreen ? '3%' : '1%',
-                                borderRadius: '50%',
-                                width: '5vh',
-                                height: '5vh',
-                                minWidth: '0',
-                                minHeight: '0',
-                                padding: '0',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                            >
-                            <SearchIcon sx={{ color: '#424242' }} />
-                            </Button>
-                            )}
+                                />
+                              </div>
+                          </div>
                 </div>
                           {exercises.length!=0 ? (
                             <Grid className='grid-transfer-content' item>{customList(exercises)}</Grid>
@@ -522,6 +540,7 @@ function CoachRoutines() {
                               There are not exercices
                             </div>
                           )}
+                          {errorExer && (<p style={{color: 'red', margin: '0px'}}>There is no selected exercises</p>)}
                           {errorEditRoutine && (<p style={{color: 'red', margin: '0px'}}>No changes were done</p>)}
                       </div>
                       
@@ -573,7 +592,8 @@ function CoachRoutines() {
                           max="500"
                           step='1'
                           onChange={(e) => setTiming(e.target.value)}
-                          />
+                          />                          
+                          {errorTiming && (<p style={{color: 'red', margin: '0px'}}>Timing must be grater than 0</p>)}
                       </div>
                   </div>
                   <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -589,7 +609,9 @@ function CoachRoutines() {
                             style={{ width: `${100 / series}%` }}
                           />
                       ))}
+                      
                       {errorAddExercise && (<p style={{color: 'red', margin: '0px'}}>Complete all fields</p>)}
+                      {errorNumRepes && (<p style={{color: 'red', margin: '0px'}}>The fields must be numbers</p>)}
                     </div>
                   </div>
                   <button onClick={() => handleAddExercise(selectedExercise)}>Add exercise</button>

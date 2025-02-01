@@ -18,6 +18,7 @@ const fetchAssistance = async (setOpenCircularProgress,setRows,setWarningConnect
         setOpenCircularProgress(false);
         return;
       }
+      console.log("filtered classes",filteredClasses)
       const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_coach_clients_assistance`, {
         method: 'GET',
         headers: {
@@ -38,7 +39,7 @@ const fetchAssistance = async (setOpenCircularProgress,setRows,setWarningConnect
         };
       });
       
-      console.log(matchedAttendances);
+      console.log("matched",matchedAttendances);
       setRows(matchedAttendances)
     } catch (error) {
       console.error("Error fetching classes:", error);

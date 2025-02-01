@@ -38,10 +38,11 @@ function UsserClasses() {
   const [comment, setComment] = useState('');
   const [changingStars,setChangingStars] = useState(false)
   const [changingComment,setChangingComment] = useState(false)
-  const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
   const [errorStars, setErrorStars] = useState(false);
+  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+  const diaActual = diasSemana[new Date().getDay()];
   const [errorComment, setErrorComment] = useState(false);
   const [newRows, setNewRows] = useState([]);
   const [viewQualifications, setViewQualifications] = useState(false);
@@ -109,14 +110,6 @@ function UsserClasses() {
     );
   }
 
-  const handleOpenSearch = () => {
-    setOpenSearch(true);
-  };
-
-  const handleCloseSearch = () => {
-    setOpenSearch(false);
-  };
-
   const handleChangeCalifyModal = () => {
     setComment(selectedEvent.comentario)
     setStars(selectedEvent.puntuacion)
@@ -131,7 +124,6 @@ function UsserClasses() {
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
-    handleCloseSearch();
   };
 
   const handleCloseModal = () => {
@@ -239,34 +231,37 @@ function UsserClasses() {
       today.setHours(0, 0, 0, 0);
       
       dataWithSalaAndComments.forEach(clase => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const startDate = new Date(clase.dateInicio);
         const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
         const endDate = new Date(clase.dateFin);
         const CorrectEndDate = new Date(endDate.getTime() + 60 * 3 * 60 * 1000);
-  
+        console.log("esto es el correct",(CorrectEndDate.getTime()-CorrectStarDate.getTime())/(1000*60))
+        today.setHours(CorrectStarDate.getHours(), CorrectStarDate.getMinutes(), CorrectStarDate.getSeconds(), CorrectStarDate.getMilliseconds())
         if (clase.permanent === "Si") {
-          let nextStartDate = new Date(CorrectStarDate);
-          let nextEndDate = new Date(CorrectEndDate);
+          let nextStartDate = CorrectStarDate;
+          let nextEndDate = CorrectEndDate;
   
           if (nextStartDate < today) {
             const dayOfWeek = CorrectStarDate.getDay();
             let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
-            if (daysUntilNextClass === 0 && today > CorrectStarDate) {
-              daysUntilNextClass = 7;
-            }
-            nextStartDate.setDate(today.getDate() + daysUntilNextClass);
-            nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
+            today.setDate(today.getDate() + daysUntilNextClass);
+            nextEndDate = new Date(today.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()));
+          } else {
+            today.setDate(nextStartDate.getDate())
           }
           
           for (let i = 0; i < 4; i++) {
             calendarEvents.push({
               title: clase.name,
-              start: new Date(nextStartDate),
+              start: new Date(today),
               end: new Date(nextEndDate),
+              sourceDate: new Date(CorrectStarDate),
               allDay: false,
               ...clase,
             });
-            nextStartDate.setDate(nextStartDate.getDate() + 7);
+            today.setDate(today.getDate() + 7);
             nextEndDate.setDate(nextEndDate.getDate() + 7);
           }
         } else {
@@ -275,21 +270,22 @@ function UsserClasses() {
             title: clase.name,
             start: new Date(CorrectStarDate),
             end: new Date(CorrectEndDate),
+            sourceDate: new Date(CorrectStarDate),
             allDay: false,
             ...clase,
           });
         }
       });
 
-      const formattedRoutines = dataWithSalaAndComments.map((routine) => {
+      const formattedRoutines = calendarEvents.map((routine) => {
         return {
             ...routine,
-            startFecha: formatDate(new Date(routine.dateInicio)), 
+            startFecha: formatDate(routine.start), 
             dateInicioHora: new Date(new Date(routine.dateInicio).setHours(new Date(routine.dateInicio).getHours() + 3)).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
             recurrent: routine.permanent=='Si' ? 'Yes' : 'No'
         };
       });
-      console.log(formattedRoutines)
+      console.log(calendarEvents)
       setTotalClasses(formattedRoutines);
       setOpenCircularProgress(false);
     } catch (error) {
@@ -299,27 +295,23 @@ function UsserClasses() {
   };
 
   useEffect(() => {
-    const newRowsList = [];
-  
-    const filteredClassesSearcher = filterClasses
-      ? totalClasses.filter(item =>
-          item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
-        )
-      : totalClasses;
-  
-    filteredClassesSearcher.forEach(row => {
-      if (
-        (row.permanent === 'No') ||
-        (row.permanent === 'Si' &&
-          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
-      ) {
-        newRowsList.push(row);
-      }
-    });
-  
-    setNewRows(newRowsList);
-  }, [filterClasses, totalClasses]);
+      const newRowsList = [];
+      const clasesAgregadas = [];
+      const filteredClassesSearcher = filterClasses
+        ? totalClasses.filter(item =>
+            item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
+          )
+        : totalClasses;
+    
+      filteredClassesSearcher.forEach(row => {
+        if (!clasesAgregadas.includes(row.cid)){
+          clasesAgregadas.push(row.cid)
+          newRowsList.push(row);
+        }
+      });
+      console.log("new rows",newRowsList)
+      setNewRows(newRowsList);
+    }, [filterClasses, totalClasses]);
   
 
   const validateCalification = () => {
@@ -396,16 +388,16 @@ function UsserClasses() {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
-          <MDBContainer>
-            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()}>
-              <MDBCol md="9" lg="7" xl="5" className="mt-5">
+          <MDBContainer style={{display:'flex'}}>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'40%'}}>
                 <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
                   <MDBCardBody className="p-4 text-black">
                     <div>
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
                       <div className="d-flex align-items-center justify-content-between mb-3">
                         <p className="small mb-0" style={{color: '#424242' }}><AccessAlarmsIcon sx={{ color: '#48CFCB'}} />{event.dateInicio.split('T')[1].split(':').slice(0, 2).join(':')} - {event.dateFin.split('T')[1].split(':').slice(0, 2).join(':')}</p>
-                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{formatDate(new Date(event.start))}</p>
+                        <p className="fw-bold mb-0" style={{color: '#424242' }}>{event.startFecha}</p>
                       </div>
                     </div>
                     <div className="d-flex align-items-center mb-4">
@@ -448,7 +440,7 @@ function UsserClasses() {
                       >
                         <CloseIcon sx={{ color: '#F5F5F5' }} />
                       </button>
-                      {(new Date(event.start).getTime() - new Date().getTime() <= 1 * 24 * 60 * 60 * 1000) ? (
+                      { event.day === diaActual &&  (new Date(event.sourceDate).getTime() - new Date().getTime() <= 0) ? (
                             <MDBBtn
                             style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
                             rounded

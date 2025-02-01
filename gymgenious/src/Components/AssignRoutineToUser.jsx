@@ -26,6 +26,7 @@ export default function RoutineCreation() {
     const [errorDaySelected, setErrorDaySelected] = useState(false);
     const [errorRoutineSelected, setErrorRoutineSelected] = useState(false);
     const [errorToken,setErrorToken] = useState(false);
+    const [errorUsers,setErrorUsers] = useState(false)
 
     useEffect(() => {
       const token = localStorage.getItem('authToken');
@@ -43,20 +44,26 @@ export default function RoutineCreation() {
     }, [userMail]);
 
     const validateForm = () => {
-        let errors = [];
+        let res = true;
         setErrorRoutineSelected(false)
         setErrorDaySelected(false)
         
         if (routineAssigned === '') {
-            errors.push('Please select a routine to assign');
+            res = false
             setErrorRoutineSelected(true)
         }
 
         if (day === '') {
-            errors.push('Please select one day to assign the routine.');
+            res = false
             setErrorDaySelected(true)
         }
-        return errors.length===0;
+
+        if (users.length==0) {
+            res=false
+            setErrorUsers(true)
+        }
+
+        return res
     }
 
     const handleAssignRoutine = async () => {
@@ -104,6 +111,10 @@ export default function RoutineCreation() {
                 setTimeout(() => {
                     setSuccess(false);
                 }, 3000);
+                setTimeout(() => {
+                    setFailure(false);
+                    window.location.reload()
+                }, 3000);
             } catch (error) {
                 console.error("Error al asignar la rutina:", error);
                 setOpenCircularProgress(false);
@@ -111,8 +122,12 @@ export default function RoutineCreation() {
                 setTimeout(() => {
                     setFailure(false);
                 }, 3000);
+                setTimeout(() => {
+                    setFailure(false);
+                    window.location.reload()
+                }, 3000);
             }
-        }
+        } 
     };
 
     const handleSubmit = (e) => {
@@ -179,6 +194,7 @@ export default function RoutineCreation() {
                         <div className="input-small-container">
                             <label htmlFor="users" style={{ color: '#424242' }}>Users:</label>
                             <UsserAssignment onUsersChange={handleUsersChange} routine={routineAssigned} routineDay={day}/>
+                            {errorUsers && (<p style={{color: 'red', margin: '0px'}}>Select at least 1 user</p>)}
                         </div>
                     </div>
                     {usersChanged ? (

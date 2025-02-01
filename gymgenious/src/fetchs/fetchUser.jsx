@@ -19,9 +19,6 @@ const fetchUser = async (setType,setOpenCircularProgress,userMail,navigate) => {
         }
         const data = await response.json();
         setType(data.type);
-        if(data.type!='coach'){
-          navigate('/');
-        }
     } catch (error) {
         console.error("Error fetching user:", error);
     } finally {

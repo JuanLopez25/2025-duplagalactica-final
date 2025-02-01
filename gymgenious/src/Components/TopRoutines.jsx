@@ -9,12 +9,13 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import NewLeftBar from '../real_components/NewLeftBar';
 import { useNavigate } from 'react-router-dom';
+import CloseIcon from '@mui/icons-material/Close';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import Slide from '@mui/material/Slide';
-import Typography from '@mui/material/Typography';
-import Slider from '@mui/material/Slider';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardBody, MDBTypography } from 'mdb-react-ui-kit';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import Loader from '../real_components/loader.jsx';
@@ -24,19 +25,10 @@ import fetchRoutines from '../fetchs/fetchAllRoutines.jsx';
 import CustomTable from '../real_components/Table4columns.jsx';
 
 function BarAnimation({ routines, isSmallScreen }) {
-    const [itemNb, setItemNb] = React.useState(5);
-
-    const orderedRoutines = routines.sort((a, b) => b.cant_asignados - a.cant_asignados);
-  
+    const orderedRoutines = routines.sort((a, b) => b.cant_asignados - a.cant_asignados);  
     const routineNames = orderedRoutines?.map(routine => routine.name);
     const routineData = orderedRoutines?.map(routine => routine.cant_asignados);
-  
-    const handleItemNbChange = (event, newValue) => {
-      if (typeof newValue !== 'number') {
-        return;
-      }
-      setItemNb(newValue);
-    };
+
     
     const routinesData = routines?.map(routine => ({
       label: routine.name,
@@ -44,16 +36,17 @@ function BarAnimation({ routines, isSmallScreen }) {
     }));
 
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%',backgroundColor:'#F5F5F5',marginTop:'10px',borderRadius:'10px',marginLeft:'2px' }}>
+        <Box sx={{display: 'flex', alignItems: 'center',backgroundColor:'#F5F5F5',marginTop:'10px',borderRadius:'10px',marginLeft:'2px',marginBottom: '5vh',marginLeft: '5vh',marginTop:'8vh',marginRight: '5vh'}}>
           <BarChart
             height={250}
             series={[{
-              data: routineData.slice(0, itemNb),
+              data: routineData.slice(0, 5),
               valueFormatter: (item) => `${item} users`,
             }]}
+            sx={{transition: 'none !important'}}
             xAxis={[{
               scaleType: 'band',
-              data: routineNames.slice(0, itemNb),
+              data: routineNames.slice(0, 5),
             }]}   
           />
           {!isSmallScreen && (
@@ -61,29 +54,12 @@ function BarAnimation({ routines, isSmallScreen }) {
             height={250}
              legend= {{ hidden: true }}
                 series={[{
-                  data: routinesData.slice(0,itemNb),
+                  data: routinesData.slice(0,5),
                   innerRadius: 50,
-                  // arcLabel:(params) => params.label ?? '',
-                  // arcLabelMinAngle: 20,
                   valueFormatter: (item) => `${item.value} users`,              
                 }]}
           />
-        )}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 220, textAlign: 'center', marginRight: '1%' }}>
-            <Typography id="input-item-number" gutterBottom>
-              Routines number
-            </Typography>
-            <Slider
-              value={itemNb}
-              orientation="vertical"
-              onChange={handleItemNbChange}
-              valueLabelDisplay="auto"
-              min={1}
-              max={5}
-              sx={{ height: '100%' }}
-              aria-labelledby="input-item-number"
-            />
-        </Box>
+        )}          
       </Box>
     );
 }
@@ -98,12 +74,10 @@ function TopRoutines() {
   const [errorToken,setErrorToken] = useState(false);
   const navigate = useNavigate();
   const [viewExercises, setViewExercises] = useState(false);
-  const [openSearch, setOpenSearch] = useState(false);
   const [filterRoutines, setFilterRoutines] = useState('');
   const [totalRoutines, setTotalRoutines] = useState([]);
 
   const handleCloseSearch = () => {
-    setOpenSearch(false);
     setRoutines(totalRoutines);
   };
 
@@ -149,6 +123,72 @@ function TopRoutines() {
       }
   }, [userMail]);
 
+  function ECommerce({event}) {
+    
+    return (
+      <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
+        visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
+          <MDBContainer style={{display:'flex'}}>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'20%'}}>
+                <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
+                  <MDBCardBody className="p-4 text-black">
+                    <div>
+                      <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{selectedEvent.name}</MDBTypography>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-center mb-4" style={{ alignItems: 'center' }}>
+                      <div className="position-relative d-inline-block" style={{ width: '10vh', height: '10vh' }}>                        
+                        <FavoriteIcon sx={{ color: 'red', width: '10vh', height: '10vh' }} />
+                        <p
+                          className="position-absolute top-50 start-50 translate-middle"
+                          style={{
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold',
+                            backgroundColor: 'red',
+                            color: 'white',
+                            fontWeight:'bold',
+                            padding: '0.4rem 0.8rem',
+                            borderRadius: '50%',
+                            minWidth: '2rem',
+                            textAlign: 'center',
+                          }}
+                        >
+                          {selectedEvent.cant_asignados}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex-grow-1 ms-3 text-center">
+                      <div className="d-flex flex-row align-items-center justify-content-center mb-2">
+                        <p className="mb-0 me-2" style={{ color: '#424242' }}>
+                          {selectedEvent.description}
+                        </p>
+                      </div>
+                    </div>
+                    <hr />
+                    <div style={{justifyContent:'center',display:'flex'}}>
+                      <button onClick={handleViewExercises} className='buttons-formated'>View exercises</button>
+                    </div>
+                    <button 
+                      onClick={handleCloseModal}
+                      className="custom-button-go-back-managing"
+                      style={{
+                        zIndex: '2',
+                        position: 'absolute', 
+                        top: '1%',
+                        left: isSmallScreen ? '78%' : '80%',
+                      }}
+                    >
+                      <CloseIcon sx={{ color: '#F5F5F5' }} />
+                    </button>
+                  </MDBCardBody>
+                </MDBCard>
+              </MDBCol>
+            </MDBRow>
+          </MDBContainer>
+      </div>
+    );
+  }
+
 
     return (
       <div className="App">
@@ -157,31 +197,21 @@ function TopRoutines() {
               <CircularProgress color="inherit" />
           </Backdrop>
         ) : (
-          <>
+          <div style={{width:'100%'}}>
+            {selectedEvent && (
+                <ECommerce event={selectedEvent}/>
+            )}
             <NewLeftBar/>
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
-            <div>
+            <div style={{width:'100%'}}>
               {routines && (
-                          <CustomTable columnsToShow={['Name','Owner','Exercises','Users','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','exercises_length','cant_asignados']}/> 
+                <CustomTable columnsToShow={['Name','Owner','Exercises','Likes','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','exercise_length','cant_asignados']}/> 
               )}
-              <div className='graphic-container'>
+              <div>
                 <BarAnimation routines={routines} isSmallScreen={isSmallScreen}/>
               </div>
+              
             </div>
-            {selectedEvent && (
-              <div className="Modal" onClick={handleCloseModal}>
-                <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
-                  <h2>Routine details</h2>
-                  <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Name:</strong> {selectedEvent.name}</p>
-                  <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Description:</strong> {selectedEvent.description}</p>
-                  <p><strong>Exercises:</strong> {selectedEvent.excercises.length}</p>
-                  <p><strong>Users:</strong> {selectedEvent.cant_asignados}</p>
-                  <p style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}><strong>Owner:</strong> {selectedEvent.owner}</p>
-                  <button onClick={handleViewExercises} style={{width: isSmallScreen ? '70%' : '40%'}}>View exercises</button>
-                  <button onClick={handleCloseModal} style={{marginTop: isSmallScreen ? '10px' : '', marginLeft: isSmallScreen ? '' : '10px', width: isSmallScreen ? '70%' : '40%'}}>Close</button>
-                </div>
-              </div>
-            )}
             {viewExercises && (
                 <div className="Modal" onClick={handleViewExercises}>
                     <div className="Modal-Content-view-exercises" onClick={(e) => e.stopPropagation()}>
@@ -254,7 +284,7 @@ function TopRoutines() {
             ) : (
               null
             )}
-          </>
+          </div>
         )}
       </div>
     );

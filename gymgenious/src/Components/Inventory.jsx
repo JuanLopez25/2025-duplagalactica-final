@@ -23,6 +23,7 @@ import verifyToken from '../fetchs/verifyToken.jsx';
 function CouchClasses() {
   const [userMail,setUserMail] = useState(null)
   const navigate = useNavigate();
+  const isSmallScreen = useMediaQuery('(max-width:700px)');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
@@ -83,37 +84,45 @@ function CouchClasses() {
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)',alignItems:'center',justifyContent:'center'}} onClick={handleCloseModal}>
            <MDBContainer style={{display:'flex'}}>
-              <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
-                <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'40%'}}>
-                <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5'}}>
-                  <MDBCardBody className="p-4 text-black" style={{width:'100vh'}}>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'20%'}}>
+                <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
+                  <MDBCardBody className="p-4 text-black">
                     <div>
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>{event.name}</MDBTypography>
                     </div>
-                    <div className="d-flex align-items-center mb-4">
-                      <div className="flex-shrink-0">
+                    <div className="d-flex align-items-center justify-content-center mb-4" style={{ alignItems: 'center' }}>
+                      <div className="position-relative d-inline-block" style={{ width: '10vh', height: '10vh' }}>   
                         <MDBCardImage
-                          style={{ width: '90px',height:'80px' }}
+                          style={{ width: '100%',height:'100%' }}
                           className="img-fluid rounded-circle border border-dark border-3"
                           src={event.image_url}
                           alt='Generic placeholder image'
                           fluid />
                       </div>
-                      <div className="flex-grow-1 ms-3">
-                        <div>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Total units {event.total}</MDBBtn>
-                          <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Remaining units {calculateRemainingAmount(event)}</MDBBtn>
-                        </div>
+                    </div>
+                    <div className="flex-grow-1 ms-3 text-center">
+                      <div className="d-flex flex-row align-items-center justify-content-center mb-2">
+                        <p className="mb-0 me-2" style={{ color: '#424242' }}>
+                          Total units: {event.total}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex-grow-1 ms-3 text-center">
+                      <div className="d-flex flex-row align-items-center justify-content-center mb-2">
+                        <p className="mb-0 me-2" style={{ color: '#424242' }}>
+                        Remaining units: {calculateRemainingAmount(event)}
+                        </p>
                       </div>
                     </div>
                     <button 
                       onClick={handleCloseModal}
                       className="custom-button-go-back-managing"
                       style={{
-                        zIndex: 2,
+                        zIndex: '2',
                         position: 'absolute', 
-                        top: '3%',
-                        left: '90%',
+                        top: '2%',
+                        left: isSmallScreen ? '78%' : '80%',
                       }}
                     >
                       <CloseIcon sx={{ color: '#F5F5F5' }} />
@@ -130,7 +139,7 @@ function CouchClasses() {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
+        verifyToken(token,()=>{},setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
@@ -138,13 +147,17 @@ function CouchClasses() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser(setType,setOpenCircularProgress,userMail,navigate)
+        fetchUser(setType,()=>{},userMail,navigate)
     }
   }, [userMail]);
 
   useEffect(() => {
     if(type==='coach' && userMail!=null){
-        fetchInventory(setItemData,setOpenCircularProgress)
+        setOpenCircularProgress(true)
+        fetchInventory(setItemData,()=>{})
+        setTimeout(() => {
+          setOpenCircularProgress(false);
+        }, 4000);
     }
   }, [type])
 

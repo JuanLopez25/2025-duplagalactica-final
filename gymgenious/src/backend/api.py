@@ -341,8 +341,8 @@ def add_mission_progress():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         missions = request.form.get('misiones')
-        
-        return add_mission_progress_route(missions)
+        uid = request.form.get('uid')
+        return add_mission_progress_route(missions,uid)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
