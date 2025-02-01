@@ -1,12 +1,7 @@
-from datetime import datetime, timedelta
-import firebase_admin
 from firebase_config import db
-from firebase_admin import credentials, firestore
-import logging
 from datetime import datetime
-import pytz
 import random
-from datetime import datetime
+import locale
 
 def add_missions(users,selectedEvent):
     try:
@@ -96,27 +91,49 @@ def get_missions_template():
     except Exception as e:
         print(f"Error while getting the mission templates: {e}")
         raise RuntimeError("It was not possible to obtain the template of the missions")
-    
-def add_mission_progress(missions):
+
+
+def add_mission_progress(missions, uid):
     try:
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+
         missions = missions.split(',')
-        users = []
-        mis_ref = db.collection('missions')
-        days = []
-        for mis in missions:
-            doc_ref = mis_ref.document(mis)
-            doc = doc_ref.get()
-            uid = doc.to_dict().get('uid',' ')
-            day = doc.to_dict().get('day',' ')
-            days.append(day)
-            users.append(uid)
-            doc.reference.delete()
-        missionProgress_ref = db.collection('missionsProgress')
-        for day in days:
-            document = missionProgress_ref.where('uid', '==', users[0]).where('Day','==',day).get() 
-            for doc in document: 
-                progress = doc.to_dict().get('progress', 0)  
-                missionProgress_ref.document(doc.id).update({'progress': progress + 1}) 
+        print("Este es el uid:", uid)
+
+        mis_ref = db.collection('missionsProgress')
+        user_doc = db.collection('users').where('uid', '==', uid).get()
+        if not user_doc:
+            raise ValueError("User not found")
+
+        userMail = user_doc[0].to_dict().get('Mail', '').strip()
+        if not userMail:
+            raise ValueError("User email not found")
+        assistance_ref = db.collection('assistedClasses').where('MailAlumno', '==', userMail)
+        assistance_docs = assistance_ref.stream()
+
+        for assistance_doc in assistance_docs:
+            assistance_data = assistance_doc.to_dict()
+            start_date_str = assistance_data.get('Inicio')
+
+            if not start_date_str:
+                continue
+            start_date = datetime.fromisoformat(start_date_str.replace('Z', ''))
+            start_day_name = start_date.strftime('%A').capitalize()  
+            mission_docs = mis_ref.where('uid', '==', uid).where('Day', '==', start_day_name).stream()
+
+            for doc in mission_docs:
+                mission_data = doc.to_dict()
+                current_progress = mission_data.get('progress', 0)
+                mis_ref.document(doc.id).update({'progress': current_progress + 1})
+            db.collection('assistedClasses').document(assistance_doc.id).delete()
+            print(f"Asistencia con ID {assistance_doc.id} eliminada correctamente.")
+
+    except Exception as e:
+        print(f"Error while adding progress and deleting assistance: {e}")
+        raise RuntimeError("It was not possible to complete the operation")
+
+
+
     except Exception as e:
         print(f"Error while adding a progress to the missions: {e}")
         raise RuntimeError("It was not possible to add a progress to the missions")

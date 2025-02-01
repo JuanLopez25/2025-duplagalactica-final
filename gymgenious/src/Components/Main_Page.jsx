@@ -24,29 +24,27 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
-import { useNavigate } from 'react-router-dom';
 import formatDate from '../functions/formatDate.jsx'
 import Searcher from '../real_components/searcher.jsx';
 
 export default function Main_Page() {
-  const [classes, setClasses] = useState([]);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showCalendar, setShowCalendar] = useState(true);
-  const navigate = useNavigate();
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [userMail,setUserMail] = useState(null);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const [successBook,setSuccessBook] = useState(false);
   const [successUnbook,setSuccessUnbook] = useState(false);
+  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+  const diaActual = diasSemana[new Date().getDay()];
   const isSmallScreen = useMediaQuery('(max-width:250px)');
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [type, setType] = useState(null);
   const [califyModal, setCalifyModal] = useState(false);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
-  const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
   const [openAchievements, setOpenAchievements] = useState(false);
@@ -145,10 +143,6 @@ export default function Main_Page() {
     setStars(newStars);
   }
 
-  const handleCloseSearch = () => {
-    setOpenSearch(false);
-    setClasses(totalClasses);
-  };
  
   function HalfRating() {
     return (
@@ -259,7 +253,7 @@ export default function Main_Page() {
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
                           <>
-                          {(new Date(event.start).getTime() - new Date().getTime() <= 0) ? (
+                          { event.day === diaActual &&  (new Date(event.sourceDate).getTime() - new Date().getTime() <= 0)  ? (
                             <MDBBtn
                             style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
                             rounded
@@ -280,18 +274,6 @@ export default function Main_Page() {
                         </MDBBtn>
                           )}
                             </>
-                            ) : (
-                              <>
-                              {(new Date(event.start).getTime() - new Date().getTime() <= 0) ? (
-                              
-                              <MDBBtn
-                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
-                            rounded
-                            block
-                            size="lg"
-                          >
-                            Class is today
-                          </MDBBtn>
                             ) : (
                               <>
                               {!membership[0] ? (
@@ -342,8 +324,6 @@ export default function Main_Page() {
                                 </>)
                                 }
                                 </>
-                            )}
-                            </>
                         )}
                         <button 
                           onClick={handleCloseModal}
@@ -459,13 +439,11 @@ export default function Main_Page() {
 
   const changeShowCalendar = () => {
     setShowCalendar(prevState => !prevState);
-    handleCloseSearch();
     handleCloseModal();
   };
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
-    handleCloseSearch();
   };
 
   const handleCommentChange = (event) => {
@@ -485,13 +463,13 @@ export default function Main_Page() {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
       const data = await response.json();
-      console.log(data)
+      
       const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
       const salas = await response2.json();
-      console.log(salas)
+  
       const dataWithSala = data.map(clase => {
         const salaInfo = salas.find(sala => sala.id === clase.sala);
         return {
@@ -501,15 +479,11 @@ export default function Main_Page() {
       });
   
       const calendarEvents = [];
-      const today = new Date();
-      console.log("today",today)
-      today.setHours(0, 0, 0, 0);
       const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
       const data3 = await response3.json();
-      console.log(data3)
       const filteredComments = data3.filter(comment => comment.uid === userAccount.uid);
       const groupedComments = data3.reduce((acc, comment) => {
         if (!acc[comment.cid]) {
@@ -538,48 +512,54 @@ export default function Main_Page() {
       });
       
       dataWithSalaAndComments.forEach(clase => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const startDate = new Date(clase.dateInicio);
         const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
         const endDate = new Date(clase.dateFin);
         const CorrectEndDate = new Date(endDate.getTime() + 60 * 3 * 60 * 1000);
-  
+        console.log("esto es el correct",(CorrectEndDate.getTime()-CorrectStarDate.getTime())/(1000*60))
+        today.setHours(CorrectStarDate.getHours(), CorrectStarDate.getMinutes(), CorrectStarDate.getSeconds(), CorrectStarDate.getMilliseconds())
         if (clase.permanent === "Si") {
-          let nextStartDate = new Date(CorrectStarDate);
-          let nextEndDate = new Date(CorrectEndDate);
+          let nextStartDate = CorrectStarDate;
+          let nextEndDate = CorrectEndDate;
   
           if (nextStartDate < today) {
             const dayOfWeek = CorrectStarDate.getDay();
             let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
-            nextStartDate.setDate(today.getDate() + daysUntilNextClass);
-            nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
+            today.setDate(today.getDate() + daysUntilNextClass);
+            nextEndDate = new Date(today.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()));
+          } else {
+            today.setDate(nextStartDate.getDate())
           }
           
           for (let i = 0; i < 4; i++) {
             calendarEvents.push({
               title: clase.name,
-              start: new Date(nextStartDate),
+              start: new Date(today),
               end: new Date(nextEndDate),
+              sourceDate: new Date(CorrectStarDate),
               allDay: false,
               ...clase,
             });
-            nextStartDate.setDate(nextStartDate.getDate() + 7);
+            today.setDate(today.getDate() + 7);
             nextEndDate.setDate(nextEndDate.getDate() + 7);
           }
         } else {
           if(startDate >= today)
-            calendarEvents.push({
-              title: clase.name,
-              start: new Date(CorrectStarDate),
-              end: new Date(CorrectEndDate),
-              allDay: false,
-              ...clase,
-            });
+          calendarEvents.push({
+            title: clase.name,
+            start: new Date(CorrectStarDate),
+            end: new Date(CorrectEndDate),
+            sourceDate: new Date(CorrectStarDate),
+            allDay: false,
+            ...clase,
+          });
         }
       });
-      console.log("Calendar events",calendarEvents)
+      console.log(calendarEvents)
       setEvents(calendarEvents);
       setOpenCircularProgress(false)
-      setClasses(calendarEvents);
       setTotalClasses(calendarEvents);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -848,17 +828,19 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response4 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions`, {
+      const response4 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_progress`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
       });
       const missions = await response4.json();
-      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.id)
+      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.idMission)
       const formData = new FormData();
       formData.append('misiones', missionsIds);
+      formData.append('uid',userAccount.uid)
       if (missionsIds.length!=0) {
+        console.log("entre al mission progress")
         const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/add_mission_progress', {
           method: 'DELETE', 
           headers: {
