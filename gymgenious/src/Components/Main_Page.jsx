@@ -166,7 +166,6 @@ export default function Main_Page() {
       </Stack>
     );
   }
-
   useEffect(() => {
     const newRowsList = [];
     const filteredClassesSearcher = filterClasses
@@ -174,20 +173,16 @@ export default function Main_Page() {
           item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
         )
       : totalClasses;
+    const classById = {};
   
     filteredClassesSearcher.forEach(row => {
-      if (
-        (row.permanent === 'No' &&
-          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
-        (row.permanent === 'Si' &&
-          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
-      ) {
-        newRowsList.push(row);
+      if (!classById[row.id] || new Date(row.start).getTime() < new Date(classById[row.id].start).getTime()) {
+        classById[row.id] = row; 
       }
     });
-  
+    Object.values(classById).forEach(row => {
+      newRowsList.push(row);
+    });
     setNewRows(newRowsList);
   }, [filterClasses, totalClasses]);
 
@@ -666,7 +661,6 @@ export default function Main_Page() {
       window.location.reload();
       setOpenCircularProgress(false);
       handleCloseModal();
-      //setSucceshandleClosesBook(true)
       setTimeout(() => {
         setSuccessBook(false);
       }, 3000);
