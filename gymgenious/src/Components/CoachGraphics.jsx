@@ -51,8 +51,6 @@ function TopRoutines({ routines, isSmallScreen }) {
 }
 
 function TopClasses({classes, isSmallScreen}) {
-    const [itemNb, setItemNb] = React.useState(5);
-
     const orderedClasses = classes.sort((a, b) => b.BookedUsers.length - a.BookedUsers.length);
     const classesNames = orderedClasses?.map(clase => clase.name);
     const classesData = orderedClasses?.map(clase => clase.BookedUsers.length);
@@ -74,11 +72,11 @@ function TopClasses({classes, isSmallScreen}) {
           <BarChart
             height={isSmallScreen ? 200 : 500}
             series={[{
-              data: classesData.slice(0, itemNb),
+              data: classesData.slice(0, 5),
             }]}
             xAxis={[{
               scaleType: 'band',
-              data: classesNames.slice(0, itemNb),
+              data: classesNames.slice(0, 5),
             }]}
           />
       </Box>
@@ -86,7 +84,6 @@ function TopClasses({classes, isSmallScreen}) {
 }
 
 function ExercisesVsUsers({exersCoachUsers, isSmallScreen}) {
-    const [itemNb, setItemNb] = React.useState(5);
     const orderedClasses = exersCoachUsers.sort((a, b) => b.count - a.count);
     const classesNames = orderedClasses?.map(clase => clase.exercise);
     const classesData = orderedClasses?.map(clase => clase.count);
@@ -108,11 +105,11 @@ function ExercisesVsUsers({exersCoachUsers, isSmallScreen}) {
         <BarChart
           height={isSmallScreen ? 200 : 500}
           series={[{
-            data: classesData.slice(0, itemNb),
+            data: classesData.slice(0, 5),
           }]}
           xAxis={[{
             scaleType: 'band',
-            data: classesNames.slice(0, itemNb),
+            data: classesNames.slice(0, 5),
           }]}
         />
     </Box>
@@ -127,7 +124,6 @@ function CoachGraphics() {
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const navigate = useNavigate();
-  const isMobileScreen = useMediaQuery('(min-height:750px)');
   const [type, setType] = useState(null);
   const [classes, setClasses] = useState([]);
   const [exersCoachUsers,setExersCoachUsers] = useState([])
@@ -336,7 +332,7 @@ function CoachGraphics() {
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
+            verifyToken(token,()=>{},setUserMail,setErrorToken)
         } else {
             navigate('/');
             console.error('No token found');
@@ -345,7 +341,7 @@ function CoachGraphics() {
     
     useEffect(() => {
         if (userMail) {
-            fetchUser(setType,setOpenCircularProgress,userMail,navigate)
+            fetchUser(setType,()=>{},userMail,navigate)
         }
     }, [userMail]);
 
@@ -356,7 +352,7 @@ function CoachGraphics() {
             fetchExcersicesCoachUsers();
             setTimeout(() => {
               setOpenCircularProgress(false);
-            }, 3000)
+            }, 5000)
         }
     }, [userMail]);
     
