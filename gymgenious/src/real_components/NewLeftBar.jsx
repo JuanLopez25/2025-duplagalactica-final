@@ -20,6 +20,8 @@ import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import CheckIcon from '@mui/icons-material/Check';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import SportsIcon from '@mui/icons-material/Sports';
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -117,7 +119,7 @@ export default function TemporaryDrawer() {
   const DrawerListCoach = (
     <Box sx={{ width: 250, background: '#424242' }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        {['Home', 'Profile', 'Create class', 'My classes', 'Managing', 'Exercises', 'My routines', 'All routines', 'Top routines', 'Graphics', 'Memberships','Your clients','Inventory','Logout'].map((text, index) => (
+        {['Home', 'Profile', 'Create class', 'My classes', 'Managing', 'Exercises', 'My routines', 'All routines', 'Top routines', 'Graphics', 'Memberships','Clients assitance','Inventory','Logout'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton onClick={() => navigateTo(index)}>
               <ListItemIcon>
@@ -132,8 +134,8 @@ export default function TemporaryDrawer() {
                 {index === 8 && <TimelineIcon sx={{ color: '#48CFCB' }} />}
                 {index === 9 && <SignalCellularAltIcon sx={{ color: '#48CFCB' }} />}
                 {index === 10 && <PaidIcon sx={{ color: '#48CFCB' }} />}
-                {index === 11 && <PaidIcon sx={{ color: '#48CFCB' }} />}
-                {index === 12 && <PaidIcon sx={{ color: '#48CFCB' }} />}
+                {index === 11 && <EditNoteIcon sx={{ color: '#48CFCB' }} />}
+                {index === 12 && <InventoryIcon sx={{ color: '#48CFCB' }} />}
                 {index === 13 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />

@@ -48,11 +48,14 @@ export default function CoachMemberships() {
       if (!response.ok) {
         throw new Error('Error al obtener las salas: ' + response.statusText);
       }
-      await fetchMembership();
-      setOpenCircularProgress(false);
+      setTimeout(() => {
+        setOpenCircularProgress(false)
+        fetchMembership(setMemberships,setOpenCircularProgress,()=>{},()=>{},()=>{})
+      }, 3000);
     } catch (error) {
         console.error("Error fetching user:", error);
-    }
+        setOpenCircularProgress(false);
+    } 
   }
 
   const handleEditPrice2 = () => {
@@ -77,7 +80,7 @@ export default function CoachMemberships() {
 
   useEffect ( () => {
     if (userMail) {
-      fetchMembership(setMemberships,setOpenCircularProgress)
+      fetchMembership(setMemberships,setOpenCircularProgress,setPrice1,setPrice2,setPrice3)
     }
   },[userMail])
 
@@ -133,7 +136,7 @@ export default function CoachMemberships() {
                             {editPrice1 ? (
                                 <button className="choose-plan-btn" onClick={handleEditPrice1}>Save</button>
                             ) : (
-                                <button className="choose-plan-btn" onClick={handleEditPrice1}>Edit</button>
+                                <button className="choose-plan-btn" onClick={()=>setEditPrice1(true)}>Edit</button>
                             )}
                             </div>
                             <div className='type-memberships' style={{marginRight: '2%'}}>
@@ -165,7 +168,7 @@ export default function CoachMemberships() {
                                 {editPrice2 ? (
                                     <button className="choose-plan-btn" onClick={handleEditPrice2}>Save</button>
                                 ) : (
-                                    <button className="choose-plan-btn" onClick={handleEditPrice2}>Edit</button>
+                                    <button className="choose-plan-btn" onClick={()=>setEditPrice2(true)}>Edit</button>
                                 )}
                             </div>
                             <div className='type-memberships'>
@@ -197,7 +200,7 @@ export default function CoachMemberships() {
                                     {editPrice3 ? (
                                         <button className="choose-plan-btn" onClick={handleEditPrice3}>Save</button>
                                     ) : (
-                                        <button className="choose-plan-btn" onClick={handleEditPrice3}>Edit</button>
+                                        <button className="choose-plan-btn" onClick={()=>setEditPrice3(true)}>Edit</button>
                                     )}
                             </div>
                             </div>
