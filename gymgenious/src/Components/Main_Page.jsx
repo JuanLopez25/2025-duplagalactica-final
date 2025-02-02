@@ -554,7 +554,9 @@ export default function Main_Page() {
       });
       console.log(calendarEvents)
       setEvents(calendarEvents);
-      setOpenCircularProgress(false)
+      setTimeout(() => {
+        setOpenCircularProgress(false);
+      }, 5000);
       setTotalClasses(calendarEvents);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -722,7 +724,7 @@ export default function Main_Page() {
   useEffect(() => {
     let token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
+        verifyToken(token,()=>{},setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
@@ -730,9 +732,8 @@ export default function Main_Page() {
   }, [userAccount]);
 
   useEffect(()=> {
-    if (userAccount) {
+    if (userAccount.length!=0) {
       fetchClasses();
-      fetchMissions();
       fetchMissionsProgress();
     }
   },[userAccount])
@@ -815,45 +816,6 @@ export default function Main_Page() {
     }
   }
 
-  const fetchMissions = async () =>{
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const response4 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_progress`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        },
-      });
-      const missions = await response4.json();
-      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.idMission)
-      const formData = new FormData();
-      formData.append('misiones', missionsIds);
-      formData.append('uid',userAccount.uid)
-      if (missionsIds.length!=0) {
-        console.log("entre al mission progress")
-        const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/add_mission_progress', {
-          method: 'DELETE', 
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: formData
-        });
-        console.log("es la respuesta",response5)
-        if (!response5.ok) {
-          throw new Error('Error al actualizar la clase: ' + response5.statusText);
-        }
-        const data = await response5.json();
-        const missionProgress = data.progress;
-        console.log("datiña",data)
-      } 
-    } catch (e) {
-
-    }
-  }
 
   const traducirDia = (diaEspañol) => {
     if (diaEspañol=='Lunes') {
@@ -874,12 +836,27 @@ export default function Main_Page() {
   }
 
   const fetchMissionsProgress = async () =>{
+    setOpenCircularProgress(true)
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
         console.error('Token no disponible en localStorage');
         return;
       }
+      const formData = new FormData();
+      formData.append('cant', 1);
+      formData.append('uid', userAccount.uid);
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/assign_mission', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData,
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response5.statusText);
+      }
+
       const response4 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_progress`, {
         method: 'GET', 
         headers: {
@@ -887,23 +864,39 @@ export default function Main_Page() {
         },
       });
       const missions = await response4.json();
-      const progress = missions.filter(mis => mis.uid === userAccount.uid)
-      if (progress.length<3 && (userAccount.length!=0)) {
-        const formData = new FormData();
-        formData.append('cant', (3-progress.length));
-        formData.append('uid', userAccount.uid);
-        const response = await fetch('https://two025-duplagalactica-final.onrender.com/assign_mission', {
-              method: 'POST',
-              headers: {
-                  'Authorization': `Bearer ${authToken}`
-              },
-              body: formData,
+      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.idMission)
+      const formData2 = new FormData();
+      formData2.append('misiones', missionsIds);
+      formData2.append('uid',userAccount.uid)
+      if (missionsIds.length!=0) {
+        console.log("entre al mission progress")
+        console.log("estos son los ids",missionsIds)
+        const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/add_mission_progress', {
+          method: 'DELETE', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: formData2
         });
-        if (!response.ok) {
+        console.log("es la respuesta",response5)
+        if (!response5.ok) {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
-        window.location.reload();
-      }
+        const data = await response5.json();
+        console.log("datiña",data)
+      } 
+
+
+      const response6 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_progress`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const missions2 = await response6.json();
+      const progress = missions2.filter(mis => mis.uid === userAccount.uid)
+
+
       const response5 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_template`, {
         method: 'GET', 
         headers: {
@@ -918,9 +911,13 @@ export default function Main_Page() {
         const template = templates.find(temp => temp.id === mission.mid);
         return template ? { ...mission, ...template } : mission;
       });
+      console.log("resultado nuevo",enrichedProgress)
       setProgress(enrichedProgress)
+      setTimeout(() => {
+        setOpenCircularProgress(false)
+      }, 5000);
     } catch (e) {
-    }
+    } 
   }
 
   

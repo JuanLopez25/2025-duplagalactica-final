@@ -28,7 +28,9 @@ def assign_mission(amount,users):
         docs = templates_ref.stream()
         missionsTemplate = [{'id': doc.id, **doc.to_dict()} for doc in docs]
         missionProgress_ref = db.collection('missionsProgress')
-        for i in range(0,int(amount)):
+        snapshot = missionProgress_ref.where('uid', '==', users).get()
+        missions_amount = 3 - len(snapshot)
+        for i in range(0,int(missions_amount)):
             number = random.randint(0, len(missionsTemplate)-1)
             mission = missionsTemplate[number]
             new_mission_progress = {'uid':users,'progress':0,'mid':mission['id'],'Day':mission['Day']}
@@ -95,6 +97,7 @@ def get_missions_template():
 
 def add_mission_progress(missions, uid):
     try:
+        print("entro aaaaaaaaa")
         res = True
         locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         missions = missions.split(',')
@@ -122,6 +125,7 @@ def add_mission_progress(missions, uid):
                                       .replace('Thursday', 'Jueves') \
                                       .replace('Friday', 'Viernes') \
                                       .replace('Sunday', 'Domingo')
+            print("estos son los dias",day_of_week_no_accent)
             mission_docs = mis_ref.where('uid', '==', uid).where('Day', '==', day_of_week_no_accent).stream()
             for doc in mission_docs:
                 mission_data = doc.to_dict()
