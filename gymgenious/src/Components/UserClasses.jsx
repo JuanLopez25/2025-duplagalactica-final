@@ -181,6 +181,7 @@ function UsserClasses() {
       }
       const data = await response.json();
       const filteredClasses = data.filter(event => event.BookedUsers.includes(userMail));
+      console.log("filtered",filteredClasses)
       const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);

@@ -17,6 +17,7 @@ import Loader from '../real_components/loader.jsx';
 const MarkAttendance = () => {
   const location = useLocation();
   const [error, setError] = useState(null);
+  const [errorClass, setErrorClass] = useState(false);
   const [success, setSuccess] = useState(false);
   const [logeedIn, setLogin] = useState(false)
   const navigate = useNavigate();
@@ -42,6 +43,14 @@ const MarkAttendance = () => {
     
   },[logeedIn]);
 
+
+  useEffect(() => {
+    let token = localStorage.getItem('authToken');
+    if (token) {
+        setLoading(true)
+    } 
+  });
+
   useEffect(()=>{
     const fetchToken = async () => {
       try {
@@ -51,9 +60,24 @@ const MarkAttendance = () => {
         const mailUsuario=userMail
         const dateInicio = dataToken.start
         const dateFin = dataToken.end
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token-userSide/${eventId}/${dateFin}/${dateInicio}/${mailUsuario}`);
-        const data = await response.json();
-        setNewToken(data.token);
+        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
+        if (!response2.ok) {
+          throw new Error('Error al obtener las clases: ' + response2.statusText);
+        }
+        const data2 = await response2.json();       
+        const filteredClasses = data2
+        .filter(event => event.BookedUsers.includes(userMail))
+        .map(event => event.id);
+        if (filteredClasses.includes(eventId)) {
+          const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token-userSide/${eventId}/${dateFin}/${dateInicio}/${mailUsuario}`);
+          const data = await response.json();
+          setNewToken(data.token);
+        } else {
+          setErrorClass(true)
+          setTimeout(() => {
+            setErrorClass(false)
+          }, 3000);
+        }
       } catch (error) {
         console.error("Error al obtener el token:", error);
       }
@@ -175,6 +199,21 @@ const MarkAttendance = () => {
                   <Slide direction="up" in={success} mountOnEnter unmountOnExit >
                       <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
                         Successful login!
+                      </Alert>
+                  </Slide>
+                </Box>
+              </div>
+            </div>
+          ) : (
+            null
+          )}
+          { errorClass ? (
+            <div className='alert-container'>
+              <div className='alert-content'>
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Slide direction="up" in={errorClass} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="error">
+                        The user is not in this class
                       </Alert>
                   </Slide>
                 </Box>
