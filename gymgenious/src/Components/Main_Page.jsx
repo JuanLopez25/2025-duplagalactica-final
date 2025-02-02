@@ -733,8 +733,10 @@ export default function Main_Page() {
 
   useEffect(()=> {
     if (userAccount.length!=0) {
-      fetchClasses();
       fetchMissionsProgress();
+    }
+    if (userAccount) {
+      fetchClasses();
     }
   },[userAccount])
 
