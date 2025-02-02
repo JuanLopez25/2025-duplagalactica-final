@@ -19,6 +19,7 @@ const MarkAttendance = () => {
   const [error, setError] = useState(null);
   const [errorClass, setErrorClass] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [successLecture,setSuccessLecture] = useState(false)
   const [logeedIn, setLogin] = useState(false)
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -47,7 +48,7 @@ const MarkAttendance = () => {
   useEffect(() => {
     let token = localStorage.getItem('authToken');
     if (token) {
-        setLoading(true)
+      setLogin(true)
     } 
   });
 
@@ -68,6 +69,7 @@ const MarkAttendance = () => {
         const filteredClasses = data2
         .filter(event => event.BookedUsers.includes(userMail))
         .map(event => event.id);
+        console.log("estas son las filtered class",filteredClasses)
         if (filteredClasses.includes(eventId)) {
           const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token-userSide/${eventId}/${dateFin}/${dateInicio}/${mailUsuario}`);
           const data = await response.json();
@@ -75,7 +77,8 @@ const MarkAttendance = () => {
         } else {
           setErrorClass(true)
           setTimeout(() => {
-            setErrorClass(false)
+            setErrorClass(false)            
+            navigate(`/`);
           }, 3000);
         }
       } catch (error) {
@@ -101,7 +104,7 @@ const MarkAttendance = () => {
             console.log(data);
             if (data.message) {
               setTimeout(() => {
-                setSuccess(true);
+                setSuccessLecture(true)
                 setLoading(false);
                 navigate(`/`);
               }, 3000);
@@ -207,12 +210,17 @@ const MarkAttendance = () => {
           ) : (
             null
           )}
-          { errorClass ? (
+          
+        </>
+      ) 
+
+      }
+      { errorClass ? (
             <div className='alert-container'>
               <div className='alert-content'>
                 <Box sx={{ position: 'relative', zIndex: 1 }}>
                   <Slide direction="up" in={errorClass} mountOnEnter unmountOnExit >
-                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="error">
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
                         The user is not in this class
                       </Alert>
                   </Slide>
@@ -222,17 +230,13 @@ const MarkAttendance = () => {
           ) : (
             null
           )}
-        </>
-      ) 
-
-      }
       {loading ? (
         <CircularProgress /> 
-      ) : success ? (
+      ) : successLecture ? (
         <div className='alert-container'>
           <div className='alert-content'>
             <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Slide direction="up" in={success} mountOnEnter unmountOnExit >
+              <Slide direction="up" in={successLecture} mountOnEnter unmountOnExit >
                   <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
                     Assistance checked correctly
                   </Alert>

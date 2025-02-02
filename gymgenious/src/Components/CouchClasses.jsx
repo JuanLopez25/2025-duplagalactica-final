@@ -118,7 +118,7 @@ function CouchClasses() {
                       <MDBTypography tag='h6' style={{color: '#424242',fontWeight:'bold' }}>Assistance for "{selectedEvent.name}"</MDBTypography>
                     </div>
                     <div style={{justifyContent:'center',left:'23%',alignContent:'center',width:'60%',position:'relative'}}>
-                      <QRCodeCanvas value={`https://2025-duplagalactica-final.vercel.app/mark-attendance?token=${qrToken}`} size={256} />
+                      <QRCodeCanvas value={`http://localhost:3000/mark-attendance?token=${qrToken}`} size={256} />
                     </div>
                     <button 
                         onClick={handleCloseCheckList}
