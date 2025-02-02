@@ -10,6 +10,7 @@
     "@mui/styled-engine-sc": "^6.1.1",
     "@mui/x-charts": "^7.22.1",
     "@prisma/client": "^5.19.1",
+    "@zxing/browser": "^0.1.5",
     "buffer": "^6.0.3",
     "cors": "^2.8.5",
     "crypto-browserify": "^3.12.1",
