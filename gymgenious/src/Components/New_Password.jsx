@@ -63,6 +63,7 @@ export default function ChangePassword() {
       }
       return errors.length === 0;
     }
+    
     const handleResetPassword = async () => {
       setOpenCircularProgress(true);
         try {

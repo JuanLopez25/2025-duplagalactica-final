@@ -1,5 +1,5 @@
 import '../App.css';
-import React, {useState, useEffect} from 'react';
+import React, { useState } from 'react';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useMediaQuery } from '@mui/material';
@@ -8,17 +8,12 @@ import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
-import fetchUser from '../fetchs/fetchUser.jsx'
-import verifyToken from '../fetchs/verifyToken.jsx';
 import Slide from '@mui/material/Slide';
 import Loader from '../real_components/loader.jsx';
 
 export default function ResetPassword() {
     const [email, setEmail] = useState('');
     const navigate = useNavigate();
-    const [errorToken,setErrorToken] = useState(false);
-    const [notEmail,setNotEmail] = useState(false)
-    const [userMail,setUserMail] = useState(null)
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const [success, setSuccess] = useState(false);
     const [failure, setFailure] = useState(false);
@@ -26,43 +21,22 @@ export default function ResetPassword() {
     const isSmallScreen = useMediaQuery('(max-width:700px)');
     const auth = getAuth();
     
-    useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
-        } else {
-            console.error('No token found');
-        }
-      }, []);
-    
-      useEffect(() => {
-        if (userMail) {
-            fetchUser(()=>{},setOpenCircularProgress,userMail);
-        }
-      }, [userMail]);
-
-
     const handleSubmit = async (e) => {
         setOpenCircularProgress(true);
         e.preventDefault();
         try {
             const url = new URL('https://2025-duplagalactica-final.vercel.app/get_unique_user_by_email');
             url.searchParams.append('mail', email); 
-            if (email==userMail) {
-                await sendPasswordResetEmail(auth, email, {
-                    url: 'https://2025-duplagalactica-final.vercel.app/redirections?mode=resetPassword', 
-                    handleCodeInApp: true
-                });
-                setOpenCircularProgress(false);
-                setSuccess(true);
-                setTimeout(() => {
-                    setSuccess(false);
-                    navigate('/');
-                }, 3000);
-            } else {
-                setOpenCircularProgress(false);
-                setNotEmail(true)
-            }
+            await sendPasswordResetEmail(auth, email, {
+                url: 'https://2025-duplagalactica-final.vercel.app/redirections?mode=resetPassword', 
+                handleCodeInApp: true
+            });
+            setOpenCircularProgress(false);
+            setSuccess(true);
+            setTimeout(() => {
+                setSuccess(false);
+                navigate('/');
+            }, 3000);
         } catch (error) {
             console.error("Error sending email:", error);
             setOpenCircularProgress(false);
@@ -91,21 +65,6 @@ export default function ResetPassword() {
                 <Loader></Loader>
                 </Backdrop>
             ) : null}
-            {errorToken ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
-                            <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
-                                <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
-                                    Invalid Token!
-                                </Alert>
-                            </Slide>
-                        </Box>
-                    </div>
-                </div>
-            ) : (
-                null
-            )}
             <div className='reset-password-container'>
                 <div className='reset-password-content'>
                     <h2 style={{color:'#424242'}}>Reset password</h2>
@@ -120,7 +79,6 @@ export default function ResetPassword() {
                                 onChange={(e) => setEmail(e.target.value)} 
                                 required
                             />
-                            {notEmail && (<p style={{color: 'red', margin: '0px'}}>That is not the email associated to this account</p>)}
                         </div>
                         <button type="submit" className='button_create_account' style={{width: isSmallScreen ? '70%' : '40%'}}>
                             Send email

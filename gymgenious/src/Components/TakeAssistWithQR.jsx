@@ -33,19 +33,19 @@ const MarkAttendance = () => {
       const video = videoRef.current;
       const ctx = canvas.getContext("2d");
 
-      // Dibujar el video en el canvas
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Extraer los datos de imagen del canvas
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, imageData.width, imageData.height);
 
       if (code) {
-        setQrData(code.data); // El contenido del QR
+        setQrData(code.data);
         setError(null);
-        processAttendance(code.data); // Llamar al backend con el token del QR
+        processAttendance(code.data);
+      } else {
+        setError("No se detectó ningún QR válido.");
       }
     }
   };
@@ -62,20 +62,20 @@ const MarkAttendance = () => {
       );
       const data = await response.json();
       console.log("Respuesta del servidor:", data);
-      setLoading(false);
     } catch (err) {
       console.error("Error al procesar la asistencia:", err);
       setError("Error al registrar la asistencia.");
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
     const interval = setInterval(() => {
-      scanQRCode(); // Escanea el QR cada 500ms
+      scanQRCode();
     }, 500);
 
-    return () => clearInterval(interval); // Limpiar el intervalo cuando se desmonte
+    return () => clearInterval(interval);
   }, []);
 
   return (
