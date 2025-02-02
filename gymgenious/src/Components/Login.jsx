@@ -30,7 +30,7 @@ export default function Login() {
   };
 
   const goToResetPassword = () => {
-    navigate('/reset-password');
+    navigate('/forgot-password');
   };
 
   const loginUser = async (e) => {

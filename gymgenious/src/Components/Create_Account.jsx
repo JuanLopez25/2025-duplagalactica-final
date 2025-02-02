@@ -78,12 +78,14 @@ export default function CreateAccount() {
         const isValidLength = password.length > 7;
 
         if(!(hasNumber && hasLowerCase && hasUpperCase && hasSpecialChar && isValidLength)){
+            errors.push('Please enter a valid password.');
             setErrorPassword(true);
         } else {
             setErrorPassword(false);
         }
 
         if(typeAccount===''){
+            errors.push('Please enter a type of account');
             setErrorType(true);
         } else {
             setErrorType(false);
@@ -108,7 +110,7 @@ export default function CreateAccount() {
                     MissionsComplete:0,
                     type: typeAccount
                 };
-                await fetch('https://two024-duplagalactica-li8t.onrender.com/create_user', {
+                await fetch('https://two025-duplagalactica-final.onrender.com/create_user', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -116,7 +118,7 @@ export default function CreateAccount() {
                     body: JSON.stringify(newUser),
                 });
                 await sendEmailVerification(firebaseUser, {
-                    url: 'https://two025-duplagalactica-final.onrender.com/redirections?mode=verifyEmail', 
+                    url: 'https://2025-duplagalactica-final.vercel.app/redirections?mode=verifyEmail', 
                     handleCodeInApp: true
                 });
                 setOpenCircularProgress(false);
@@ -157,10 +159,12 @@ export default function CreateAccount() {
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [openPasswordRequirements, setOpenPasswordRequirements] = useState(false);
+
     const handleOpenPasswordRequirements = (event) => {
       setAnchorEl(anchorEl ? null : event.currentTarget);
       setOpenPasswordRequirements(!openPasswordRequirements)
     };
+
     const id = openPasswordRequirements ? 'simple-popper' : undefined;
     return (
         <div className='App'>
@@ -208,7 +212,7 @@ export default function CreateAccount() {
                                 value={date} 
                                 onChange={(e) => setDate(e.target.value)} 
                             />
-                            {errorDate && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a date</p>)}
+                            {errorDate && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a valid date</p>)}
                         </div>
                         <div className="input-container">
                             <label htmlFor="email" style={{color:'#424242'}}>Email:</label>
@@ -309,19 +313,6 @@ export default function CreateAccount() {
             ) : (
                 null
             )}
-            {/* { failureEmailRepeated ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureEmailRepeated} mountOnEnter unmountOnExit >
-                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>An account already exists with this email!</Alert>
-                        </Slide>
-                    </Box>
-                </div>
-            </div>
-            ) : (
-                null
-            )} */}
             { failure ? (
                 <div className='alert-container'>
                     <div className='alert-content'>

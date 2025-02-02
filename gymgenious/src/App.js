@@ -26,6 +26,7 @@ import UserRankings from './Components/UserRanking.jsx';
 import Assitance from './Components/Assistance.jsx';
 import MarkAttendance from './Components/TakeAssistWithQR.jsx';
 import CoachClients from './Components/CoachClients.jsx'
+import ForgotPassword from './Components/forgotPassword.jsx'
 import Inventory from './Components/Inventory.jsx'
 
 function App() {
@@ -58,21 +59,10 @@ function App() {
         <Route path="/mark-attendance" element={<MarkAttendance/>}/>
         <Route path='/coach-clients' element={<CoachClients/>}/>
         <Route path='/inventory' element={<Inventory/>}/>
+        <Route path='/forgot-password' element={<ForgotPassword/>}/>
       </Routes>
     </Router>
   );
 }
-/////ESTO PUEDE SERVIR PARA EL WEB PAGE APP, NO RECARGA TODA LA PAGINA CUANDO CAMBIAS PAGINA////
-
-// import { Link } from 'react-router-dom';
-
-// function Navbar() {
-//   return (
-//     <nav>
-//       <Link to="/">Home</Link>
-//       <Link to="/about">About</Link>
-//     </nav>
-//   );
-// }
 
 export default App;
