@@ -1,62 +1,220 @@
-import React, { useEffect, useRef, useState } from "react";
-import { BrowserMultiFormatReader } from "@zxing/browser";
-import CircularProgress from "@mui/material/CircularProgress";
-import Alert from "@mui/material/Alert";
+import '../App.css';
+import { useLocation } from "react-router-dom"; 
+import React, { useEffect, useState } from "react";
+import CheckIcon from '@mui/icons-material/Check';  
+import Box from '@mui/material/Box';
+import Slide from '@mui/material/Slide';
+import CircularProgress from '@mui/material/CircularProgress'; 
+import Alert from '@mui/material/Alert'; 
+import verifyToken from '../fetchs/verifyToken';
+import { useMediaQuery } from '@mui/material';
+import { auth } from '../firebase-config.js';
+import { useNavigate } from 'react-router-dom';
+import {signInWithEmailAndPassword } from 'firebase/auth';
+import Backdrop from '@mui/material/Backdrop';
+import Loader from '../real_components/loader.jsx';
 
 const MarkAttendance = () => {
-  const videoRef = useRef(null);
-  const [qrData, setQrData] = useState(null);
+  const location = useLocation();
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [logeedIn, setLogin] = useState(false)
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [newToken,setNewToken] = useState(null)
+  const params = new URLSearchParams(location.search);
+  const [userMail,setUserMail] = useState(null);
+  const [verifyEmail, setVerifyEmail] = useState(false);
+  const token = params.get("token");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [openCircularProgress, setOpenCircularProgress] = useState(false);
+  const [errorLogin, setErrorLogin] = useState(false);
+  const isSmallScreen = useMediaQuery('(max-width:700px)');
 
   useEffect(() => {
-    const codeReader = new BrowserMultiFormatReader();
-    codeReader
-      .decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
-        if (result) {
-          setQrData(result.getText());
-          setError(null);
-          processAttendance(result.getText());
-        }
-        if (err) {
-          console.error(err);
-        }
-      })
-      .catch((err) => {
-        console.error("Error al acceder a la cámara:", err);
-        setError("No se pudo acceder a la cámara.");
-      });
+    let token = localStorage.getItem('authToken');
+    if (token) {
+        verifyToken(token,()=>{},setUserMail,()=>{});
+    } else {
+        console.error('No token found');
+    }
+    
+  },[logeedIn]);
 
-    return () => codeReader.reset();
-  }, []);
+  useEffect(()=>{
+    const fetchToken = async () => {
+      try {
+        const tokenDataResponse = await fetch(`https://two025-duplagalactica-final.onrender.com/get_decoded_token?token=${token}`);
+        const dataToken = await tokenDataResponse.json()
+        const eventId=dataToken.eventId
+        const mailUsuario=userMail
+        const dateInicio = dataToken.start
+        const dateFin = dataToken.end
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/generate-token-userSide/${eventId}/${dateFin}/${dateInicio}/${mailUsuario}`);
+        const data = await response.json();
+        setNewToken(data.token);
+      } catch (error) {
+        console.error("Error al obtener el token:", error);
+      }
+    };
+    if (token && userMail && logeedIn) {
+      fetchToken();
+    }
+  },[token,userMail,logeedIn])
 
-  const processAttendance = async (token) => {
-    setLoading(true);
+  useEffect(() => {
+    if (newToken && logeedIn) {
+      try {
+        fetch(`https://two025-duplagalactica-final.onrender.com/attendance?token=${newToken}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            if (data.message) {
+              setTimeout(() => {
+                setSuccess(true);
+                setLoading(false);
+                navigate(`/`);
+              }, 3000);
+            }
+          })
+          .catch((error) => {
+            setError("Error al registrar la asistencia.");
+            console.error("Error:", error);
+            setLoading(false);
+          });
+      } catch (error) {
+        console.error("Error al decodificar el token:", error);
+        setError("Token inválido.");
+      }
+    }
+  }, [newToken,logeedIn]);
+
+  const loginUser = async (e) => {
+    setVerifyEmail(false);
+    setErrorLogin(false)
+    setOpenCircularProgress(true);
+    e.preventDefault(); 
     try {
-      const response = await fetch(
-        `https://two025-duplagalactica-final.onrender.com/attendance?token=${token}`,
-        { method: "POST", headers: { "Content-Type": "application/json" } }
-      );
-      const data = await response.json();
-      console.log("Respuesta del servidor:", data);
-    } catch (err) {
-      console.error("Error al registrar la asistencia:", err);
-      setError("Error al registrar la asistencia.");
-    } finally {
-      setLoading(false);
+      const userCredential = await signInWithEmailAndPassword(auth, username, password);
+      const user = userCredential.user;
+  
+      if (!user.emailVerified) {
+        setOpenCircularProgress(false);
+        setVerifyEmail(true);
+        return;
+      }
+      const token = await user.getIdToken();
+      localStorage.setItem('authToken', token);
+      console.log('Token almacenado:', localStorage.getItem('authToken'));
+      setOpenCircularProgress(false);
+      setSuccess(true);
+      setLogin(true)
+    } catch (error) {
+      console.error("Login error:", error);
+      setOpenCircularProgress(false);
+      setErrorLogin(true)
     }
   };
 
   return (
-    <div className="full-screen-image-login">
+    <div className='full-screen-image-login'>
+      {!logeedIn && (
+        <>
+        <div className='login-container'>
+              <div className='login-content'>
+                <h2 style={{color:'#424242'}}>Login</h2>
+                <form onSubmit={loginUser}>
+                  <div className="input-container">
+                    <label htmlFor="username" style={{color:'#424242'}}>Email:</label>
+                    <input 
+                      type="text" 
+                      id="username" 
+                      name="username" 
+                      value={username} 
+                      onChange={(e) => setUsername(e.target.value)} 
+                      style={{color:'#283618'}}
+                    />
+                  </div>
+                  <div className="input-container">
+                    <label htmlFor="password" style={{color:'#424242'}}>Password:</label>
+                    <input 
+                    color='#283618'
+                      type="password" 
+                      id="password" 
+                      name="password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                    />
+                  </div>
+                  {errorLogin && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Credentials or server error</p>)}
+                  {verifyEmail && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Please verify your mail</p>)}
+                  <button type="submit" className='button_login' style={{width: isSmallScreen ? '70%' : '40%'}}>
+                    Login
+                  </button>
+                </form>
+              </div>
+            </div>
+            {openCircularProgress ? (
+            <Backdrop
+              sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+              open={openCircularProgress}
+            >
+              <Loader></Loader>
+            </Backdrop>
+          ) : null}
+          { success ? (
+            <div className='alert-container'>
+              <div className='alert-content'>
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Slide direction="up" in={success} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
+                        Successful login!
+                      </Alert>
+                  </Slide>
+                </Box>
+              </div>
+            </div>
+          ) : (
+            null
+          )}
+        </>
+      ) 
+
+      }
       {loading ? (
-        <CircularProgress />
-      ) : (
-        <div>
-          <video ref={videoRef} style={{ width: "100%" }} />
-          {qrData && <p>QR Detectado: {qrData}</p>}
-          {error && <Alert severity="error">{error}</Alert>}
+        <CircularProgress /> 
+      ) : success ? (
+        <div className='alert-container'>
+          <div className='alert-content'>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Slide direction="up" in={success} mountOnEnter unmountOnExit >
+                  <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
+                    Assistance checked correctly
+                  </Alert>
+              </Slide>
+            </Box>
+          </div>
         </div>
+      ) : error ? (
+        <div className='alert-container'>
+              <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={error} mountOnEnter unmountOnExit >
+                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                            Error while checking assitance, please try again
+                        </Alert>
+                    </Slide>
+                  </Box>
+              </div>
+        </div>
+      ) : (
+        <p>Marcando asistencia...</p> 
       )}
     </div>
   );
