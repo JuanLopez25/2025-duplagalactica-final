@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';  
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import CircularProgress from '@mui/material/CircularProgress'; 
 import Alert from '@mui/material/Alert'; 
 import verifyToken from '../fetchs/verifyToken';
 import { useMediaQuery } from '@mui/material';
@@ -103,11 +102,11 @@ const MarkAttendance = () => {
           .then((data) => {
             console.log(data);
             if (data.message) {
+              setSuccessLecture(true)
+              setLoading(false);
               setTimeout(() => {
-                setSuccessLecture(true)
-                setLoading(false);
                 navigate(`/`);
-              }, 3000);
+              }, 3000);              
             }
           })
           .catch((error) => {
@@ -187,7 +186,7 @@ const MarkAttendance = () => {
                 </form>
               </div>
             </div>
-            {openCircularProgress ? (
+          {openCircularProgress ? (
             <Backdrop
               sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
               open={openCircularProgress}
@@ -210,29 +209,29 @@ const MarkAttendance = () => {
           ) : (
             null
           )}
-          
         </>
       ) 
-
       }
-      { errorClass ? (
-            <div className='alert-container'>
-              <div className='alert-content'>
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Slide direction="up" in={errorClass} mountOnEnter unmountOnExit >
-                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
-                        The user is not in this class
-                      </Alert>
-                  </Slide>
-                </Box>
-              </div>
+      <>
+        { errorClass ? (
+          <div className='alert-container'>
+            <div className='alert-content'>
+              <Box sx={{ position: 'relative', zIndex: 1 }}>
+                <Slide direction="up" in={errorClass} mountOnEnter unmountOnExit >
+                    <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                      The user is not in this class
+                    </Alert>
+                </Slide>
+              </Box>
             </div>
-          ) : (
-            null
-          )}
-      {loading ? (
-        <CircularProgress /> 
-      ) : successLecture ? (
+          </div>
+        ) : (
+          null
+        )}
+      {loading && (
+        <Loader></Loader>
+      )}
+      {successLecture ? (
         <div className='alert-container'>
           <div className='alert-content'>
             <Box sx={{ position: 'relative', zIndex: 1 }}>
@@ -259,6 +258,7 @@ const MarkAttendance = () => {
       ) : (
         <p>Marcando asistencia...</p> 
       )}
+        </>
     </div>
   );
 };
