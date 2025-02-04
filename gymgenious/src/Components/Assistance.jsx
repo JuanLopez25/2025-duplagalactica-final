@@ -1,39 +1,61 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
-const QrScanner = () => {
-  const videoRef = useRef(null);
+const QRScanner = () => {
+  const [scanResult, setScanResult] = useState(null);
+  const scannerRef = useRef(null);
 
   useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" } })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream; 
-        }
-      })
-      .catch((err) => {
-        console.error("Error al acceder a la cámara:", err);
-      });
+    const scanner = new Html5QrcodeScanner("reader", {
+      fps: 10,
+      qrbox: { width: 250, height: 250 },
+    });
+
+    scanner.render(
+      (decodedText) => {
+        setScanResult(decodedText);
+        scanner.clear()
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+
+    scannerRef.current = scanner;
 
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach((track) => track.stop());
-      }
+      scanner.clear();
     };
   }, []);
 
   return (
-    <div style={{ textAlign: "center", marginTop: "20px" }}>
-      <h1>Lector de QR</h1>
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        style={{ width: "100%", maxWidth: "500px", borderRadius: "10px" }}
-      ></video>
+    <div className='App' style={styles.container}>
+      <h2 style={styles.title}>QR Scanner</h2>
+      {!scanResult ? <div id="reader" style={styles.scanner}></div> : <h3 style={styles.result}>Resultado: {scanResult}</h3>}
     </div>
   );
 };
 
-export default QrScanner;
+const styles = {
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100vh",
+    backgroundColor: "#121212",
+  },
+  title: {
+    color: "white",
+    marginBottom: "20px",
+  },
+  scanner: {
+    filter: "invert(1)", 
+  },
+  result: {
+    color: "white",
+    fontSize: "20px",
+  },
+};
+
+export default QRScanner;
