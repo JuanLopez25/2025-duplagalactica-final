@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 const QRScanner = () => {
-  const [scanResult, setScanResult] = useState(null);
   const scannerRef = useRef(null);
 
   useEffect(() => {
@@ -13,8 +12,12 @@ const QRScanner = () => {
 
     scanner.render(
       (decodedText) => {
-        setScanResult(decodedText);
-        scanner.clear()
+        if (isValidURL(decodedText)) {
+          window.location.href = decodedText;
+        } else {
+          alert("El código escaneado no es un enlace válido: " + decodedText);
+        }
+        scanner.clear();
       },
       (error) => {
         console.log(error);
@@ -28,10 +31,19 @@ const QRScanner = () => {
     };
   }, []);
 
+  const isValidURL = (text) => {
+    try {
+      new URL(text);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
   return (
     <div className='App' style={styles.container}>
       <h2 style={styles.title}>QR Scanner</h2>
-      {!scanResult ? <div id="reader" style={styles.scanner}></div> : <h3 style={styles.result}>Resultado: {scanResult}</h3>}
+      <div id="reader" style={styles.scanner}></div>
     </div>
   );
 };
@@ -50,11 +62,7 @@ const styles = {
     marginBottom: "20px",
   },
   scanner: {
-    filter: "invert(1)", 
-  },
-  result: {
-    color: "white",
-    fontSize: "20px",
+    filter: "invert(1)",
   },
 };
 
