@@ -30,7 +30,7 @@ const fetchExercises = async (setOpenCircularProgress,setWarningConnection,setEx
 
         setExercises(normalizedExercises);
         setTotalExercises(normalizedExercises);
-        setLoading(false);
+        setOpenCircularProgress(false);
     } catch (error) {
         console.error("Error fetching users:", error);
         setOpenCircularProgress(false);
