@@ -8,7 +8,7 @@ const verifyToken = async (token,setOpenCircularProgress,setUserMail,setErrorTok
       setUserMail(decodedToken.email);
       setOpenCircularProgress(false);
     } catch (error) {
-      console.error('Error al verificar el token:', error);
+      console.error('Error verifying token:', error);
       setOpenCircularProgress(false);
       setErrorToken(true);
       setTimeout(() => {

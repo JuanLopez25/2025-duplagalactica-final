@@ -5,42 +5,46 @@ const fetchAssistance = async (setOpenCircularProgress,setRows,setWarningConnect
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
+          console.error('Token not available in localStorage');
+          return;
       }
-      const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
-      if (!response.ok) {
-        throw new Error('Error al obtener las clases: ' + response.statusText);
+
+      const classesRequest = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
+      if (!classesRequest.ok) {
+          throw new Error('Error fetching classes: ' + classesRequest.statusText);
       }
-      const data = await response.json();
-      const filteredClasses = data.filter(event => event.owner === userMail);
-      if (filteredClasses.length === 0) {
-        setOpenCircularProgress(false);
-        return;
+      const classList = await classesRequest.json();
+
+
+      const ownedClasses = classList.filter(classItem => classItem.owner === userMail);
+      if (ownedClasses.length === 0) {
+          setOpenCircularProgress(false);
+          return;
       }
-      console.log("filtered classes",filteredClasses)
-      const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_coach_clients_assistance`, {
+
+      
+      const attendanceRequest = await fetch('https://two025-duplagalactica-final.onrender.com/get_coach_clients_assistance', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${authToken}`
+            'Authorization': `Bearer ${authToken}`
         }
       });
-      if (!response2.ok) {
-        throw new Error('Error al obtener los datos del usuario: ' + response2.statusText);
+      if (!attendanceRequest.ok) {
+          throw new Error('Error fetching attendance data: ' + attendanceRequest.statusText);
       }
-      const data2 = await response2.json();
-      console.log("data de assist",data2)
-      const matchedAttendances = data2.map(attendance => {
-        const matchingClass = filteredClasses.find(filteredClass => filteredClass.id === attendance.IdClase);
-        return {
-          ...attendance,
-          className: matchingClass ? matchingClass.name : null,
-          fecha: formatDate(new Date(attendance.Inicio))
-        };
+      const attendanceRecords = await attendanceRequest.json();
+
+      const formattedAttendance = attendanceRecords.map(attendance => {
+          const matchingClass = ownedClasses.find(classItem => classItem.id === attendance.classId);
+          return {
+              ...attendance,
+              className: matchingClass ? matchingClass.name : null,
+              fecha: formatDate(new Date(attendance.startTime))
+          };
       });
+      setRows(formattedAttendance);
+
       
-      console.log("matched",matchedAttendances);
-      setRows(matchedAttendances)
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
