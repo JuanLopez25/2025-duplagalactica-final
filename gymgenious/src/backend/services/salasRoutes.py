@@ -1,8 +1,4 @@
-import firebase_admin
 from firebase_config import db
-from firebase_admin import credentials, firestore
-import logging
-
 
 
 def get_salas():

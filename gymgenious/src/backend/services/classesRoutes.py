@@ -1,8 +1,4 @@
-import firebase_admin
 from firebase_config import db
-from firebase_admin import credentials, firestore
-import logging
-
 
 
 def get_classes():
@@ -25,16 +21,7 @@ def get_comments():
         print(f"Error while getting the clasifications: {e}")
         raise RuntimeError("It was not possible to get the clasifications")
 
-def get_assistance():
-    try:
-        assistance_ref = db.collection('classAssistance')
-        docs = assistance_ref.stream()
-        class_asistance = [{'id': doc.id, **doc.to_dict()} for doc in docs]
-        return class_asistance
-    except Exception as e:
-        print(f"Error while getting the assitance to classes: {e}")
-        raise RuntimeError("It was not possible to get the assistance to classes")
-    
+
 def create_class(new_class):
     try:
         db.collection('classes').add(new_class)
@@ -44,15 +31,6 @@ def create_class(new_class):
         print(f"Error while creating the class: {e}")
         raise RuntimeError("It was not possible to create the class")
     
-def add_assistance(class_assistance,fecha,uid):
-    try:
-        new_assistance = {'date':fecha,'cid':class_assistance,'uid':uid}
-        db.collection('classAssistance').add(new_assistance)
-        created_assistance = {**new_assistance}
-        return created_assistance
-    except Exception as e:
-        print(f"Error while creating the assistance: {e}")
-        raise RuntimeError("It was not possible to create the assitance")
 
 def add_calification(classId, calification, commentary, userId):
     try:

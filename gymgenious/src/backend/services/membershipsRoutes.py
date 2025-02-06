@@ -1,11 +1,5 @@
 from datetime import datetime, timedelta
-import firebase_admin
 from firebase_config import db
-from firebase_admin import credentials, firestore
-import logging
-from datetime import datetime
-import pytz
-from datetime import datetime
 
 def get_memb_user():
     try:

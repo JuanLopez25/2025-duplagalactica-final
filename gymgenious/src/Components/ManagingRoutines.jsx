@@ -137,7 +137,6 @@ const Link = ({ heading, subheading, onClick }) => {
 
 export default function ManagingRoutines () {
   const [userMail,setUserMail] = useState('')
-  const step = 0;
   const [errorToken,setErrorToken] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const navigate = useNavigate();
