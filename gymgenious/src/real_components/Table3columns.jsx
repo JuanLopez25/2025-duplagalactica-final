@@ -124,12 +124,16 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
                             <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
                                 {row[vals[0]]}
                             </TableCell>
+                            {!isSmallScreen && (
                             <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
                                 {row[vals[1]]}
                             </TableCell>
+                            )}
+                            {!isSmallScreen250 && (
                             <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>
                                 {row[vals[2]]}
                             </TableCell>
+                            )}
                         </TableRow>
                         ))}
                     </>

@@ -463,7 +463,7 @@ function CoachRoutines() {
             <NewLeftBar/>
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
             {routines && (
-              <CustomTable columnsToShow={['Name','Exercises','Description','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','exercise_length','description']}/> 
+              <CustomTable columnsToShow={['Name','Description','Exercises','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','description','exercise_length']}/> 
             )}
             {selectedEvent && (
               <div className="Modal" onClick={handleCloseModalEvent}>

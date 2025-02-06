@@ -39,7 +39,7 @@ export default function Main_Page() {
   const [successUnbook,setSuccessUnbook] = useState(false);
   const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
   const diaActual = diasSemana[new Date().getDay()];
-  const isSmallScreen = useMediaQuery('(max-width:250px)');
+  const isSmallScreen = useMediaQuery('(max-width:350px)');
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [type, setType] = useState(null);
   const [califyModal, setCalifyModal] = useState(false);
@@ -1065,7 +1065,7 @@ export default function Main_Page() {
         </div>
         ) : (
           <>
-           <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen} searchingParameter={'class name'}/>
+           <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen700} searchingParameter={'class name'}/>
            <div className="Table-Container">
             <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
@@ -1074,9 +1074,9 @@ export default function Main_Page() {
       </>
     ) : (
       <>
-      <div className='leftBar' style={{zIndex:'1000'}}>
-      <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen} searchingParameter={'class name'}/>
-    </div>
+      
+      <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen700} searchingParameter={'class name'}/>
+    
     <div className="Table-Container">
       <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
     </div>

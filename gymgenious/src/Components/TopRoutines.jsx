@@ -205,7 +205,7 @@ function TopRoutines() {
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
             <div style={{width:'100%'}}>
               {routines && (
-                <CustomTable columnsToShow={['Name','Owner','Exercises','Likes','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','exercise_length','cant_asignados']}/> 
+                <CustomTable columnsToShow={['Name','Owner','Likes','Exercises','There are no created routines']} data={routines} handleSelectEvent={handleSelectEvent} vals={['name','owner','cant_asignados','exercise_length']}/> 
               )}
               <div>
                 <BarAnimation routines={routines} isSmallScreen={isSmallScreen}/>

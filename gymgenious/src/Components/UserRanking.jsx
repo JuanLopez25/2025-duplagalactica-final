@@ -356,7 +356,7 @@ export default function StickyHeadTable() {
                 </div>
             </div>
             {rankings && (
-                          <CustomTable columnsToShow={['Name','Users ranked','Ranking ID','Ranking Password','There are no rankings']} data={rankings} handleSelectEvent={handleSelectEvent} vals={['name','participants_length','id','password']}/> 
+                          <CustomTable columnsToShow={['Name','Ranking ID', 'Users ranked','Ranking Password','There are no rankings']} data={rankings} handleSelectEvent={handleSelectEvent} vals={['name','id','participants_length','password']}/> 
             )}
             {selectedEvent && (
                 <div className="Modal" onClick={handleCloseModal}>

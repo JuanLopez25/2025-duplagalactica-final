@@ -19,7 +19,6 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
     const [maxHeight, setMaxHeight] = useState('600px');
     const [dense, setDense] = useState(false);
     const isSmallScreen = useMediaQuery('(max-width:700px)');
-    const isSmallScreen250 = useMediaQuery('(max-width:360px)');
 
     useEffect(() => {
     console.log("asi llega la data", data)
@@ -96,7 +95,6 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
                         </TableSortLabel>
                         </TableCell>
                     )}
-                    {!isSmallScreen250 && (
                         <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
                         <TableSortLabel active={orderBy === 'excercises.length'} direction={orderBy === 'excercises.length' ? order : 'asc'} onClick={(event) => handleRequestSort(event, 'excercises.length')}>
                             {columnsToShow[2]}
@@ -107,7 +105,6 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
                             ) : null}
                         </TableSortLabel>
                         </TableCell>
-                    )}
                     {!isSmallScreen && (
                         <TableCell align="right" sx={{ borderBottom: '1px solid #424242', fontWeight: 'bold', color: '#424242' }}>
                         <TableSortLabel active={orderBy === 'likes'} direction={orderBy === 'likes' ? order : 'asc'} onClick={(event) => handleRequestSort(event, 'likes')}>
@@ -136,15 +133,19 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
                             <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
                                 {row[vals[0]]}
                             </TableCell>
-                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
+                            {!isSmallScreen && (
+                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
                                 {row[vals[1]]}
                             </TableCell>
-                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>
+                            )}
+                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
                                 {row[vals[2]]}
                             </TableCell>
-                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242' }}>
+                            {!isSmallScreen && (
+                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
                                 {row[vals[3]]}
                             </TableCell>
+                            )}
                         </TableRow>
                         ))}
                     </>
