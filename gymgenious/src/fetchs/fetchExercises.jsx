@@ -3,30 +3,33 @@ const fetchExercises = async (setOpenCircularProgress,setWarningConnection,setEx
     try {
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
+            console.error('Token not available in localStorage');
+            return;
         }
-        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_excersices`, {
+        const localExercisesRequest = await fetch(`https://two025-duplagalactica-final.onrender.com/get_excersices`, {
             method: 'GET', 
             headers: {
-              'Authorization': `Bearer ${authToken}`
+                'Authorization': `Bearer ${authToken}`
             }
         });
-        if (!response.ok) {
-            throw new Error('Error al obtener los ejercicios: ' + response.statusText);
+        if (!localExercisesRequest.ok) {
+            throw new Error('Error fetching exercises: ' + localExercisesRequest.statusText);
         }
-        const exercisesData = await response.json();
-        const response2 = await fetch(`https://train-mate-api.onrender.com/api/exercise/get-all-exercises`, {
+        const localExercises = await localExercisesRequest.json();
+
+        const externalExercisesRequest = await fetch(`https://train-mate-api.onrender.com/api/exercise/get-all-exercises`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        const exercisesDataFromTrainMate = await response2.json();
-        const totalExercises = exercisesData.concat(exercisesDataFromTrainMate.exercises)
-        const totalExercisesCorrected = await correctExercisesData(totalExercises);
-        setExercises(totalExercisesCorrected);
-        setTotalExercises(totalExercisesCorrected);
+        const externalExercisesData = await externalExercisesRequest.json();
+
+        const combinedExercises = localExercises.concat(externalExercisesData.exercises);
+        const normalizedExercises = await correctExercisesData(combinedExercises);
+
+        setExercises(normalizedExercises);
+        setTotalExercises(normalizedExercises);
         setOpenCircularProgress(false);
     } catch (error) {
         console.error("Error fetching users:", error);

@@ -3,54 +3,60 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
     try {
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            console.error('Token no disponible en localStorage');
+            console.error('Token not available in localStorage');
             return;
         }
-        const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
+
+        const routinesData = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        if (!response.ok) {
-            throw new Error('Error al obtener las rutinas: ' + response.statusText);
+        if (!routinesData.ok) {
+            throw new Error('Error fetching routines: ' + routinesData.statusText);
         }
-        const routines = await response.json();
-        const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
+        const routines = await routinesData.json();
+
+        const assignedRoutinesData = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        if (!response2.ok) {
-            throw new Error('Error al obtener las rutinas asignadas: ' + response2.statusText);
+        if (!assignedRoutinesData.ok) {
+            throw new Error('Error fetching assigned routines: ' + assignedRoutinesData.statusText);
         }
-        const assignedRoutines = await response2.json();
-        const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
+        const assignedRoutines = await assignedRoutinesData.json();
+
+        const exercisesDataLocal = await fetch('https://two025-duplagalactica-final.onrender.com/get_exercises', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        if (!response3.ok) {
-            throw new Error('Error al obtener los ejercicios: ' + response3.statusText);
+        if (!exercisesDataLocal.ok) {
+            throw new Error('Error fetching exercises: ' + exercisesDataLocal.statusText);
         }
-        const exercisesData = await response3.json();
-        const response4 = await fetch('https://train-mate-api.onrender.com/api/exercise/get-all-exercises', {
+        const exercisesList = await exercisesDataLocal.json();
+
+
+        const exercisesDataExternal = await fetch('https://train-mate-api.onrender.com/api/exercise/get-all-exercises', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        if (!response4.ok) {
-            throw new Error('Error al obtener los ejercicios de Train Mate: ' + response4.statusText);
+        if (!exercisesDataExternal.ok) {
+            throw new Error('Error fetching Train Mate exercises: ' + exercisesDataExternal.statusText);
         }
-        const exercisesDataFromTrainMate = await response4.json();
-        const routinesWithExercisesData = routines.map((routine) => {
-            const updatedExercises = routine.excercises.map((exercise) => {
-                let matchedExercise = exercisesData.find((ex) => ex.id === exercise.id);
-                if (!matchedExercise && Array.isArray(exercisesDataFromTrainMate.exercises)) {
-                    matchedExercise = exercisesDataFromTrainMate.exercises.find((ex) => ex.id === exercise.id);
+        const exercisesFromTrainMate = await exercisesDataExternal.json();
+
+         const routinesWithExercises = routines.map((routine) => {
+            const updatedExercises = routine.exercises.map((exercise) => {
+                let matchedExercise = exercisesList.find((ex) => ex.id === exercise.id);
+                if (!matchedExercise && Array.isArray(exercisesFromTrainMate.exercises)) {
+                    matchedExercise = exercisesFromTrainMate.exercises.find((ex) => ex.id === exercise.id);
                 }
                 if (matchedExercise) {
                     return {
@@ -64,10 +70,11 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
 
             return {
                 ...routine,
-                excercises: updatedExercises,
+                exercises: updatedExercises,
             };
         });
-        const routinesWithAssignedCount = routinesWithExercisesData.map((routine) => {
+
+        const routinesWithAssignedCount = routinesWithExercises.map((routine) => {
             const assignedForRoutine = assignedRoutines.filter((assigned) => assigned.id === routine.id);
             const totalAssignedUsers = assignedForRoutine.reduce((acc, assigned) => {
                 return acc + (assigned.users ? assigned.users.length : 0);
@@ -78,23 +85,24 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
                 cant_asignados: totalAssignedUsers,
             };
         });
-        const routinesWithAssignedCountAndExerciseLength = routinesWithAssignedCount.map((routine) => {
-            return {
-                ...routine,
-                exercise_length: routine.excercises ? routine.excercises.length : 0,
-            };
-        });
-        setRoutines(routinesWithAssignedCountAndExerciseLength);
-        setTotalRoutines(routinesWithAssignedCountAndExerciseLength);
+
+        const finalRoutines = routinesWithAssignedCount.map((routine) => ({
+            ...routine,
+            exercise_length: routine.exercises ? routine.exercises.length : 0,
+        }));
+
+
+        setRoutines(finalRoutines);
+        setTotalRoutines(finalRoutines);
+
     } catch (error) {
-        console.error("Error fetching rutinas:", error);
+        console.error("Error fetching routines:", error);
         setOpenCircularProgress(false);
         setWarningConnection(true);
         setTimeout(() => {
             setWarningConnection(false);
         }, 3000);
-    }
-    finally {
+    } finally {
         setOpenCircularProgress(false);
     }
 };
