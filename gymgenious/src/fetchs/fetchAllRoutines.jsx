@@ -29,7 +29,7 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
         }
         const assignedRoutines = await assignedRoutinesData.json();
 
-        const exercisesDataLocal = await fetch('https://two025-duplagalactica-final.onrender.com/get_exercises', {
+        const exercisesDataLocal = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -51,9 +51,9 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
             throw new Error('Error fetching Train Mate exercises: ' + exercisesDataExternal.statusText);
         }
         const exercisesFromTrainMate = await exercisesDataExternal.json();
-
+        console.log("routines",exercisesFromTrainMate)
          const routinesWithExercises = routines.map((routine) => {
-            const updatedExercises = routine.exercises.map((exercise) => {
+            const updatedExercises = routine.excercises.map((exercise) => {
                 let matchedExercise = exercisesList.find((ex) => ex.id === exercise.id);
                 if (!matchedExercise && Array.isArray(exercisesFromTrainMate.exercises)) {
                     matchedExercise = exercisesFromTrainMate.exercises.find((ex) => ex.id === exercise.id);
@@ -73,7 +73,7 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
                 exercises: updatedExercises,
             };
         });
-
+        console.log("a")
         const routinesWithAssignedCount = routinesWithExercises.map((routine) => {
             const assignedForRoutine = assignedRoutines.filter((assigned) => assigned.id === routine.id);
             const totalAssignedUsers = assignedForRoutine.reduce((acc, assigned) => {
@@ -86,6 +86,7 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
             };
         });
 
+        console.log("b")
         const finalRoutines = routinesWithAssignedCount.map((routine) => ({
             ...routine,
             exercise_length: routine.exercises ? routine.exercises.length : 0,

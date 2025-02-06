@@ -3,12 +3,8 @@ import { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
-import Paper from '@mui/material/Paper';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
@@ -20,13 +16,10 @@ import AddCircleOutlineSharpIcon from '@mui/icons-material/AddCircleOutlineSharp
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
 
-function intersection(a, b) {
-  return a.filter((value) => b.includes(value));
-}
+
 
 export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   const [users, setUsers] = useState([]);
-  const [checked, setChecked] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningFetchingUsers, setWarningFetchingUsers] = useState(false);
@@ -69,7 +62,7 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
-    });
+      });
       if (!assignedResponse.ok) {
         throw new Error('Error al obtener las rutinas asignadas: ' + assignedResponse.statusText);
       }
@@ -83,7 +76,7 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
-    });
+      });
       if (!allUsersResponse.ok) {
         throw new Error('Error al obtener los usuarios: ' + allUsersResponse.statusText);
       }

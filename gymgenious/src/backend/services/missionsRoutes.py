@@ -97,11 +97,9 @@ def get_missions_template():
 
 def add_mission_progress(missions, uid):
     try:
-        print("entro aaaaaaaaa")
         res = True
         locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         missions = missions.split(',')
-        print("Este es el uid:", uid)
         mis_ref = db.collection('missionsProgress')
         user_doc = db.collection('users').where('uid', '==', uid).get()
         if not user_doc:
@@ -125,7 +123,6 @@ def add_mission_progress(missions, uid):
                                       .replace('Thursday', 'Jueves') \
                                       .replace('Friday', 'Viernes') \
                                       .replace('Sunday', 'Domingo')
-            print("estos son los dias",day_of_week_no_accent)
             mission_docs = mis_ref.where('uid', '==', uid).where('Day', '==', day_of_week_no_accent).stream()
             for doc in mission_docs:
                 mission_data = doc.to_dict()

@@ -41,7 +41,6 @@ def assign_routine_to_user(newAssignRoutine):
                 'day': newAssignRoutine['day'],
                 'id': newAssignRoutine['id'],
                 'owner': newAssignRoutine['owner'],
-                'routine': newAssignRoutine['routine'],
                 'users': mails  
             })
             return new_doc_ref

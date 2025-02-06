@@ -1,9 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import logging
-import firebase_admin
-from firebase_admin import credentials, firestore
-from Controllers.classesController import get_assistance_route,add_assistance_route,add_calification_route,get_comments_route,get_classes_route, create_class_route,book_class_route,unbook_class_route,delete_class_route,update_class_info_route
+from Controllers.classesController import add_calification_route,get_comments_route,get_classes_route, create_class_route,book_class_route,unbook_class_route,delete_class_route,update_class_info_route
 from Controllers.usersController import leave_ranking_route,join_ranking_route,get_rankings_route,create_ranking_route,use_geme_route,get_unique_user_by_email_route ,get_user_route, send_email_route, create_user_route,get_users_route,get_coach_users_route,get_clients_users_route,get_client_users_no_match_routine_route,update_users_info_route
 from Controllers.excersicesController import create_exersice_route,get_excersice_by_owner_route,get_excersices_route,update_exer_info_route
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
@@ -611,14 +608,6 @@ def create_inventory():
 def get_classes():
     return get_classes_route()
 
-@app.route('/get_assistance', methods=['GET'])
-def get_assistance():
-    try:
-        return get_assistance_route()
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
 @app.route('/get_comments', methods=['GET'])
 def get_comments():
     return get_comments_route()
@@ -642,13 +631,6 @@ def create_class():
         print("Error")
         return jsonify({'error':'Something went wrong'})
     
-
-@app.route('/add_assistance', methods=['POST'])
-def add_assistance():
-    classId = request.form.get('selectedEvent')
-    uid = request.form.get('uid')
-    date = request.form.get('fecha')
-    return add_assistance_route(classId,date,uid)
 
 #------------------------------------------------
 #------------------------------------------------

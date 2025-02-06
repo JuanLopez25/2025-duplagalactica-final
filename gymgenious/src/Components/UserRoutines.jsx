@@ -123,7 +123,27 @@ export default function StickyHeadTable() {
             const filteredRows = data.filter((row) =>
                 row.users.some((u) => u === userMail)
             );
-            setRows(filteredRows);
+            
+            const routinesData = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            if (!routinesData.ok) {
+                throw new Error('Error fetching routines: ' + routinesData.statusText);
+            }
+            const routines = await routinesData.json();
+            const combinedData = filteredRows.map(assignedRoutine => {
+                const routine = routines.find(routine => routine.id === assignedRoutine.id);
+                if (routine) {
+                    return {
+                        ...assignedRoutine,
+                        routine: routine.name
+                    };
+                }
+            });
+            setRows(combinedData);
             setOpenCircularProgress(false);
         } catch (error) {
             setOpenCircularProgress(false);

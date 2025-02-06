@@ -1,8 +1,5 @@
-import firebase_admin
 from firebase_config import db
-from firebase_admin import credentials, firestore, storage
-import logging
-import base64
+from firebase_admin import storage
 import uuid
 
 

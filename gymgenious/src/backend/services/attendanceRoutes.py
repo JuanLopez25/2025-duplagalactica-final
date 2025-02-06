@@ -1,7 +1,5 @@
-import firebase_admin
+
 from firebase_config import db
-from firebase_admin import credentials, firestore
-import logging
 
 
 
@@ -9,8 +7,8 @@ import logging
 def mark_attendance(eventId,dateInicio,dateEnd,userMail):
     try:
         new_attendance = {'IdClase':eventId,'MailAlumno':userMail,'Inicio':dateInicio,'Fin':dateEnd}
-        class_ref = db.collection('assistedClasses').add(new_attendance)
-        class_ref2 = db.collection('historicalAssistance').add(new_attendance)
+        db.collection('assistedClasses').add(new_attendance)
+        db.collection('historicalAssistance').add(new_attendance)
         return {'message':'Todo ok'}
     except Exception as e:
         print(f"Error while marking the attendance: {e}")
