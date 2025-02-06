@@ -1285,24 +1285,17 @@ iframe {
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   width: 80%;
   left: 10%;
-  top: 5%;
+  top: 2.5%;
+  height: 95%;
   text-align: center;
   position:absolute;
   overflow-y: auto;
 }
 
-@media screen and (max-width: 950px) {
+@media screen and (max-width: 600px) {
   .routine-creation-container {
-    left: 10%;
-    width: 80%;
-    height: auto;
-  }
-}
-
-@media screen and (max-height: 500px) {
-  .routine-creation-container {
-    height: 75%;
-    top:10%;
+    height: 82%;
+    top:9%;
     overflow-y: auto;
   }
 }

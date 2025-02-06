@@ -130,7 +130,7 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
                             </TableCell>
                             )}
                             {!isSmallScreen250 && (
-                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>
+                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '50px' }}>
                                 {row[vals[2]]}
                             </TableCell>
                             )}
