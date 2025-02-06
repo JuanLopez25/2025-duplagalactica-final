@@ -98,50 +98,35 @@ def get_missions_template():
 def add_mission_progress(missions, uid):
     try:
         res = True
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         missions = missions.split(',')
         mis_ref = db.collection('missionsProgress')
-        user_doc = db.collection('users').where('uid', '==', uid).get()
-        if not user_doc:
+        user_query = db.collection('users').where('uid', '==', uid).limit(1).get()
+        if not user_query:
             raise ValueError("User not found")
-        userMail = user_doc[0].to_dict().get('Mail', '').strip()
-        if not userMail:
+        user_mail = user_query[0].to_dict().get('Mail', '').strip()
+        if not user_mail:
             raise ValueError("User email not found")
-        assistance_ref = db.collection('assistedClasses').where('MailAlumno', '==', userMail)
-        assistance_docs = assistance_ref.stream()
+        day_translation = {
+            'Monday': 'Lunes', 'Tuesday': 'Martes', 'Wednesday': 'Miercoles',
+            'Thursday': 'Jueves', 'Friday': 'Viernes', 'Saturday': 'Sabado', 'Sunday': 'Domingo'
+        }
+        assistance_docs = db.collection('assistedClasses').where('MailAlumno', '==', user_mail).stream()
+        batch = db.batch()
         for assistance_doc in assistance_docs:
-            assistance_data = assistance_doc.to_dict()
-            start_date_str = assistance_data.get('Inicio')
+            start_date_str = assistance_doc.to_dict().get('Inicio')
             if not start_date_str:
                 continue
-            start_date = datetime.fromisoformat(start_date_str.replace('Z', ''))
-            start_day_name = start_date.strftime('%A')
-            day_of_week_no_accent = start_day_name.replace('Saturday', 'Sabado') \
-                                      .replace('Monday', 'Lunes') \
-                                      .replace('Tuesday', 'Martes') \
-                                      .replace('Wednesday', 'Miercoles') \
-                                      .replace('Thursday', 'Jueves') \
-                                      .replace('Friday', 'Viernes') \
-                                      .replace('Sunday', 'Domingo')
-            mission_docs = mis_ref.where('uid', '==', uid).where('Day', '==', day_of_week_no_accent).stream()
-            for doc in mission_docs:
-                mission_data = doc.to_dict()
-                current_progress = mission_data.get('progress', 0)
-                new_progress = current_progress + 1
-                if current_progress != new_progress:
-                    mis_ref.document(doc.id).update({'progress': new_progress})
-                    res = False
-                    db.collection('assistedClasses').document(assistance_doc.id).delete()
-
-
-            print(f"Asistencia con ID {assistance_doc.id} eliminada correctamente.")
+            start_day_name = datetime.fromisoformat(start_date_str.replace('Z', '')).strftime('%A')
+            day_of_week = day_translation.get(start_day_name, start_day_name)
+            mission_docs = mis_ref.where('uid', '==', uid).where('Day', '==', day_of_week).stream()
+            for mission_doc in mission_docs:
+                mission_data = mission_doc.to_dict()
+                new_progress = mission_data.get('progress', 0) + 1
+                batch.update(mis_ref.document(mission_doc.id), {'progress': new_progress})
+                res = False
+            batch.delete(db.collection('assistedClasses').document(assistance_doc.id))
+        batch.commit()
         return res
     except Exception as e:
         print(f"Error while adding progress and deleting assistance: {e}")
         raise RuntimeError("It was not possible to complete the operation")
-
-
-
-    except Exception as e:
-        print(f"Error while adding a progress to the missions: {e}")
-        raise RuntimeError("It was not possible to add a progress to the missions")

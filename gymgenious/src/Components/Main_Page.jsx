@@ -553,10 +553,12 @@ export default function Main_Page() {
         }
       });
       console.log(calendarEvents)
+      if (type!='client') {
+        setTimeout(() => {
+          setOpenCircularProgress(false)
+        }, 6000);
+      }
       setEvents(calendarEvents);
-      setTimeout(() => {
-        setOpenCircularProgress(false);
-      }, 5000);
       setTotalClasses(calendarEvents);
     } catch (error) {
       console.error("Error fetching classes:", error);
@@ -871,8 +873,6 @@ export default function Main_Page() {
       formData2.append('misiones', missionsIds);
       formData2.append('uid',userAccount.uid)
       if (missionsIds.length!=0) {
-        console.log("entre al mission progress")
-        console.log("estos son los ids",missionsIds)
         const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/add_mission_progress', {
           method: 'DELETE', 
           headers: {
@@ -880,12 +880,10 @@ export default function Main_Page() {
           },
           body: formData2
         });
-        console.log("es la respuesta",response5)
         if (!response5.ok) {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
         const data = await response5.json();
-        console.log("datiña",data)
       } 
 
 
@@ -917,7 +915,7 @@ export default function Main_Page() {
       setProgress(enrichedProgress)
       setTimeout(() => {
         setOpenCircularProgress(false)
-      }, 5000);
+      }, 1000);
     } catch (e) {
     } 
   }
