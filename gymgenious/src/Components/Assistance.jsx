@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import NewLeftBar from '../real_components/NewLeftBar';
 
 const QRScanner = () => {
   const scannerRef = useRef(null);
@@ -41,10 +42,14 @@ const QRScanner = () => {
   };
 
   return (
+    <>
+    <NewLeftBar/>
     <div className='App' style={styles.container}>
+      
       <h2 style={styles.title}>QR Scanner</h2>
       <div id="reader" style={styles.scanner}></div>
     </div>
+    </>
   );
 };
 

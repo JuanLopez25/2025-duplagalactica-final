@@ -40,6 +40,7 @@ export default function CreateClass() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
+  const isSmallScreenImages = useMediaQuery('(max-width:500px)');
   const [type, setType] = useState(null);
   const [maxWidthImg, setMaxWidthImg] = useState('0px');
   const [errorSala1, setErrorSala1] = useState(false);
@@ -306,12 +307,12 @@ export default function CreateClass() {
   }, [type])
 
   useEffect(() => {
-    if (isSmallScreen) {
+    if (isSmallScreenImages) {
       setMaxWidthImg('100%')
     } else {
       setMaxWidthImg('200px')
     }
-  }, [isSmallScreen]);
+  }, [isSmallScreenImages]);
 
   
   const [anchorEl, setAnchorEl] = useState(null);
@@ -539,6 +540,13 @@ export default function CreateClass() {
                           />
                           {errorDate && (<p style={{color: 'red', margin: '0px'}}>Select a date</p>)}
                         </div>   
+                      </div>
+                      <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                        <div className="input-small-container">
+                          {itemData.length>0 && 
+                            <ItemList data={itemData} setItemData={setItemData}/>
+                          }
+                        </div>
                       </div>
                       <button className='button_login' style={{width: '70%'}} onClick={handleViewRooms}>
                     Show gymrooms

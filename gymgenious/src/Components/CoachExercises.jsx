@@ -222,7 +222,7 @@ export default function CoachExercises() {
                     )}
                     {selectedEvent && (
                         <div className="Modal" onClick={handleCloseModalEvent}>
-                            <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
+                            <div className="Modal-Content-view-exercise" onClick={(e) => e.stopPropagation()}>
                                 <h2 style={{marginBottom: '0px'}}>Exercise:</h2>
                                 <h5 style={{ marginTop: '5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
                                     {selectedEvent.name}

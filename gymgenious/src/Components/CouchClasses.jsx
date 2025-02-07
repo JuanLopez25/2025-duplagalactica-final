@@ -699,9 +699,9 @@ function CouchClasses() {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
-          <MDBContainer style={{display:'flex'}}>
+          <MDBContainer style={{display:'flex', width: isSmallScreen700 ? '90%' : '85%'}}>
             <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
-              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'40%'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5">
                 <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
                   <MDBCardBody className="p-4 text-black">
                     <div>
