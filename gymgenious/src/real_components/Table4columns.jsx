@@ -69,7 +69,7 @@ const CustomTable = ({ columnsToShow, data, handleSelectEvent,vals }) => {
         <div className="Table-Container">
         <Box sx={{ width: '100%', flexWrap: 'wrap', background: '#F5F5F5', border: '2px solid #424242', borderRadius: '10px' }}>
             <Paper sx={{ width: '100%', backgroundColor: '#F5F5F5', borderRadius: '10px' }}>
-            <TableContainer sx={{ maxHeight: maxHeight, overflow: 'auto' }}>
+            <TableContainer sx={{ maxHeight: '525px', overflow: 'auto' }}>
                 <Table sx={{ width: '100%', borderCollapse: 'collapse' }} aria-labelledby="tableTitle" size={dense ? 'small' : 'medium'}>
                 <TableHead>
                     <TableRow sx={{ height: '5vh', width: '5vh' }}>
