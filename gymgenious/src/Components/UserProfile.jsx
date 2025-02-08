@@ -162,14 +162,6 @@ export default function CreateAccount() {
 
     return (
         <div className='App'>
-            {!userMail ? (
-                <Backdrop
-                sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                open={true}
-                >
-                    <Loader></Loader>
-                </Backdrop>
-            ) : (
             <>
                 <LeftBar/>
                 {openCircularProgress ? (
@@ -329,7 +321,6 @@ export default function CreateAccount() {
           </section>
                 </div>
             </>
-            )}
         </div>
     );
 }

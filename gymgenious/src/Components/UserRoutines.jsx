@@ -44,6 +44,11 @@ export default function StickyHeadTable() {
     const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [maxHeight, setMaxHeight] = useState('600px');
 
+     useEffect(() => {
+        if (type!='client' && type!=null) {
+            navigate('/');      
+        }
+    }, [type]);
 
     const fetchUser = async () => {
     try {

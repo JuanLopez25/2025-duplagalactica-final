@@ -30,6 +30,7 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PaidIcon from '@mui/icons-material/Paid';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
+import PostAddIcon from '@mui/icons-material/PostAdd';
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = React.useState(false);
@@ -139,7 +140,7 @@ export default function TemporaryDrawer() {
                 {index === 10 && <PaidIcon sx={{ color: '#48CFCB' }} />}
                 {index === 11 && <EditNoteIcon sx={{ color: '#48CFCB' }} />}
                 {index === 12 && <InventoryIcon sx={{ color: '#48CFCB' }} />}
-                {index === 13 && <InventoryIcon sx={{ color: '#48CFCB' }} />}
+                {index === 13 && <PostAddIcon sx={{ color: '#48CFCB' }} />}
                 {index === 14 && <ExitToApp sx={{ color: '#48CFCB' }} />}
               </ListItemIcon>
               <ListItemText primary={text} primaryTypographyProps={{ sx: { color: '#48CFCB', fontWeight: 'bold' } }} />

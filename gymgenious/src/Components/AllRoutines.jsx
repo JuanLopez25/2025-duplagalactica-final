@@ -157,21 +157,6 @@ function AllRoutines() {
 
     return (
       <div className="App">
-        {warningConnection ? (
-          <div className='alert-container'>
-            <div className='alert-content'>
-              <Box sx={{ position: 'relative', zIndex: 1 }}>
-                <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
-                  <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
-                    Connection Error. Try again later!
-                  </Alert>
-                </Slide>
-              </Box>
-            </div>
-          </div>
-        ) : (
-          null
-        )}
           <>
             <NewLeftBar/>
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>

@@ -15,7 +15,6 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import NewLeftBar from '../real_components/NewLeftBar';
 import Backdrop from '@mui/material/Backdrop';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../real_components/loader.jsx';
 import AddIcon from '@mui/icons-material/Add';
