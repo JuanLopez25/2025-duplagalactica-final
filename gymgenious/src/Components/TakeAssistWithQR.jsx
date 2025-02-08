@@ -82,10 +82,13 @@ const MarkAttendance = () => {
         }
       } catch (error) {
         console.error("Error al obtener el token:", error);
+        navigate(`/`);
       }
     };
     if (token && userMail && logeedIn) {
       fetchToken();
+    } else if (!token) {
+      navigate(`/`);
     }
   },[token,userMail,logeedIn])
 

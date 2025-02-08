@@ -57,7 +57,12 @@ function CoachRoutines() {
   const [totalExercises, setTotalExercises] = useState([]);
   const [totalRoutines, setTotalRoutines] = useState([]);
 
-
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
+  
   const handleCloseSearch = () => {
     setRoutines(totalRoutines);
   };

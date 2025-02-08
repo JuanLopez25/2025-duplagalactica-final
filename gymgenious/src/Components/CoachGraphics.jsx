@@ -128,6 +128,11 @@ function CoachGraphics() {
   const [classes, setClasses] = useState([]);
   const [exersCoachUsers,setExersCoachUsers] = useState([])
 
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
 
   const fetchRoutines = async () => {
     setOpenCircularProgress(true);

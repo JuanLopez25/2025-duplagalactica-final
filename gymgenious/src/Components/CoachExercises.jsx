@@ -35,6 +35,13 @@ export default function CoachExercises() {
     const [filterExercises, setFilterExercises] = useState('');
     const [totalExercises, setTotalExercises] = useState([]);
   
+
+    useEffect(() => {
+        if (type!='coach' && type!=null) {
+            navigate('/');      
+        }
+    }, [type]);
+
     const handleSelectEvent = (event) => {
         console.log("evento",event)
         setSelectedEvent(event);

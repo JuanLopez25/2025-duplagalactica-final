@@ -24,6 +24,13 @@ export default function CoachMemberships() {
   const [editPrice2, setEditPrice2] = useState(false);
   const [editPrice3, setEditPrice3] = useState(false);
 
+
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
+
   const handleEditPrice1 = () => {
     savePrice(price1,'Class')
     setEditPrice1(!editPrice1);

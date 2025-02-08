@@ -45,6 +45,14 @@ export default function StickyHeadTable() {
     const [errorAlreadyJoined, setErrorAlreadyJoined] = useState(false);
     const [rankings,setRankings] = useState([])
 
+
+
+    useEffect(() => {
+        if (type!='client' && type!=null) {
+        navigate('/');      
+        }
+      }, [type]);
+
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
     };

@@ -36,6 +36,12 @@ function CouchClasses() {
     return item.total - sumOfSublistValues;
   }
 
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+    navigate('/');      
+    }
+  }, [type]);
+
   function CardExample() {
     return (
       <div

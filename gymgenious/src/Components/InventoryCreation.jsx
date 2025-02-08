@@ -9,6 +9,8 @@ import Slide from '@mui/material/Slide';
 import verifyToken from '../fetchs/verifyToken.jsx';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx';
+import fetchUser from '../fetchs/fetchUser.jsx';
+import NewLeftBar from '../real_components/NewLeftBar.jsx';
 
 
 export default function ExerciseCreation() {
@@ -20,11 +22,19 @@ export default function ExerciseCreation() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
+  const [type, setType] = useState(null);
   const [failureErrors, setFailureErrors] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const [errorName,setErrorName] = useState(false)
   const [errorDesc,setErrorDesc] = useState(false)
   const [errorImage,setErrorImage] = useState(false)
+
+
+  useEffect(() => {
+    if (userMail) {
+        fetchUser(setType,()=>{},userMail,navigate)
+    }
+  }, [userMail]);
 
   const validateForm = () => {
       let res = true
@@ -116,7 +126,15 @@ export default function ExerciseCreation() {
     }
   }, []);
 
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+    navigate('/');      
+    }
+  }, [type]);
+
   return (
+    <div className='App'>
+    <NewLeftBar />
     <div className='exercise-creation-container'>
       <button 
         onClick={() => window.location.reload()} 
@@ -247,6 +265,7 @@ export default function ExerciseCreation() {
             ) : (
               null
       )}
+    </div>
     </div>
   );
 }

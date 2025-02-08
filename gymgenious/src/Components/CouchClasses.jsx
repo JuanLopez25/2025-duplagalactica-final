@@ -24,6 +24,7 @@ import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCar
 import CustomTable from '../real_components/Table4columns.jsx';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
+import { useNavigate } from 'react-router-dom';
 
 function CouchClasses() {
   const [warningFetchingSalas,setWarningFetchingSalas] = useState(false)
@@ -38,6 +39,7 @@ function CouchClasses() {
   const [errorCapacity,setErrorCapacity] = useState(false)
   const [permanent, setPermanent] = useState('');
   const [date, setDate] = useState('');
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
@@ -65,6 +67,13 @@ function CouchClasses() {
   const [openCheckList, setOpenCheckList] = useState(false);
   const [viewQualifications, setViewQualifications] = useState(false);
   const [viewInventory, setViewInventory] = useState(false)
+
+
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
 
   const handleViewQualifications = () => {
     setViewQualifications(!viewQualifications)

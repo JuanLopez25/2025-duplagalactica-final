@@ -143,7 +143,12 @@ export default function ManagingRoutines () {
   const [activeComponent, setActiveComponent] = useState(null);
   const [type, setType] = useState(null);
 
-
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
+  
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {

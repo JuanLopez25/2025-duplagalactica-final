@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Box, useMediaQuery } from '@mui/material';
+import { Box } from '@mui/material';
 import NewLeftBar from '../real_components/NewLeftBar'
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
@@ -20,6 +20,13 @@ function CouchClasses() {
   const [errorToken,setErrorToken] = useState(false);
   const [type, setType] = useState(null);
   const [newRows, setNewRows] = useState([]);
+
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+    navigate('/');      
+    }
+  }, [type]);
+
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');

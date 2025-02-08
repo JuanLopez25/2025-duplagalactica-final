@@ -59,7 +59,11 @@ export default function CreateClass() {
   const [salaNoDisponible, setSalaNoDisponible] = useState(['1'])
   const [itemData,setItemData] = useState([])
 
-  
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
 
   const ComponenteBotonShowGymRoom = () => {
     return (

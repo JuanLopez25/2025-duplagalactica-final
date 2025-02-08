@@ -65,6 +65,12 @@ function AllRoutines() {
           console.error('No token found');
       }
   }, []);
+
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
     
   useEffect(() => {
       if (userMail) {

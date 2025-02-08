@@ -33,12 +33,14 @@ const fetchInventory = async ( setItemData,setOpenCircularProgress) => {
             throw new Error('Error fetching classes: ' + classesRequest.statusText);
         }
         const classesData = await classesRequest.json();
-
+        console.log("datos de classes",classesData)
+        console.log("datos de items",inventoryWithQuantities)
         classesData.forEach((classItem) => {
             classItem.reservations.forEach((reservation) => {
                 const item = inventoryWithQuantities.find((i) => i.id === reservation.item);
                 if (item) {
-                    item.reservations.push({ 'name': classItem.name, 'cantidad': reservation.cantidad });
+                    console.log("este es el item",item)
+                    item.reservas.push({ 'name': classItem.name, 'cantidad': reservation.cantidad });
                 }
             });
         });

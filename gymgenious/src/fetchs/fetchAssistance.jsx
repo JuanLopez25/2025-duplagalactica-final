@@ -35,13 +35,14 @@ const fetchAssistance = async (setOpenCircularProgress,setRows,setWarningConnect
       const attendanceRecords = await attendanceRequest.json();
 
       const formattedAttendance = attendanceRecords.map(attendance => {
-          const matchingClass = ownedClasses.find(classItem => classItem.id === attendance.classId);
+          const matchingClass = ownedClasses.find(classItem => classItem.id === attendance.IdClase);
           return {
               ...attendance,
               className: matchingClass ? matchingClass.name : null,
-              fecha: formatDate(new Date(attendance.startTime))
+              fecha: formatDate(new Date(attendance.Inicio))
           };
       });
+      console.log("estos sopn los datos",formattedAttendance)
       setRows(formattedAttendance);
 
       
