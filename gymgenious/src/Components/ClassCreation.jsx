@@ -287,6 +287,15 @@ export default function CreateClass() {
     }
   };
 
+  useEffect(() => {
+    if (warningFetchingSalas) {
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    }
+  }, [warningFetchingSalas]);
+
+
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -300,7 +309,7 @@ export default function CreateClass() {
 
   useEffect(() => {
     if (userMail) {
-      fetchUser(setType,setOpenCircularProgress,userMail,navigate)
+      fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
     }
   }, [userMail]);
 
