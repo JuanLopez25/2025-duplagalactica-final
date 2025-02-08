@@ -27,6 +27,7 @@ export default function CreateClass() {
   const [hourFin, setHourFin] = useState('');
   const [permanent, setPermanent] = useState('');
   const [date, setDate] = useState('');
+  const [warningConnection, setWarningConnection] = useState(false);
   const [salas, setSalas] = useState([]);
   const [showSalas, setShowSalas] = useState(false);
   const [warningFetchingSalas, setWarningFetchingSalas] = useState(false);
@@ -306,7 +307,7 @@ export default function CreateClass() {
 
   useEffect(() => {
     if(type==='coach' && userMail!=null){
-        fetchInventory(setItemData,setOpenCircularProgress)
+        fetchInventory(setItemData,setOpenCircularProgress,setWarningConnection)
     }
   }, [type])
 
@@ -338,6 +339,21 @@ export default function CreateClass() {
     <div className='full-screen-image-2'>
       {!showSalas ? (
       <>
+      {warningConnection ? (
+        <div className='alert-container'>
+          <div className='alert-content'>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                  Connection Error. Try again later!
+                </Alert>
+              </Slide>
+            </Box>
+          </div>
+        </div>
+      ) : (
+        null
+      )}
       {type!='coach' ? (
             <Backdrop
             sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}

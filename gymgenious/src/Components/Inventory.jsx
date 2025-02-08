@@ -159,11 +159,7 @@ function CouchClasses() {
 
   useEffect(() => {
     if(type==='coach' && userMail!=null){
-        setOpenCircularProgress(true)
-        fetchInventory(setItemData,()=>{})
-        setTimeout(() => {
-          setOpenCircularProgress(false);
-        }, 4000);
+        fetchInventory(setItemData,setOpenCircularProgress,setWarningConnection)
     }
   }, [type])
 

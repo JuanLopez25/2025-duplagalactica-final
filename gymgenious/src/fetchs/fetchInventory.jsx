@@ -1,4 +1,4 @@
-const fetchInventory = async ( setItemData,setOpenCircularProgress) => {
+const fetchInventory = async ( setItemData,setOpenCircularProgress,setWarningConnection) => {
     setOpenCircularProgress(true)
     try {
       const authToken = localStorage.getItem('authToken');
@@ -56,10 +56,20 @@ const fetchInventory = async ( setItemData,setOpenCircularProgress) => {
         
         setItemData(inventoryWithQuantities);      
       } catch (error) {
-        console.error("Error:", error.message);
+        console.error("Error fetching inventory:", error);
+        setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
       }      
     } catch (error) {
         console.error("Error fetching inventory:", error);
+        setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
     } finally {
         setOpenCircularProgress(false)
     }
