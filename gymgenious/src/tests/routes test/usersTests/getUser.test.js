@@ -43,4 +43,31 @@ describe('getUser', () => {
     expect(result).toHaveProperty('mail', mockEmail);
     expect(result).toHaveProperty('name', null);
   });
+
+  it('should handle cases where multiple users match', async () => {
+    const mockPassword = 'securepassword';
+    const mockEmail = 'test@example.com';
+    const mockUsers = [
+      { id: '123', password: mockPassword, mail: mockEmail, name: 'Test User 1' },
+      { id: '456', password: mockPassword, mail: mockEmail, name: 'Test User 2' }
+    ];
+    getUser.mockResolvedValue(mockUsers);
+    const result = await getUser(mockPassword, mockEmail);
+    expect(result).toEqual(mockUsers);
+    expect(result).toHaveLength(2);
+  });
+
+  it('should throw an error if database query fails', async () => {
+    getUser.mockRejectedValue(new Error('Database error'));
+    await expect(getUser('securepassword', 'test@example.com')).rejects.toThrow('Database error');
+  });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

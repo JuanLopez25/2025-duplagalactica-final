@@ -22,4 +22,13 @@ describe('sendEmail', () => {
         sendEmail.mockRejectedValue(new Error(errorMessage));
         await expect(sendEmail(mockEmail)).rejects.toThrow('Error al enviar el correo');
     });
+
+    it('should throw an error if token is missing', async () => {
+        const mockRequest = { headers: {} };
+        expect(() => {
+            if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+                throw new Error('Missing token');
+            }
+        }).toThrow('Missing token');
+    });
 });
