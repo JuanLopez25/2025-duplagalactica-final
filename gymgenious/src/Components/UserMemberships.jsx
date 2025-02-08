@@ -2,48 +2,44 @@ import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LeftBar from '../real_components/NewLeftBar.jsx';
-import moment from 'moment'
 import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
-import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
 import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
-import CloseIcon from '@mui/icons-material/Close';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SchoolIcon from '@mui/icons-material/School';
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
+import verifyToken from '../fetchs/verifyToken.jsx';
 
 export default function UserMemberships() {
   const [plan, setPlan] = useState('');
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
-  const [errors, setErrors] = useState([]);
-  const [success, setSuccess] = useState(false);
-  const [failure, setFailure] = useState(false);
-  const [failureErrors, setFailureErrors] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(true);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
+  const [warningConnection, setWarningConnection] = useState(false);
   const [type, setType] = useState(null);
   const [user,setUser] = useState();
   const [membership, setMembership] = useState([]);
   const [errorAquire, setErrorAquire] = useState(false);
   const [upgrade, setUpgrade] = useState(false);
-
-  
   const [memberships,setMemberships] = useState([])
+
+  useEffect(() => {
+    if (type!='client' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
 
   const hanldeChangeUpgrade = () => {
     setUpgrade(!upgrade);
     setErrorAquire(false);
   }
-
 
   const fetchMembership = async () => {
     setOpenCircularProgress(true);
@@ -53,7 +49,7 @@ export default function UserMemberships() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_membership_template', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_membership_template', {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -69,7 +65,12 @@ export default function UserMemberships() {
         setOpenCircularProgress(false);
       }, 3000);
     } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error("Error usingin memberships:", error);
+        setOpenCircularProgress(false)
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
     }
   }
 
@@ -110,7 +111,7 @@ export default function UserMemberships() {
         } else {
             fechaFin = 'never';
         }
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/aquire_membership_month', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/aquire_membership_month', {
           method: 'PUT', 
           headers: {
             'Content-Type': 'application/json',
@@ -125,7 +126,12 @@ export default function UserMemberships() {
         
         setOpenCircularProgress(false)
       } catch (error) {
-        console.error("Error fetching classes:", error);
+        console.error("Error aquireing memberships:", error);
+        setOpenCircularProgress(false)
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
       }
     } else {
       setErrorAquire(true);
@@ -145,32 +151,10 @@ export default function UserMemberships() {
     );
   };
 
-  const validateForm = () => {
-      let errors = [];
-      
-
-      setErrors(errors);
-      return errors.length === 0;
-  }
-
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
-
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         navigate('/');
         console.error('No token found');
@@ -198,7 +182,7 @@ export default function UserMemberships() {
         return;
       }
       const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -210,7 +194,7 @@ export default function UserMemberships() {
         const data = await response.json();
         setUser(data)
         setType(data.type);
-        const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
+        const response3 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memb_user`, {
             method: 'GET', 
             headers: {
               'Authorization': `Bearer ${authToken}`
@@ -228,7 +212,7 @@ export default function UserMemberships() {
         const formattedDate = `${year}-${month}-${day}`;
         const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
         const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
-        const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memberships`, {
+        const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memberships`, {
           method: 'GET', 
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -249,7 +233,13 @@ export default function UserMemberships() {
           navigate('/');
         }
     } catch (error) {
-        console.error("Error fetching user:", error);
+      setOpenCircularProgress(false)
+      setWarningConnection(true);
+      setTimeout(() => {
+          setWarningConnection(false);
+          localStorage.removeItem('authToken');
+          navigate('/')
+      }, 3000);
     }
   };
 
@@ -367,7 +357,7 @@ export default function UserMemberships() {
 
   return (
     <div className='full-screen-image-2'>
-      {type!='client' || openCircularProgress ? (
+      {openCircularProgress ? (
             <Backdrop
             sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
             open={true}
@@ -384,80 +374,36 @@ export default function UserMemberships() {
             )}
           </>
       )}
-      {openCircularProgress ? (
-                <Backdrop
-                sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                open={openCircularProgress}
-                >
-                <Loader></Loader>
-                </Backdrop>
-            ) : null}
-            { success ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={success} mountOnEnter unmountOnExit >
-                          <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
-                              Class successfully created!
-                          </Alert>
-                          </Slide>
-                        </Box>
-                    </div>
-                </div>
-            ) : (
-                null
-            )}
-            { failureErrors ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                        <div>
-                            <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                            Error creating class!
-                            </Alert>
-                            {errors.length > 0 && errors.map((error, index) => (
-                            <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                                <li>{error}</li>
-                            </Alert>
-                            ))}
-                        </div>
-                        </Slide>
-                    </Box>
-                    </div>
-                </div>
-              
-            ) : (
-                null
-            )}
-            { failure ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failure} mountOnEnter unmountOnExit >
-                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>Error creating class. Try again!</Alert>
-                        </Slide>
-                    </Box>
-                </div>
-            </div>
-            ) : (
-                null
-            )}
-            { errorToken ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
-                            <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
-                                Invalid Token!
-                            </Alert>
-                        </Slide>
-                        </Box>
-                    </div>
-                </div>
-            ) : (
-                null
-            )}
+      {warningConnection ? (
+          <div className='alert-container'>
+              <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                      Connection Error. Try again later!
+                      </Alert>
+                  </Slide>
+                  </Box>
+              </div>
+          </div>
+      ) : (
+          null
+      )}
+      { errorToken ? (
+          <div className='alert-container'>
+              <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                          Invalid Token!
+                      </Alert>
+                  </Slide>
+                  </Box>
+              </div>
+          </div>
+      ) : (
+          null
+      )}
     </div>
   );
 }

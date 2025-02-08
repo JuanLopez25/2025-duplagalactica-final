@@ -2,33 +2,22 @@ import '../App.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LeftBar from '../real_components/NewLeftBar.jsx';
-import moment from 'moment'
-import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import CheckIcon from '@mui/icons-material/Check';
-import Slide from '@mui/material/Slide';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import Popper from '@mui/material/Popper';
-import {jwtDecode} from "jwt-decode";
-import { useMediaQuery } from '@mui/material';
+import { Box } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
-import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
+import Alert from '@mui/material/Alert';
+import Slide from '@mui/material/Slide';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
-import CloseIcon from '@mui/icons-material/Close';
-
+import fetchMembership from '../fetchs/fetchMembershipsTemplates.jsx';
+import fetchUser from '../fetchs/fetchUser.jsx'
+import verifyToken from '../fetchs/verifyToken.jsx'
 
 export default function CoachMemberships() {
-  const [permanent, setPermanent] = useState('');
-  const [name, setName] = useState('');
-  const [userAccount,setUserAccount] = useState()
-  const [maxNum,setMaxNum] = useState(1);
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
-  const isSmallScreen = useMediaQuery('(max-width:768px)');
+  const [warningConnection, setWarningConnection] = useState(false);
   const [type, setType] = useState(null);
   const [memberships,setMemberships] = useState([])
   const [price1, setPrice1] = useState(0.00);
@@ -37,6 +26,13 @@ export default function CoachMemberships() {
   const [editPrice1, setEditPrice1] = useState(false);
   const [editPrice2, setEditPrice2] = useState(false);
   const [editPrice3, setEditPrice3] = useState(false);
+
+
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
 
   const handleEditPrice1 = () => {
     savePrice(price1,'Class')
@@ -51,7 +47,7 @@ export default function CoachMemberships() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/edit_memb_price', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/edit_memb_price', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -62,67 +58,35 @@ export default function CoachMemberships() {
       if (!response.ok) {
         throw new Error('Error al obtener las salas: ' + response.statusText);
       }
-      await fetchMembership();
-      setOpenCircularProgress(false);
+      setTimeout(() => {
+        setOpenCircularProgress(false)
+        fetchMembership(setMemberships,setOpenCircularProgress,()=>{},()=>{},()=>{})
+      }, 3000);
     } catch (error) {
         console.error("Error fetching user:", error);
-    }
-  }
-
-
-  const fetchMembership = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_membership_template', {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Error al obtener las salas: ' + response.statusText);
-      }
-      const data = await response.json();
-      console.log("asi se ve",data)
-      setMemberships(data)
-      setOpenCircularProgress(false);
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
+        setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
+    } 
   }
 
   const handleEditPrice2 = () => {
     savePrice(price2,'Monthly')
     setEditPrice2(!editPrice2);
   }
+
   const handleEditPrice3 = () => {
     savePrice(price3,'Yearly')
     setEditPrice3(!editPrice3);
   }
 
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         navigate('/');
         console.error('No token found');
@@ -130,59 +94,50 @@ export default function CoachMemberships() {
   }, []);
 
   useEffect ( () => {
-    if (userAccount) {
-      fetchMembership()
+    if (userMail) {
+      fetchMembership(setMemberships,setOpenCircularProgress,setPrice1,setPrice2,setPrice3,setWarningConnection)
     }
-  },[userAccount])
+  },[userMail])
 
   useEffect(() => {
     if (userMail) {
-      fetchUser();
+      fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
     }
   }, [userMail]);
 
-  const fetchUser = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-      //const response = await fetch(`http://127.0.0.1:5000/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setUserAccount(data)
-        setType(data.type);
-        if(data.type!='coach'){
-          navigate('/');
-        }
-        setOpenCircularProgress(false);
-    } catch (error) {
-        console.error("Error fetching user:", error);
-        setOpenCircularProgress(false);
-    }
-  };
-
   return (
     <div className='full-screen-image-2'>
-      {type!='coach' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
+      
+        {warningConnection ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                        Connection Error. Try again later!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
+            )}
+            {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
+            )}
             <>
                 <LeftBar/>
                 <div className='membership-choose-container'>
@@ -219,7 +174,7 @@ export default function CoachMemberships() {
                             {editPrice1 ? (
                                 <button className="choose-plan-btn" onClick={handleEditPrice1}>Save</button>
                             ) : (
-                                <button className="choose-plan-btn" onClick={handleEditPrice1}>Edit</button>
+                                <button className="choose-plan-btn" onClick={()=>setEditPrice1(true)}>Edit</button>
                             )}
                             </div>
                             <div className='type-memberships' style={{marginRight: '2%'}}>
@@ -251,7 +206,7 @@ export default function CoachMemberships() {
                                 {editPrice2 ? (
                                     <button className="choose-plan-btn" onClick={handleEditPrice2}>Save</button>
                                 ) : (
-                                    <button className="choose-plan-btn" onClick={handleEditPrice2}>Edit</button>
+                                    <button className="choose-plan-btn" onClick={()=>setEditPrice2(true)}>Edit</button>
                                 )}
                             </div>
                             <div className='type-memberships'>
@@ -283,7 +238,7 @@ export default function CoachMemberships() {
                                     {editPrice3 ? (
                                         <button className="choose-plan-btn" onClick={handleEditPrice3}>Save</button>
                                     ) : (
-                                        <button className="choose-plan-btn" onClick={handleEditPrice3}>Edit</button>
+                                        <button className="choose-plan-btn" onClick={()=>setEditPrice3(true)}>Edit</button>
                                     )}
                             </div>
                             </div>
@@ -291,7 +246,6 @@ export default function CoachMemberships() {
                     </div>
                 </div>
             </>
-      )}
       {openCircularProgress ? (
                 <Backdrop
                 sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}

@@ -5,16 +5,20 @@ import LeftBar from '../real_components/NewLeftBar.jsx';
 import moment from 'moment'
 import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import Popper from '@mui/material/Popper';
-import {jwtDecode} from "jwt-decode";
 import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
+import verifyToken from '../fetchs/verifyToken.jsx'
+import ItemList from '../real_components/ItemList.jsx';
+import day from '../functions/DateToString.jsx'
+import fetchSalas from '../fetchs/fetchSalas.jsx';
+import fetchUser from '../fetchs/fetchUser.jsx'
+import fetchInventory from '../fetchs/fetchInventory.jsx';
+import validateSalas from '../fetchs/fetchValidateSalas.jsx';
 
 
 export default function CreateClass() {
@@ -22,21 +26,22 @@ export default function CreateClass() {
   const [hourFin, setHourFin] = useState('');
   const [permanent, setPermanent] = useState('');
   const [date, setDate] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [openHourRequirements, setOpenHourRequirements] = useState(false);
+  const [warningConnection, setWarningConnection] = useState(false);
   const [salas, setSalas] = useState([]);
   const [showSalas, setShowSalas] = useState(false);
-  const [warningFetchingRoutines, setWarningFetchingRoutines] = useState(false);
+  const [warningFetchingSalas, setWarningFetchingSalas] = useState(false);
   const [salaAssigned, setSala] = useState(null); 
   const [name, setName] = useState('');
   const [maxNum,setMaxNum] = useState(1);
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
-  const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState(false);
-  const [failure, setFailure] = useState(false);
-  const [failureErrors, setFailureErrors] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
+  const isSmallScreenImages = useMediaQuery('(max-width:500px)');
   const [type, setType] = useState(null);
   const [maxWidthImg, setMaxWidthImg] = useState('0px');
   const [errorSala1, setErrorSala1] = useState(false);
@@ -50,14 +55,17 @@ export default function CreateClass() {
   const [errorEndTime30, setErrorEndTime30] = useState(false);
   const [errorName, setErrorName] = useState(false);
   const [errorRecurrent, setErrorRecurrent] = useState(false);
+  const id = 'simple-popper';
   const [errorDate, setErrorDate] = useState(false);
   const [errorDateStart, setErrorDateStart] = useState(false);
   const [salaNoDisponible, setSalaNoDisponible] = useState(['1'])
-  const day = (dateString) => {
-    const date = new Date(dateString);
-    const daysOfWeek = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado','Domingo'];
-    return daysOfWeek[date.getDay()];
-  };
+  const [itemData,setItemData] = useState([])
+
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
 
   const ComponenteBotonShowGymRoom = () => {
     return (
@@ -67,97 +75,6 @@ export default function CreateClass() {
     );
   };
   
-  const validateSalas = async () => {
-    setValidating(true)
-    setOpenCircularProgress(true);
-    setErrorSalas(false);
-    try {
-        const salasError = []
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-            console.error('Token no disponible en localStorage');
-            return;
-        }
-        const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
-        if (!response2.ok) {
-            throw new Error('Error al obtener las clases: ' + response2.statusText);
-        }
-        const data = await response2.json();
-        const isoDateString = date; 
-        const newClassStartTime = new Date(`${date}T${hour}:00Z`);
-        const newClassEndTime = new Date(`${date}T${hourFin}:00Z`);
-        const newClassStartTimeInMinutes = timeToMinutes(hour);
-        const newClassEndTimeInMinutes = timeToMinutes(hourFin);
-        const conflictingClasses = data.filter(classItem => 
-            classItem.day === day(isoDateString) 
-        );
-        if (permanent == "No") {
-          const hasPermanentConflict = conflictingClasses.filter(existingClass => 
-              existingClass.permanent == "Si" && 
-              newClassStartTime > new Date(existingClass.dateFin) &&
-              newClassEndTime > new Date(existingClass.dateInicio) &&
-              newClassEndTime > new Date(existingClass.dateFin) &&
-              newClassStartTime > new Date(existingClass.dateInicio) &&
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5))
-          );
-          const hasNonPermanentConflict = conflictingClasses.filter(existingClass =>
-              newClassStartTime < new Date(existingClass.dateFin) &&
-              newClassEndTime > new Date(existingClass.dateInicio)
-          );
-          hasNonPermanentConflict.forEach(clas => salasError.push(clas.sala))
-          hasPermanentConflict.forEach(clas => salasError.push(clas.sala))
-          
-      } 
-      else if (permanent == "Si") {
-          const hasPastPermanentConflict = conflictingClasses.filter(existingClass =>
-              existingClass.permanent == "Si" &&
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-              newClassStartTime.getFullYear()>= (new Date(existingClass.dateFin)).getFullYear() &&
-              newClassEndTime.getFullYear()>= (new Date(existingClass.dateInicio)).getFullYear() &&
-              String((newClassStartTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-              String((newClassEndTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-              String((newClassStartTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-              String((newClassEndTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-          );
-
-          const hasNonPermanentConflict = conflictingClasses.filter(existingClass =>
-            newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-            newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-            newClassStartTime.getFullYear()<= (new Date(existingClass.dateFin)).getFullYear() &&
-            newClassEndTime.getFullYear()<= (new Date(existingClass.dateInicio)).getFullYear() &&
-            String((newClassStartTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-            String((newClassEndTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-            String((newClassStartTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-            String((newClassEndTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-          );
-
-          const hasPermanentConflict = conflictingClasses.filter(existingClass =>
-            newClassStartTime < new Date(existingClass.dateFin) &&
-            newClassEndTime > new Date(existingClass.dateInicio)
-          );
-          hasNonPermanentConflict.forEach(clas => salasError.push(clas.sala))
-          hasPermanentConflict.forEach(clas => salasError.push(clas.sala))
-      }
-      setSalaNoDisponible(salasError)
-      setValidating(false)
-    } catch (error) {
-        console.error("Error al crear la clase:", error);
-        if(salaAssigned==='PmQ2RZJpDXjBetqThVna'){
-          setErrorSala1(true);
-        } else if(salaAssigned==='cuyAhMJE8Mz31eL12aPO') {
-          setErrorSala2(true);
-        } else if(salaAssigned==='jxYcsGUYhW6pVnYmjK8H') {
-          setErrorSala3(true);
-        } else if(salaAssigned==='waA7dE83alk1HXZvlbyK') {
-          setErrorSala4(true);
-        }
-        setOpenCircularProgress(false);
-    }
-  };
-
-
   const BotonShowGymRoom = ({ children, ...rest }) => {
     return (
       <button {...rest} className="draw-outline-button" onClick={handleViewRooms}>
@@ -259,13 +176,7 @@ export default function CreateClass() {
       } else {
         setErrorDateStart(false);
       }
-
-      setErrors(errors);
       return errors.length === 0;
-  }
-  const timeToMinutes = (time) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
   }
 
   const handleCreateClass = async () => {
@@ -281,80 +192,25 @@ export default function CreateClass() {
           if(salaAssigned===null){
             throw new Error('Select a room');
           }
-          const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
+          const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
           if (!response2.ok) {
               throw new Error('Error al obtener las clases: ' + response2.statusText);
           }
-          const data = await response2.json();
           const isoDateString = date; 
           const newClassStartTime = new Date(`${date}T${hour}:00Z`);
           const newClassEndTime = new Date(`${date}T${hourFin}:00Z`);
-          const newClassStartTimeInMinutes = timeToMinutes(hour);
-          const newClassEndTimeInMinutes = timeToMinutes(hourFin);
-          const conflictingClasses = data.filter(classItem => 
-              classItem.sala === salaAssigned &&
-              classItem.day === day(isoDateString) 
-          );
-          if (permanent == "No") {
-            const hasPermanentConflict = conflictingClasses.some(existingClass => 
-                existingClass.permanent == "Si" && 
-                newClassStartTime > new Date(existingClass.dateFin) &&
-                newClassEndTime > new Date(existingClass.dateInicio) &&
-                newClassEndTime > new Date(existingClass.dateFin) &&
-                newClassStartTime > new Date(existingClass.dateInicio) &&
-                newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-                newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5))
-            );
-            const hasNonPermanentConflict = conflictingClasses.some(existingClass =>
-                newClassStartTime < new Date(existingClass.dateFin) &&
-                newClassEndTime > new Date(existingClass.dateInicio)
-            );
-            if (hasNonPermanentConflict || hasPermanentConflict) {
-                console.error('Conflicto de horario con clases existentes en esta sala.');
-                setOpenCircularProgress(false);
-                throw new Error('Error al crear la clase: Conflicto de horario con clases existentes en esta sala.');
+          const itemsReservados = [];
+          itemData.forEach((item) => {
+            if (item.cantidad > 0) {
+              itemsReservados.push({ item: item.id, cantidad: item.cantidad });
             }
-        } 
-        else if (permanent == "Si") {
-            const hasPastPermanentConflict = conflictingClasses.some(existingClass =>
-                existingClass.permanent == "Si" &&
-                newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-                newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-                newClassStartTime.getFullYear()>= (new Date(existingClass.dateFin)).getFullYear() &&
-                newClassEndTime.getFullYear()>= (new Date(existingClass.dateInicio)).getFullYear() &&
-                String((newClassStartTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-                String((newClassEndTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-                String((newClassStartTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-                String((newClassEndTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-            );
-
-            const hasNonPermanentConflict = conflictingClasses.some(existingClass =>
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-              newClassStartTime.getFullYear()<= (new Date(existingClass.dateFin)).getFullYear() &&
-              newClassEndTime.getFullYear()<= (new Date(existingClass.dateInicio)).getFullYear() &&
-              String((newClassStartTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-              String((newClassEndTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-              String((newClassStartTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-              String((newClassEndTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-            );
-
-            const hasPermanentConflict = conflictingClasses.some(existingClass =>
-              newClassStartTime < new Date(existingClass.dateFin) &&
-              newClassEndTime > new Date(existingClass.dateInicio)
-            );
-            if (hasPastPermanentConflict || hasPermanentConflict || hasNonPermanentConflict) {
-                console.error('Ya existe una clase permanente en esta sala para este horario.');
-                setOpenCircularProgress(false);
-                throw new Error('Error al crear la clase: Ya existe una clase permanente en esta sala para este horario.');
-            }
-        }
-
+          });
           const newClass = {
               name: name,
               dateInicio: newClassStartTime.toISOString(),
               dateFin: newClassEndTime.toISOString(),
               hour: hour,
+              reservations: itemsReservados,
               day: day(isoDateString),
               permanent: permanent,
               owner: userMail,
@@ -363,8 +219,7 @@ export default function CreateClass() {
               sala: salaAssigned
           };
 
-          const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/create_class', {
-          //const response = await fetch('http://127.0.0.1:5000/create_class', {
+          const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_class', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -385,26 +240,13 @@ export default function CreateClass() {
           }, 3000);
       } catch (error) {
           console.error("Error al crear la clase:", error);
-          if(salaAssigned==='PmQ2RZJpDXjBetqThVna'){
-            setErrorSala1(true);
-          } else if(salaAssigned==='cuyAhMJE8Mz31eL12aPO') {
-            setErrorSala2(true);
-          } else if(salaAssigned==='jxYcsGUYhW6pVnYmjK8H') {
-            setErrorSala3(true);
-          } else if(salaAssigned==='waA7dE83alk1HXZvlbyK') {
-            setErrorSala4(true);
-          }
-          if(salaAssigned===null){
-            setErrorSalas(true);
-          }
-          setOpenCircularProgress(false);
+          setOpenCircularProgress(false)
+          setWarningConnection(true);
+          setTimeout(() => {
+              setWarningConnection(false);
+          }, 3000);
       }
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    handleCreateClass();
   };
 
   const handleComeBack = (e) => {
@@ -425,71 +267,31 @@ export default function CreateClass() {
   const handleViewRooms = () => {
     if(validateForm()){
       setSalaNoDisponible([])
-      validateSalas()
+      validateSalas(setValidating,setOpenCircularProgress,setErrorSalas,setSalaNoDisponible,setErrorSala1,setErrorSala2,setErrorSala3,setErrorSala4,date,hour,hourFin,permanent,salaAssigned)
       setTimeout(() => {
         if( !validating ){
           setShowSalas(true);
-          fetchSalas();
+          fetchSalas(setOpenCircularProgress,setSalas,setWarningFetchingSalas,maxNum)
         }
         setOpenCircularProgress(false)
       }, 3000);
     }
   };
 
-  const fetchSalas = async () => {
-    setOpenCircularProgress(true);
-    try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          console.error('Token no disponible en localStorage');
-          return;
-        }
-        const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_salas`, {
-        //const response = await fetch(`http://127.0.0.1:5000/get_salas`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener las rutinas: ' + response.statusText);
-        }
-        const data = await response.json();
-        const dataFinal = data.map(room => {
-          return {
-              ...room,
-              opacity: parseInt(room.capacidad) >= maxNum ? 1 : 0.5
-          };
-      });
-        setSalas(dataFinal);
-    } catch (error) {
-        console.error("Error fetching rutinas:", error);
-        setOpenCircularProgress(false);
-        setWarningFetchingRoutines(true);
-        setTimeout(() => {
-            setWarningFetchingRoutines(false);
-        }, 3000);
+  useEffect(() => {
+    if (warningFetchingSalas) {
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     }
-  };
+  }, [warningFetchingSalas]);
 
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
-    }
-  };
+
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
     } else {
         navigate('/');
         console.error('No token found');
@@ -498,63 +300,34 @@ export default function CreateClass() {
 
   useEffect(() => {
     if (userMail) {
-      fetchUser();
+      fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
     }
   }, [userMail]);
 
+
   useEffect(() => {
-    if (isSmallScreen) {
+    if(type==='coach' && userMail!=null){
+        fetchInventory(setItemData,setOpenCircularProgress,setWarningConnection)
+    }
+  }, [type])
+
+  useEffect(() => {
+    if (isSmallScreenImages) {
       setMaxWidthImg('100%')
     } else {
       setMaxWidthImg('200px')
     }
-  }, [isSmallScreen]);
+  }, [isSmallScreenImages]);
 
-  // useEffect(() => {
-  //   if (userMail && maxNum) {
-  //     fetchSalas();
-  //   }
-  // }, [userMail,maxNum]);
-
-  const fetchUser = async () => {
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-      //const response = await fetch(`http://127.0.0.1:5000/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setType(data.type);
-        if(data.type!='coach'){
-          navigate('/');
-        }
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
-
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [openHourRequirements, setOpenHourRequirements] = useState(false);
+  
   const handleOpenHourRequirements = (event) => {
     if (openHourRequirements) {
-        setAnchorEl(null); // Close popper
+        setAnchorEl(null); 
     } else {
-        setAnchorEl(event.currentTarget); // Open popper with the clicked element as anchor
+        setAnchorEl(event.currentTarget);
     }
     setOpenHourRequirements(!openHourRequirements);
-};
-  const id = 'simple-popper';
+  };
 
   const handleCloseHourRequirements = () => {
     setOpenHourRequirements(false);
@@ -564,14 +337,21 @@ export default function CreateClass() {
     <div className='full-screen-image-2'>
       {!showSalas ? (
       <>
-      {type!='coach' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
+      {warningConnection ? (
+        <div className='alert-container'>
+          <div className='alert-content'>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                  Connection Error. Try again later!
+                </Alert>
+              </Slide>
+            </Box>
+          </div>
+        </div>
+      ) : (
+        null
+      )}
           <>
             <LeftBar/>
             <div className='class-creation-container'>
@@ -592,6 +372,21 @@ export default function CreateClass() {
                           />
                            {errorName && (<p style={{color: 'red', margin: '0px'}}>Enter a name</p>)}
                         </div>
+                        <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
+                            <label htmlFor="permanent" style={{color:'#424242'}}>Recurrent:</label>
+                            <select
+                              onClick={handleCloseHourRequirements}
+                              id="permanent" 
+                              name="permanent" 
+                              value={permanent} 
+                              onChange={(e) => setPermanent(e.target.value)} 
+                            >
+                              <option value="" >Select</option>
+                              <option value="Si">Yes</option>
+                              <option value="No">No</option>
+                            </select>
+                            {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
+                          </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                         <div className="input-small-container" style={{marginBottom: '0px'}}>
@@ -655,22 +450,12 @@ export default function CreateClass() {
                         </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
-                          <div className="input-small-container" style={{width:"100%", marginBottom: '0px'}}>
-                            <label htmlFor="permanent" style={{color:'#424242'}}>Recurrent:</label>
-                            <select
-                              onClick={handleCloseHourRequirements}
-                              id="permanent" 
-                              name="permanent" 
-                              value={permanent} 
-                              onChange={(e) => setPermanent(e.target.value)} 
-                            >
-                              <option value="" >Select</option>
-                              <option value="Si">Yes</option>
-                              <option value="No">No</option>
-                            </select>
-                            {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
-                          </div>
+                        <div className="input-small-container">
+                          {itemData.length>0 && 
+                            <ItemList data={itemData} setItemData={setItemData}/>
+                          }
                         </div>
+                      </div>
                         <ComponenteBotonShowGymRoom/>
                     </>
                   ) : (
@@ -735,6 +520,7 @@ export default function CreateClass() {
                             <option value="No">No</option>
                           </select>
                           {errorRecurrent && (<p style={{color: 'red', margin: '0px'}}>Select a recurrent value</p>)}
+                          
                         </div>
                       </div>
                       <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -765,6 +551,13 @@ export default function CreateClass() {
                           {errorDate && (<p style={{color: 'red', margin: '0px'}}>Select a date</p>)}
                         </div>   
                       </div>
+                      <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
+                        <div className="input-small-container">
+                          {itemData.length>0 && 
+                            <ItemList data={itemData} setItemData={setItemData}/>
+                          }
+                        </div>
+                      </div>
                       <button className='button_login' style={{width: '70%'}} onClick={handleViewRooms}>
                     Show gymrooms
                   </button>
@@ -774,7 +567,6 @@ export default function CreateClass() {
               </div>
             </div>
           </>
-      )}
       </>
       ) : (
         <>
@@ -949,35 +741,12 @@ export default function CreateClass() {
             ) : (
                 null
             )}
-            { failureErrors ? (
+            { warningFetchingSalas ? (
                 <div className='alert-container'>
                     <div className='alert-content'>
                     <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                        <div>
-                            <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                            Error creating class!
-                            </Alert>
-                            {errors.length > 0 && errors.map((error, index) => (
-                            <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                                <li>{error}</li>
-                            </Alert>
-                            ))}
-                        </div>
-                        </Slide>
-                    </Box>
-                    </div>
-                </div>
-              
-            ) : (
-                null
-            )}
-            { failure ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failure} mountOnEnter unmountOnExit >
-                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>Error creating class. Try again!</Alert>
+                        <Slide direction="up" in={warningFetchingSalas} mountOnEnter unmountOnExit >
+                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>Error fetching salas!</Alert>
                         </Slide>
                     </Box>
                 </div>

@@ -1,51 +1,35 @@
 import * as React from 'react';
-import Paper from '@mui/material/Paper';
+import { Paper, useMediaQuery, Box} from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
 import { useState, useEffect } from 'react';
-import { Box, useMediaQuery } from '@mui/material';
-import { visuallyHidden } from '@mui/utils';
-import { jwtDecode } from "jwt-decode";
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
-import NewLeftBar from '../real_components/NewLeftBar';
-import ColorToggleButton from '../real_components/ColorToggleButton.jsx';
-import Backdrop from '@mui/material/Backdrop';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import CircularProgress from '@mui/material/CircularProgress';
-import DaySelection from '../real_components/DaySelection.jsx';
-import { useNavigate } from 'react-router-dom';
+import verifyToken from '../fetchs/verifyToken.jsx';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
+import fetchUser from '../fetchs/fetchUser.jsx';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import NewLeftBar from '../real_components/NewLeftBar';
+import Backdrop from '@mui/material/Backdrop';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import { useNavigate } from 'react-router-dom';
 import Loader from '../real_components/loader.jsx';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
+import CustomTable from '../real_components/Table4columns.jsx';
 
 export default function StickyHeadTable() {
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [orderBy, setOrderBy] = useState('name');
-    const [order, setOrder] = useState('asc');
     const [userMail, setUserMail] = useState('');
-    const [routines, setRoutines] = useState([]);
-    const [routine, setRoutine] = useState([]);
-    const [selectedDay, setSelectedDay] = useState('');
     const isSmallScreen = useMediaQuery('(max-width:700px)');
+    const [warningConnection, setWarningConnection] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
-    const [rows, setRows] = useState([]);
-    const [errorToken, setErrorToken] = useState(false);
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
-    const [dense, setDense] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigate();    
+    const [errorToken,setErrorToken] = useState(false);
     const [type, setType] = useState(null);
-    const [warningFetchingUserRoutines, setWarningFetchingUserRoutines] = useState(false);
-    const isMobileScreen = useMediaQuery('(min-height:750px)');
-    const [maxHeight, setMaxHeight] = useState('600px');
     const [viewCreateRanking, setViewCreateRanking] = useState(false);
     const [viewJoinRanking, setViewJoinRanking] = useState(false);
     const [name, setName] = useState('');
@@ -60,20 +44,13 @@ export default function StickyHeadTable() {
     const [errorAlreadyJoined, setErrorAlreadyJoined] = useState(false);
     const [rankings,setRankings] = useState([])
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
 
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
-    };
 
-    const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
-    };
+    useEffect(() => {
+        if (type!='client' && type!=null) {
+        navigate('/');      
+        }
+      }, [type]);
 
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
@@ -108,7 +85,7 @@ export default function StickyHeadTable() {
             console.error('Token no disponible en localStorage');
             return;
             }
-            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_rankings', {
+            const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_rankings', {
             method: 'GET', 
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -119,7 +96,7 @@ export default function StickyHeadTable() {
             }
             const data = await response.json();
             const userRankings = data.filter(rank=>rank.participants.includes(userMail))
-            const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_users`, {
+            const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_users`, {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -141,12 +118,23 @@ export default function StickyHeadTable() {
                 })
             };
             });
-            setRankings(updatedRankings)
+            const updatedRankings2 = updatedRankings.map(rank => {
+                return {
+                    ...rank,
+                    participants_length: rank.participants.length
+                };
+            });
+            setRankings(updatedRankings2)
             setTimeout(() => {
             setOpenCircularProgress(false);
             }, 3000);
         } catch (error) {
             console.error("Error fetching user:", error);
+            setOpenCircularProgress(false);
+            setWarningConnection(true);
+            setTimeout(() => {
+                setWarningConnection(false);
+            }, 3000);
         }
     };
 
@@ -179,7 +167,7 @@ export default function StickyHeadTable() {
                     console.error('Token no disponible en localStorage');
                     return;
                 }
-                const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/create_ranking', {
+                const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_ranking', {
                     method: 'POST',
                     headers: {
                     'Content-Type': 'application/json',
@@ -197,6 +185,10 @@ export default function StickyHeadTable() {
             } catch (error) {
                 console.error("Error al crear el ranking:", error);
                 setOpenCircularProgress(false);
+                setWarningConnection(true);
+                setTimeout(() => {
+                    setWarningConnection(false);
+                }, 3000);
             };
         }
     };
@@ -231,7 +223,7 @@ export default function StickyHeadTable() {
                 if(alreadyJoined){
                     throw new Error('ya te has unido a este ranking')
                 }
-                const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_rankings', {
+                const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_rankings', {
                     method: 'GET', 
                     headers: {
                         'Authorization': `Bearer ${authToken}`
@@ -246,7 +238,7 @@ export default function StickyHeadTable() {
                 if (userRankings.length==0) {
                     throw new Error('No existe ningun ranking asi');
                 }
-                const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/join_ranking', {
+                const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/join_ranking', {
                     method: 'PUT', 
                     headers: {
                     'Content-Type': 'application/json',
@@ -266,8 +258,13 @@ export default function StickyHeadTable() {
                 if(error=='Error: No existe ningun ranking asi'){
                     setErrorCredentials(true);
                 }
-                if(error=='Error: ya te has unido a este ranking'){
+                else if(error=='Error: ya te has unido a este ranking'){
                     setErrorAlreadyJoined(true);
+                } else {
+                    setWarningConnection(true);
+                    setTimeout(() => {
+                        setWarningConnection(false);
+                    }, 3000);
                 }
             }
         }
@@ -282,7 +279,7 @@ export default function StickyHeadTable() {
                 console.error('Token no disponible en localStorage');
                 return;
             }
-            const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/leave_ranking', {
+            const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/leave_ranking', {
                 method: 'PUT', 
                 headers: {
                   'Content-Type': 'application/json',
@@ -299,27 +296,18 @@ export default function StickyHeadTable() {
         } catch (error) {
             console.error("Error al crear el ranking:", error);
             setOpenCircularProgress(false);
+            setWarningConnection(true);
+            setTimeout(() => {
+                setWarningConnection(false);
+            }, 3000);
         };
     };
     
-    const verifyToken = async (token) => {
-        try {
-            const decodedToken = jwtDecode(token);
-            setUserMail(decodedToken.email);
-        } catch (error) {
-            console.error('Error al verificar el token:', error);
-            setErrorToken(true);
-            setTimeout(() => {
-              setErrorToken(false);
-            }, 3000);
-            throw error;
-        }
-      };
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token);
+            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
         } else {
             navigate('/');
             console.error('No token found');
@@ -329,7 +317,7 @@ export default function StickyHeadTable() {
 
     useEffect(() => {
     if (userMail) {
-        fetchUser();
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection);
     }
     }, [userMail]);
 
@@ -339,75 +327,12 @@ export default function StickyHeadTable() {
     }
     }, [type])
     
-      const fetchUser = async () => {
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-          const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-            }
-            const data = await response.json();
-            setType(data.type);
-            if(data.type!='client'){
-              navigate('/');
-            }
-        } catch (error) {
-            console.error("Error fetching user:", error);
-        }
-      };
-
-    useEffect(() => {
-        if(isSmallScreen) {
-          setRowsPerPage(10);
-        } else {
-          setRowsPerPage(5)
-        }
-        if(isMobileScreen) {
-          setMaxHeight('700px');
-        } else {
-          setMaxHeight('600px')
-        }
-      }, [isSmallScreen, isMobileScreen])
-
-    const visibleRows = React.useMemo(
-        () =>
-          [...rankings]
-            .sort((a, b) =>
-              order === 'asc'
-                ? a[orderBy] < b[orderBy]
-                  ? -1
-                  : 1
-                : a[orderBy] > b[orderBy]
-                ? -1
-                : 1
-            )
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-        [order, orderBy, page, rowsPerPage, rankings]
-      );
 
     return (
         <div className="App">
-            {type!='client' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <NewLeftBar />
-            <div className='input-container-buttons' style={{left: isSmallScreen ? '60px' : '50px', position: 'absolute', top: '0.5%'}}>
+            <div className='input-container-buttons' style={{left: isSmallScreen ? '6vh' : '8vh', position: 'absolute', top: '0.5%'}}>
                 <div className='input-small-container-buttons' onClick={handleViewCreateRanking}>
                     <Button onClick={handleViewCreateRanking}
                     style={{
@@ -427,8 +352,8 @@ export default function StickyHeadTable() {
                     </Button>
                 </div>
             </div>
-            <div className='input-container-buttons' style={{left: isSmallScreen ? '115px' : '97px', position: 'absolute', top: '0.5%'}}>
-                <div className='input-small-container-buttons' onClick={handleViewJoinRanking}>
+            <div className='input-container-buttons' style={{left: isSmallScreen? '12vh' : '16vh', position: 'absolute', top: '0.5%'}}>
+                <div className='input-small-container-buttons'>
                     <Button onClick={handleViewJoinRanking}
                     style={{
                         backgroundColor: '#48CFCB',
@@ -447,133 +372,9 @@ export default function StickyHeadTable() {
                     </Button>
                 </div>
             </div>
-            <div className="Table-Container" style={{alignItems: 'center'}}>
-                <Box sx={{ width: '100%', flexWrap: 'wrap', background: '#F5F5F5', border: '2px solid #424242', borderRadius: '10px' }}>
-                    <Paper
-                        sx={{
-                        width: '100%',
-                        backgroundColor: '#F5F5F5',
-                        borderRadius: '10px'
-                        }}
-                    >
-                        <TableContainer sx={{maxHeight: {maxHeight}, overflow: 'auto'}}>
-                            <Table
-                                sx={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                }}
-                                aria-labelledby="tableTitle"
-                                size={dense ? 'small' : 'medium'}
-                            >
-                                <TableHead>
-                                    <TableRow sx={{ height: '5vh', width: '5vh' }}>
-                                        <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                            <TableSortLabel
-                                                active={orderBy === 'name'}
-                                                direction={orderBy === 'name' ? order : 'asc'}
-                                                onClick={(event) => handleRequestSort(event, 'name')}
-                                            >
-                                                Name
-                                                {orderBy === 'name' ? (
-                                                    <Box component="span" sx={visuallyHidden}>
-                                                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                    </Box>
-                                                ) : null}
-                                            </TableSortLabel>
-                                        </TableCell>
-                                        {!isSmallScreen && (
-                                            <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                                <TableSortLabel
-                                                    active={orderBy === 'usersRanked'}
-                                                    direction={orderBy === 'usersRanked' ? order : 'asc'}
-                                                    onClick={(event) => handleRequestSort(event, 'usersRanked')}
-                                                >
-                                                    Users Ranked
-                                                    {orderBy === 'usersRanked' ? (
-                                                        <Box component="span" sx={visuallyHidden}>
-                                                            {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                                        </Box>
-                                                    ) : null}
-                                                </TableSortLabel>
-                                            </TableCell>
-                                        )}
-                                        {!isSmallScreen && (
-                                            <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                                <TableSortLabel
-                                                >
-                                                    Ranking ID
-                                                </TableSortLabel>
-                                            </TableCell>
-                                        )}
-                                        <TableCell sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', fontWeight: 'bold' }}>
-                                            <TableSortLabel
-                                            >
-                                                Ranking password
-                                            </TableSortLabel>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {visibleRows.length===0 ? (
-                                        <TableRow>
-                                        <TableCell colSpan={isSmallScreen ? 2 : 4} align="center" sx={{ color: '#424242', borderBottom: '1px solid #424242' }}>
-                                            There are no rankings
-                                        </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        visibleRows.map((row) => (
-                                        <TableRow onClick={() => handleSelectEvent(row)} hover tabIndex={-1} key={`${row.id}-${row.day}`} sx={{ cursor: 'pointer', borderBottom: '1px solid #ccc' }}>
-                                            <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                            {row.name}
-                                            </TableCell>
-                                            {!isSmallScreen && (
-                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242' }}>
-                                                {row.participants.length}
-                                                </TableCell>
-                                            )}
-                                            {!isSmallScreen && (
-                                                <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                                {row.id}
-                                                </TableCell>
-                                            )}
-                                            <TableCell align="right" sx={{ borderBottom: '1px solid #424242', borderRight: '1px solid #424242', color: '#424242', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto' }}>
-                                            {row.password}
-                                            </TableCell>
-                                        </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                        {visibleRows.length!=0 ? (
-                            <>
-                                {isSmallScreen ? (
-                                    <TablePagination
-                                        rowsPerPageOptions={[10]}
-                                        component="div"
-                                        count={rankings.length}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        onPageChange={handleChangePage}
-                                    />
-                                ) : (
-                                    <TablePagination
-                                        rowsPerPageOptions={[5, 10, 25]}
-                                        component="div"
-                                        count={rankings.length}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        onPageChange={handleChangePage}
-                                        onRowsPerPageChange={handleChangeRowsPerPage}
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            null
-                        )}
-                    </Paper>
-                </Box>
-            </div>
+            {rankings && (
+                          <CustomTable columnsToShow={['Name','Ranking ID', 'Users ranked','Ranking Password','There are no rankings']} data={rankings} handleSelectEvent={handleSelectEvent} vals={['name','id','participants_length','password']}/> 
+            )}
             {selectedEvent && (
                 <div className="Modal" onClick={handleCloseModal}>
                     <div className="Modal-Content-view-exercises" onClick={(e) => e.stopPropagation()}>
@@ -708,8 +509,37 @@ export default function StickyHeadTable() {
                     <Loader></Loader>
                 </Backdrop>
             )}
+            {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
+            )}
+            {warningConnection ? (
+                <div className='alert-container'>
+                    <div className='alert-content'>
+                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                        <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                            <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                            Connection Error. Try again later!
+                            </Alert>
+                        </Slide>
+                        </Box>
+                    </div>
+                </div>
+            ) : (
+                null
+            )}
             </>
-        )}
         </div>
     );
 }

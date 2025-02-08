@@ -56,3 +56,4 @@ describe('getUniqueUserByEmail', () => {
         await expect(getUniqueUserByEmail('test@example.com')).rejects.toThrow('Database error');
     });
 });
+

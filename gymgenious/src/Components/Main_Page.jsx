@@ -1,64 +1,126 @@
 import React, { useState, useEffect } from 'react';
 import { useMediaQuery } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress, { circularProgressClasses } from '@mui/material/CircularProgress';
+import { circularProgressClasses } from '@mui/material/CircularProgress';
 import NewLeftBar from '../real_components/NewLeftBar.jsx';
-import {jwtDecode} from "jwt-decode";
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import Slide from '@mui/material/Slide';
-import CheckIcon from '@mui/icons-material/Check';
+import verifyToken from '../fetchs/verifyToken.jsx';
 import Calendar from '../real_components/Calendar.jsx';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import EnhancedTable from '../real_components/TableClasses.jsx';
-import WarningConnectionAlert from '../real_components/WarningConnectionAlert.jsx';
+import Alert from '@mui/material/Alert';
+import Slide from '@mui/material/Slide';
 import ErrorTokenAlert from '../real_components/ErrorTokenAlert.jsx';
 import SuccessAlert from '../real_components/SuccessAlert.jsx';
 import EmailIcon from '@mui/icons-material/Email';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import CloseIcon from '@mui/icons-material/Close';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
+import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography } from 'mdb-react-ui-kit';
 import Loader from '../real_components/loader.jsx'
 import Button from '@mui/material/Button';
-import SearchIcon from '@mui/icons-material/Search';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import DiamondIcon from '@mui/icons-material/Diamond';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
+import formatDate from '../functions/formatDate.jsx'
+import Searcher from '../real_components/searcher.jsx';
 
 export default function Main_Page() {
-  const [classes, setClasses] = useState([]);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showCalendar, setShowCalendar] = useState(true);
-  const [leftBarOption, setLeftBarOption] = useState('');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [userMail,setUserMail] = useState(null);
-  const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const [successBook,setSuccessBook] = useState(false);
   const [successUnbook,setSuccessUnbook] = useState(false);
-  const isSmallScreen = useMediaQuery('(max-width:250px)');
+  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+  const diaActual = diasSemana[new Date().getDay()];
+  const isSmallScreen = useMediaQuery('(max-width:350px)');
   const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [type, setType] = useState(null);
   const [califyModal, setCalifyModal] = useState(false);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
-  const [openSearch, setOpenSearch] = useState(false);
   const [filterClasses, setFilterClasses] = useState('');
   const [totalClasses, setTotalClasses] = useState([]);
   const [openAchievements, setOpenAchievements] = useState(false);
   const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
   const [progress,setProgress] = useState();
+  const [fetchError,setFetchError] = useState(false)
   const [newRows, setNewRows] = useState([]);
   const [errorStars, setErrorStars] = useState(false);
   const [errorComment, setErrorComment] = useState(false);
+  const [membership, setMembership] = useState([])
+  const [userAccount, setUserAccount] = useState([])
+  const [changingStars,setChangingStars] = useState(false)
+  const [changingComment,setChangingComment] = useState(false)
+  const [viewQualifications, setViewQualifications] = useState(false)
 
+
+  const fetchUser = async () => {
+    setOpenCircularProgress(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+      }
+      const encodedUserMail = encodeURIComponent(userMail);
+      const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data = await response.json();
+      setUserAccount(data)
+      setType(data.type);      
+      const response3 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memb_user`, {
+          method: 'GET', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+      });
+      if (!response3.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data3 = await response3.json();
+      const membershipsOfUser = data3.filter(memb => memb.userId == data.uid)
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
+      const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
+      const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memberships`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const membresia = await response2.json();
+      const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
+      setMembership(firstFiler)
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      setOpenCircularProgress(false)
+      setFetchError(true);
+      setTimeout(() => {
+        setFetchError(false);
+        localStorage.removeItem('authToken');
+        window.location.reload()
+      }, 3000);
+
+    }
+  };
 
   const handleViewAchievements = () => {
     setOpenAchievements(true);
@@ -71,20 +133,7 @@ export default function Main_Page() {
         setVisibleDrawerAchievements(false);
       }, 450);
   }
-  
-  const [membership, setMembership] = useState([])
-  const [userAccount, setUserAccount] = useState([])
-  const [amountClasses,setAmountClasses] = useState(0)
-  const [changingStars,setChangingStars] = useState(false)
-  const [changingComment,setChangingComment] = useState(false)
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-  const day = String(currentDate.getDate()).padStart(2, '0');
-  const formattedDate = `${year}-${month}-${day}`;
-  const [notifications,setCantidadNotifications] = useState(0);
-  const [viewQualifications, setViewQualifications] = useState(false)
-  
+   
   const handleChangeCalifyModal = () => {
     setComment(selectedEvent.comentario)
     setStars(selectedEvent.puntuacion)
@@ -101,23 +150,7 @@ export default function Main_Page() {
     setStars(newStars);
   }
 
-  const handleOpenSearch = () => {
-    setOpenSearch(true);
-  };
-
-  const handleCloseSearch = () => {
-    setOpenSearch(false);
-    setClasses(totalClasses);
-  };
-  
-  function formatDate(date) {
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${year}-${month}-${day}`;
-  }
-
+ 
   function HalfRating() {
     return (
       <Stack spacing={1}>
@@ -143,26 +176,21 @@ export default function Main_Page() {
 
   useEffect(() => {
     const newRowsList = [];
-  
     const filteredClassesSearcher = filterClasses
       ? totalClasses.filter(item =>
           item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
         )
       : totalClasses;
+    const classById = {};
   
     filteredClassesSearcher.forEach(row => {
-      if (
-        (row.permanent === 'No' &&
-          new Date(row.dateInicio).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
-        (row.permanent === 'Si' &&
-          new Date(row.start).getTime() - new Date().getTime() <= 6 * 24 * 60 * 60 * 1000 &&
-          new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
-      ) {
-        newRowsList.push(row);
+      if (!classById[row.id] || new Date(row.start).getTime() < new Date(classById[row.id].start).getTime()) {
+        classById[row.id] = row; 
       }
     });
-  
+    Object.values(classById).forEach(row => {
+      newRowsList.push(row);
+    });
     setNewRows(newRowsList);
   }, [filterClasses, totalClasses]);
 
@@ -171,8 +199,8 @@ export default function Main_Page() {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
-          <MDBContainer>
-            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()}>
+          <MDBContainer style={{display:'flex', width: isSmallScreen700 ? '90%' : '85%'}}>
+            <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
               <MDBCol md="9" lg="7" xl="5" className="mt-5">
                 <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
                   <MDBCardBody className="p-4 text-black">
@@ -228,7 +256,7 @@ export default function Main_Page() {
                         <>
                         {selectedEvent.BookedUsers && selectedEvent.BookedUsers.includes(userMail)  ? (
                           <>
-                          {(new Date(event.start).getTime() - new Date().getTime() <= 0) ? (
+                          { event.day === diaActual &&  (new Date(event.sourceDate).getTime() - new Date().getTime() <= 0)  ? (
                             <MDBBtn
                             style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
                             rounded
@@ -249,18 +277,6 @@ export default function Main_Page() {
                         </MDBBtn>
                           )}
                             </>
-                            ) : (
-                              <>
-                              {(new Date(event.start).getTime() - new Date().getTime() <= 0) ? (
-                              
-                              <MDBBtn
-                            style={{ backgroundColor: 'red', color: 'white', width: '70%', left: '15%' }} 
-                            rounded
-                            block
-                            size="lg"
-                          >
-                            Class is today
-                          </MDBBtn>
                             ) : (
                               <>
                               {!membership[0] ? (
@@ -311,8 +327,6 @@ export default function Main_Page() {
                                 </>)
                                 }
                                 </>
-                            )}
-                            </>
                         )}
                         <button 
                           onClick={handleCloseModal}
@@ -428,13 +442,11 @@ export default function Main_Page() {
 
   const changeShowCalendar = () => {
     setShowCalendar(prevState => !prevState);
-    handleCloseSearch();
     handleCloseModal();
   };
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
-    handleCloseSearch();
   };
 
   const handleCommentChange = (event) => {
@@ -449,13 +461,13 @@ export default function Main_Page() {
   const fetchClasses = async () => {
     setOpenCircularProgress(true)
     try {
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_classes');
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_classes');
       if (!response.ok) {
         throw new Error('Error al obtener las clases: ' + response.statusText);
       }
       const data = await response.json();
       
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_salas');
+      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_salas');
       if (!response2.ok) {
         throw new Error('Error al obtener las salas: ' + response2.statusText);
       }
@@ -470,9 +482,7 @@ export default function Main_Page() {
       });
   
       const calendarEvents = [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_comments');
+      const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/get_comments');
       if (!response3.ok) {
         throw new Error('Error al obtener los comentarios: ' + response3.statusText);
       }
@@ -505,34 +515,37 @@ export default function Main_Page() {
       });
       
       dataWithSalaAndComments.forEach(clase => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const startDate = new Date(clase.dateInicio);
         const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
         const endDate = new Date(clase.dateFin);
         const CorrectEndDate = new Date(endDate.getTime() + 60 * 3 * 60 * 1000);
-  
+        console.log("esto es el correct",(CorrectEndDate.getTime()-CorrectStarDate.getTime())/(1000*60))
+        today.setHours(CorrectStarDate.getHours(), CorrectStarDate.getMinutes(), CorrectStarDate.getSeconds(), CorrectStarDate.getMilliseconds())
         if (clase.permanent === "Si") {
-          let nextStartDate = new Date(CorrectStarDate);
-          let nextEndDate = new Date(CorrectEndDate);
+          let nextStartDate = CorrectStarDate;
+          let nextEndDate = CorrectEndDate;
   
           if (nextStartDate < today) {
             const dayOfWeek = CorrectStarDate.getDay();
             let daysUntilNextClass = (dayOfWeek - today.getDay() + 7) % 7;
-            if (daysUntilNextClass === 0 && today > CorrectStarDate) {
-              daysUntilNextClass = 7;
-            }
-            nextStartDate.setDate(today.getDate() + daysUntilNextClass);
-            nextEndDate = new Date(nextStartDate.getTime() + (CorrectEndDate.getTime() - CorrectStarDate.getTime()));
+            today.setDate(today.getDate() + daysUntilNextClass);
+            nextEndDate = new Date(today.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()));
+          } else {
+            today.setDate(nextStartDate.getDate())
           }
           
           for (let i = 0; i < 4; i++) {
             calendarEvents.push({
               title: clase.name,
-              start: new Date(nextStartDate),
+              start: new Date(today),
               end: new Date(nextEndDate),
+              sourceDate: new Date(CorrectStarDate),
               allDay: false,
               ...clase,
             });
-            nextStartDate.setDate(nextStartDate.getDate() + 7);
+            today.setDate(today.getDate() + 7);
             nextEndDate.setDate(nextEndDate.getDate() + 7);
           }
         } else {
@@ -541,43 +554,27 @@ export default function Main_Page() {
             title: clase.name,
             start: new Date(CorrectStarDate),
             end: new Date(CorrectEndDate),
+            sourceDate: new Date(CorrectStarDate),
             allDay: false,
             ...clase,
           });
         }
       });
-      const response4 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assistance', {
-        method: 'GET'
-      });
-      if (!response4.ok) {
-        throw new Error('Error al obtener las salas: ' + response4.statusText);
+      
+      if (type!='client') {
+        setTimeout(() => {
+          setOpenCircularProgress(false)
+        }, 6000);
       }
-      const assistance_references = await response4.json();
-      const assitance_buscadas = assistance_references.filter(asis=>asis.uid==userAccount.uid)
-      const clases_del_profesor = calendarEvents.filter(clas => clas.owner==userMail)
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const formattedToday = `${year}-${month}-${day}`;
-      const clases_hoy = clases_del_profesor.filter(clas => {
-        const classDate = new Date(clas.start);
-        const formattedClassDate = `${classDate.getFullYear()}-${String(classDate.getMonth() + 1).padStart(2, '0')}-${String(classDate.getDate()).padStart(2, '0')}`;
-        
-        return formattedClassDate === formattedToday;
-      });
-      const clases_que_se_toma_asistencia = clases_hoy.filter(clas=> clas.BookedUsers.length>0)
-      setCantidadNotifications(clases_que_se_toma_asistencia.length-assitance_buscadas.length)
-      console.log(calendarEvents)
+      
       setEvents(calendarEvents);
-      setOpenCircularProgress(false)
-      setClasses(calendarEvents);
       setTotalClasses(calendarEvents);
     } catch (error) {
       console.error("Error fetching classes:", error);
-      setWarningConnection(true);
+      setFetchError(true);
       setOpenCircularProgress(false)
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
     }
   };
@@ -590,7 +587,7 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/book_class', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/book_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -601,7 +598,7 @@ export default function Main_Page() {
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_membership_class', {
+      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/use_membership_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -613,7 +610,7 @@ export default function Main_Page() {
         throw new Error('Error al actualizar la clase: ' + response2.statusText);
       }
 
-      const response3 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_geme', {
+      const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/use_geme', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -635,9 +632,9 @@ export default function Main_Page() {
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
-      setWarningConnection(true);
+      setFetchError(true);
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
     }
     
@@ -651,7 +648,7 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/book_class', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/book_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -662,7 +659,7 @@ export default function Main_Page() {
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/use_membership_class', {
+      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/use_membership_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -670,23 +667,22 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ id: event,membId:membership[0].id })
       });
-      if (!response.ok) {
-        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      if (!response2.ok) {
+        throw new Error('Error al actualizar la clase: ' + response2.statusText);
       }
       await fetchClasses();
       window.location.reload();
       setOpenCircularProgress(false);
       handleCloseModal();
-      //setSucceshandleClosesBook(true)
       setTimeout(() => {
         setSuccessBook(false);
       }, 3000);
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
-      setWarningConnection(true);
+      setFetchError(true);
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
     }
     
@@ -700,7 +696,7 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/unbook_class', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/unbook_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -708,7 +704,10 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ event: event,mail:userMail })
       });
-      const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/unuse_membership_class', {
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      }
+      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/unuse_membership_class', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
@@ -716,8 +715,8 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ id: event,membId:membership[0].id })
       });
-      if (!response.ok) {
-        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      if (!response2.ok) {
+        throw new Error('Error al actualizar la membresia: ' + response2.statusText);
       }
       await fetchClasses();
       window.location.reload();
@@ -729,31 +728,17 @@ export default function Main_Page() {
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
-      setWarningConnection(true);
+      setFetchError(true);
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
-    }
-  };
-
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        setErrorToken(true);
-        setTimeout(() => {
-          setErrorToken(false);
-        }, 3000);
-        throw error;
     }
   };
 
   useEffect(() => {
     let token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,()=>{},setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
@@ -761,10 +746,11 @@ export default function Main_Page() {
   }, [userAccount]);
 
   useEffect(()=> {
+    if (userAccount.length!=0) {
+      fetchMissionsProgress();
+    }
     if (userAccount) {
       fetchClasses();
-      fetchMissions();
-      fetchMissionsProgress();
     }
   },[userAccount])
 
@@ -784,7 +770,7 @@ export default function Main_Page() {
       }
       const formData = new FormData();
       formData.append('misiones', missionProgressId);
-      const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/delete_missions', {
+      const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/delete_missions', {
         method: 'DELETE', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -796,7 +782,12 @@ export default function Main_Page() {
       }
       window.location.reload();
     } catch (error) {
-        console.error("Error fetching user:", error);
+      console.error("Error fetching missions:", error);
+      setOpenCircularProgress(false);
+      setFetchError(true);
+      setTimeout(() => {
+        setFetchError(false);
+      }, 3000);
     }
   }
 
@@ -826,7 +817,7 @@ export default function Main_Page() {
         }
         let starsValue = changingStars ? stars : event.puntuacion;
         let commentValue = changingComment ? comment : event.comentario;
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_calification', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/add_calification', {
           method: 'PUT', 
           headers: {
             'Content-Type': 'application/json',
@@ -841,43 +832,13 @@ export default function Main_Page() {
         handleChangeCalifyModal()
         handleCloseModal();
       } catch (error) {
-          console.error("Error fetching user:", error);
+        console.error("Error fetching clasification:", error);
+        setOpenCircularProgress(false);
+        setFetchError(true);
+        setTimeout(() => {
+          setFetchError(false);
+        }, 3000);
       }
-    }
-  }
-
-
-  const fetchMissions = async () =>{
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const response4 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_missions`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        },
-      });
-      const missions = await response4.json();
-      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.id)
-      const formData = new FormData();
-      formData.append('misiones', missionsIds);
-      if (missionsIds.length!=0) {
-        const response5 = await fetch('https://two024-duplagalactica-li8t.onrender.com/add_mission_progress', {
-          method: 'DELETE', 
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: formData
-        });
-        if (!response5.ok) {
-          throw new Error('Error al actualizar la clase: ' + response5.statusText);
-        }
-      } 
-    } catch (e) {
-
     }
   }
 
@@ -900,37 +861,63 @@ export default function Main_Page() {
   }
 
   const fetchMissionsProgress = async () =>{
+    setOpenCircularProgress(true)
     try {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response4 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_missions_progress`, {
+      const formData = new FormData();
+      formData.append('cant', 1);
+      formData.append('uid', userAccount.uid);
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/assign_mission', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData,
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response5.statusText);
+      }
+
+      const response4 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_progress`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
         },
       });
       const missions = await response4.json();
-      const progress = missions.filter(mis => mis.uid === userAccount.uid)
-      if (progress.length<3 && (userAccount.length!=0)) {
-        const formData = new FormData();
-        formData.append('cant', (3-progress.length));
-        formData.append('uid', userAccount.uid);
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/assign_mission', {
-              method: 'POST',
-              headers: {
-                  'Authorization': `Bearer ${authToken}`
-              },
-              body: formData,
+      const missionsIds = missions.filter(mis => mis.uid === userAccount.uid).map(mis => mis.idMission)
+      const formData2 = new FormData();
+      formData2.append('misiones', missionsIds);
+      formData2.append('uid',userAccount.uid)
+      if (missionsIds.length!=0) {
+        const response5 = await fetch('https://two025-duplagalactica-final.onrender.com/add_mission_progress', {
+          method: 'DELETE', 
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: formData2
         });
-        if (!response.ok) {
+        if (!response5.ok) {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
-        window.location.reload();
-      }
-      const response5 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_missions_template`, {
+      } 
+
+
+      const response6 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_progress`, {
+        method: 'GET', 
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
+      });
+      const missions2 = await response6.json();
+      const progress = missions2.filter(mis => mis.uid === userAccount.uid)
+
+
+      const response5 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_missions_template`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -944,76 +931,45 @@ export default function Main_Page() {
         const template = templates.find(temp => temp.id === mission.mid);
         return template ? { ...mission, ...template } : mission;
       });
+      console.log("resultado nuevo",enrichedProgress)
       setProgress(enrichedProgress)
+      setTimeout(() => {
+        setOpenCircularProgress(false)
+      }, 1000);
     } catch (e) {
-    }
+      setOpenCircularProgress(false);
+      setFetchError(true);
+      setTimeout(() => {
+        setFetchError(false);
+      }, 3000);
+    } 
   }
 
-  const fetchUser = async () => {
-    setOpenCircularProgress(true);
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
-      }
-      const encodedUserMail = encodeURIComponent(userMail);
-      const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-          method: 'GET', 
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-      });
-      if (!response.ok) {
-          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-      }
-      const data = await response.json();
-      setUserAccount(data)
-      setType(data.type);
-      
-      const response3 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memb_user`, {
-          method: 'GET', 
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-      });
-      if (!response3.ok) {
-          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-      }
-      const data3 = await response3.json();
-      const membershipsOfUser = data3.filter(memb => memb.userId == data.uid)
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const formattedDate = `${year}-${month}-${day}`;
-      const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
-      const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
-      const response2 = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_memberships`, {
-        method: 'GET', 
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        },
-      });
-      const membresia = await response2.json();
-      const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
-      setMembership(firstFiler)
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-  };
-  
   return (
     <div className="App">
       {circularProgressClasses ? (<><loader></loader></>):(<></>)}
+      {fetchError ? (
+        <div className='alert-container'>
+          <div className='alert-content'>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Slide direction="up" in={fetchError} mountOnEnter unmountOnExit >
+                <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                  Connection Error. Try again later!
+                </Alert>
+              </Slide>
+            </Box>
+          </div>
+        </div>
+      ) : (
+        null
+      )}
       <SuccessAlert successAlert={successBook} message={'Successfully Booked!'}/>
       <SuccessAlert successAlert={successUnbook} message={'Successfully Unbooked!'}/>
-      <WarningConnectionAlert warningConnection={warningConnection}/>
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
-      {type==='client' ? (
+      {type==='client' && showCalendar ? (
         <>
-        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '186px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container-buttons' style={{left: isSmallScreen700 ? '6vh' : '8vh', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container-buttons' onClick={handleViewAchievements}>
             <Button onClick={handleViewAchievements}
               style={{
@@ -1033,7 +989,7 @@ export default function Main_Page() {
             </Button>
           </div>
         </div>
-        <div className='input-container-buttons' style={{left: isSmallScreen700 ? showCalendar ? '114px' : openSearch ? '235px' : '168px' : showCalendar ? '96px' : openSearch ? '406px' :'142px', position: 'absolute', top: '0.5%'}}>
+        <div className='input-container-buttons' style={{left: isSmallScreen700? '12vh' : '16vh', position: 'absolute', top: '0.5%'}}>
           <div className='input-small-container-buttons'>
             <Button
               style={{
@@ -1057,60 +1013,6 @@ export default function Main_Page() {
         </>
       ):(
       <>
-      {type==='coach' ? (
-        <>
-        {notifications>0 ? (
-        <>
-        <div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
-            <Button
-              style={{
-                  backgroundColor: '#48CFCB',
-                  position: 'absolute',
-                  borderRadius: '25%',
-                  width: '5vh',
-                  height: '5vh',
-                  minWidth: '0',
-                  minHeight: '0',
-                  padding: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-              }}
-              >
-              <NotificationsActiveIcon sx={{ color: 'red' }} />
-              <p style={{color:'red'}}>{notifications}</p>
-            </Button>
-          </div>
-        </div>
-        </>
-        ) :
-        (<><div className='input-container' style={{marginLeft: isSmallScreen700 ? showCalendar ? '60px' : openSearch ? '194px' : '114px' : showCalendar ? '50px' : openSearch ? '360px' :'96px', width: isSmallScreen700 ? '50%' : '30%', position: 'absolute', top: '0.5%'}}>
-          <div className='input-small-container'>
-            <Button
-              style={{
-                  backgroundColor: '#48CFCB',
-                  position: 'absolute',
-                  borderRadius: '50%',
-                  width: '5vh',
-                  height: '5vh',
-                  minWidth: '0',
-                  minHeight: '0',
-                  padding: '0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-              }}
-              >
-              <NotificationsIcon sx={{ color: '#424242' }} />
-            </Button>
-          </div>
-        </div></>)
-        }
-        </>
-      ):
-      (<></>)
-      }
       </>)
       }
       {visibleDrawerAchievements && type === 'client' && (
@@ -1199,97 +1101,23 @@ export default function Main_Page() {
         </div>
         ) : (
           <>
-            <div className='input-container-buttons' style={{left: isSmallScreen700 ? '60px' : '50px', position: 'absolute', top: '0.5%', paddingRight: '0px'}}>
-              <div className='input-small-container-buttons'>
-                {openSearch ? (
-                    <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search..."
-                    style={{
-                      borderRadius: '10px',
-                      padding: '0 10px',
-                      transition: 'all 0.3s ease',
-                      height: '5vh',
-                      width: isSmallScreen700 ? '125px' : '300px'
-                    }}
-                    id={filterClasses}
-                    onChange={(e) => setFilterClasses(e.target.value)} 
-                  />
-                ) : (
-                  <Button onClick={handleOpenSearch}
-                  style={{
-                    backgroundColor: '#48CFCB',
-                    borderRadius: '50%',
-                    width: '5vh',
-                    height: '5vh',
-                    minWidth: '0',
-                    minHeight: '0',
-                    padding: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <SearchIcon sx={{ color: '#424242' }} />
-                </Button>
-                )}
-                </div>
-          </div>
-          <div className="Table-Container">
+           <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen700} searchingParameter={'class name'}/>
+           <div className="Table-Container">
             <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
           </div>
         </>
       )}
       </>
-  ) : (
-    <>
-    <div className='leftBar' style={{zIndex:'1000'}}>
-      {openSearch ? (
-          <input
-          type="text"
-          className="search-input"
-          placeholder="Search..."
-          style={{
-            position: 'absolute',
-            top: '0.5vh',
-            left: '7vh',
-            width: '60vh',
-            height: '5vh',
-            borderRadius: '10px',
-            padding: '0 10px',
-            transition: 'all 0.3s ease',
-          }}
-          id={filterClasses}
-          onChange={(e) => setFilterClasses(e.target.value)} 
-        />
-      ) : (
-        <Button onClick={handleOpenSearch}
-        style={{
-          backgroundColor: '#48CFCB',
-          position: 'absolute',
-          borderRadius: '50%',
-          top: '0.5vh',
-          left: '7vh ',
-          width: '5vh',
-          height: '5vh',
-          minWidth: '0',
-          minHeight: '0',
-          padding: '0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <SearchIcon sx={{ color: '#424242' }} />
-      </Button>
-      )}
-  </div>
-  <div className="Table-Container">
-    <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
-  </div>
-</>
-  )}
+    ) : (
+      <>
+      
+      <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen700} searchingParameter={'class name'}/>
+    
+    <div className="Table-Container">
+      <EnhancedTable newRows={newRows} user={userMail} userType={type} handleSelectEvent={handleSelectEvent}/>
+    </div>
+  </>
+    )}
   {selectedEvent && (
     <ECommerce event={selectedEvent}/>
   )}
@@ -1312,16 +1140,6 @@ export default function Main_Page() {
             <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
                 <div className="input-small-container">
                      <label htmlFor="stars" style={{color:'#14213D'}}>Stars:</label>
-                    {/*<input 
-                    type="number" 
-                    id="stars" 
-                    name="stars"
-                    value={stars}
-                    min="1"
-                    step='1'
-                    max="5"
-                    onChange={handleStarsChange}
-                    /> */}
                     <HalfRating/>
                     {errorStars && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Select stars</p>)}
                 </div>

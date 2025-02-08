@@ -19,23 +19,23 @@ export default function CreateAccount() {
     const [date, setDate] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [errors, setErrors] = useState([]);
     const [typeAccount,setTypeAccount] = useState('')
     const navigate = useNavigate();
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const [success, setSuccess] = useState(false);
     const [failure, setFailure] = useState(false);
-    const [failureErrors, setFailureErrors] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(true)
     const auth = getAuth();
     const [errorLastName, setErrorLastName] = useState(false);
     const [errorMail, setErrorMail] = useState(false);
     const [errorPassword, setErrorPassword] = useState(false);
     const [errorName, setErrorName] = useState(false);
     const [errorDate, setErrorDate] = useState(false);
+    const id = openPasswordRequirements ? 'simple-popper' : undefined;
     const [errorType, setErrorType] = useState(false);
     const [errorEmailRepeated, setErrorEmailRepeated] = useState(false);
     const isSmallScreen = useMediaQuery('(max-width:700px)');
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [openPasswordRequirements, setOpenPasswordRequirements] = useState(false);
 
     const validateForm = () => {
         let errors = [];
@@ -78,17 +78,18 @@ export default function CreateAccount() {
         const isValidLength = password.length > 7;
 
         if(!(hasNumber && hasLowerCase && hasUpperCase && hasSpecialChar && isValidLength)){
+            errors.push('Please enter a valid password.');
             setErrorPassword(true);
         } else {
             setErrorPassword(false);
         }
 
         if(typeAccount===''){
+            errors.push('Please enter a type of account');
             setErrorType(true);
         } else {
             setErrorType(false);
         }
-        setErrors(errors);
         return errors.length === 0;
     }
 
@@ -108,7 +109,7 @@ export default function CreateAccount() {
                     MissionsComplete:0,
                     type: typeAccount
                 };
-                await fetch('https://two024-duplagalactica-li8t.onrender.com/create_user', {
+                await fetch('https://two025-duplagalactica-final.onrender.com/create_user', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ export default function CreateAccount() {
                     body: JSON.stringify(newUser),
                 });
                 await sendEmailVerification(firebaseUser, {
-                    url: 'https://2024-duplagalactica.vercel.app/redirections?mode=verifyEmail', 
+                    url: 'https://2025-duplagalactica-final.vercel.app/redirections?mode=verifyEmail', 
                     handleCodeInApp: true
                 });
                 setOpenCircularProgress(false);
@@ -143,9 +144,7 @@ export default function CreateAccount() {
         const token = localStorage.getItem('authToken');
         if (token) {
           navigate('/');
-        } else {
-          setIsAuthenticated(false);
-        }
+        } 
       }, []);
 
     const handleSubmit = (e) => {
@@ -155,23 +154,13 @@ export default function CreateAccount() {
         }
     };
 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [openPasswordRequirements, setOpenPasswordRequirements] = useState(false);
     const handleOpenPasswordRequirements = (event) => {
       setAnchorEl(anchorEl ? null : event.currentTarget);
       setOpenPasswordRequirements(!openPasswordRequirements)
     };
-    const id = openPasswordRequirements ? 'simple-popper' : undefined;
+
     return (
         <div className='App'>
-            {isAuthenticated ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <LeftBar value={'profile'}/>
             <div className='create-account-container-new'>
@@ -208,7 +197,7 @@ export default function CreateAccount() {
                                 value={date} 
                                 onChange={(e) => setDate(e.target.value)} 
                             />
-                            {errorDate && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a date</p>)}
+                            {errorDate && (<p style={{color: 'red', margin: '0px', textAlign: 'left'}}>Enter a valid date</p>)}
                         </div>
                         <div className="input-container">
                             <label htmlFor="email" style={{color:'#424242'}}>Email:</label>
@@ -286,42 +275,6 @@ export default function CreateAccount() {
             ) : (
                 null
             )}
-            { failureErrors ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                        <div>
-                            <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                            Error creating account!
-                            </Alert>
-                            {errors.length > 0 && errors.map((error, index) => (
-                            <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                                <li>{error}</li>
-                            </Alert>
-                            ))}
-                        </div>
-                        </Slide>
-                    </Box>
-                    </div>
-                </div>
-              
-            ) : (
-                null
-            )}
-            {/* { failureEmailRepeated ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureEmailRepeated} mountOnEnter unmountOnExit >
-                        <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>An account already exists with this email!</Alert>
-                        </Slide>
-                    </Box>
-                </div>
-            </div>
-            ) : (
-                null
-            )} */}
             { failure ? (
                 <div className='alert-container'>
                     <div className='alert-content'>
@@ -336,7 +289,6 @@ export default function CreateAccount() {
                 null
             )}
             </>
-        )}
         </div>
     );
 }

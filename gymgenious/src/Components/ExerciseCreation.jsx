@@ -1,15 +1,11 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMediaQuery } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
-import {jwtDecode} from "jwt-decode";
-import { Button } from '@mui/material';
+import verifyToken from '../fetchs/verifyToken.jsx'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx';
 
@@ -18,29 +14,39 @@ export default function ExerciseCreation() {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [image, setImage] = useState(null);
-  const navigate = useNavigate();
   const [userMail,setUserMail] = useState(null);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
-  const [errors, setErrors] = useState([]);
-  const [failureErrors, setFailureErrors] = useState(false);
-  const isSmallScreen = useMediaQuery('(max-width:700px)');
+  const [errorToken,setErrorToken] = useState(false);
+  const [errorName,setErrorName] = useState(false)
+  const [errorDesc,setErrorDesc] = useState(false)
+  const [errorImage,setErrorImage] = useState(false)
 
   const validateForm = () => {
-    let errors = [];
-    
+    let res = true
     if (name === '') {
-        errors.push('Please assign a name to the exercise.');
+      setErrorName(true)
+      res = false
+    } else {
+      setErrorName(false)
     }
 
     if (desc === '') {
-      errors.push('Please assign a description to the exercise.');
+      setErrorDesc(true)
+      res = false
+    } else {
+      setErrorDesc(false)
     }
 
-    setErrors(errors);
-    return errors.length===0;
-}
+    if (!image) {
+      setErrorImage(true);
+      res = false
+    } else {
+      setErrorImage(false)
+    }
+    return res
+  }
 
   const handleCreateExersice = async () => {
     setOpenCircularProgress(true);
@@ -58,7 +64,7 @@ export default function ExerciseCreation() {
           console.error('Token no disponible en localStorage');
           return;
         }
-        const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/create_exersice', {
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_exersice', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -85,10 +91,6 @@ export default function ExerciseCreation() {
     }
   } else {
     setOpenCircularProgress(false);
-    setFailureErrors(true);
-    setTimeout(() => {
-        setFailureErrors(false);
-        }, 3000);
   }
 } 
 
@@ -100,21 +102,12 @@ export default function ExerciseCreation() {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-        verifyToken(token);
+        verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
     } else {
         console.error('No token found');
     }
   }, []);
 
-  const verifyToken = async (token) => {
-    try {
-        const decodedToken = jwtDecode(token);
-        setUserMail(decodedToken.email);
-    } catch (error) {
-        console.error('Error al verificar el token:', error);
-        throw error;
-    }
-  };
 
   return (
     <div className='exercise-creation-container'>
@@ -137,18 +130,12 @@ export default function ExerciseCreation() {
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
               />
+              {errorName && (<p style={{color: 'red', margin: '0px'}}>There is no name</p>)}
             </div>
           </div>
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
               <div className="input-small-container">
                   <label htmlFor="desc" style={{color:'#14213D'}}>Desc:</label>
-                  {/* <input 
-                  type="text" 
-                  id="desc" 
-                  name="desc" 
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)} 
-                  /> */}
                   <textarea 
                   onChange={(e) => setDesc(e.target.value)}
                   name="desc"
@@ -157,6 +144,7 @@ export default function ExerciseCreation() {
                   value={desc}
                   maxLength={300}
                   style={{maxHeight: '150px', width: '100%', borderRadius: '8px'}} />
+                  {errorDesc && (<p style={{color: 'red', margin: '0px'}}>There is no description</p>)}
               </div>
           </div>
           <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -171,6 +159,7 @@ export default function ExerciseCreation() {
                 onChange={(e) => setImage(e.target.files[0])                  
                 }  
               />
+              {errorImage && (<p style={{color: 'red', margin: '0px'}}>There are images uploaded</p>)}
             </div>
           </div>
           <button type="submit" className='button_login'>
@@ -201,29 +190,6 @@ export default function ExerciseCreation() {
       ) : (
           null
       )}
-      { failureErrors ? (
-          <div className='alert-container'>
-              <div className='alert-content'>
-              <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                  <div>
-                      <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                      Error creating exercise!
-                      </Alert>
-                      {errors.length > 0 && errors.map((error, index) => (
-                      <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                          <li>{error}</li>
-                      </Alert>
-                      ))}
-                  </div>
-                  </Slide>
-              </Box>
-              </div>
-          </div>
-        
-      ) : (
-          null
-      )}
       { failure ? (
           <div className='alert-container'>
               <div className='alert-content'>
@@ -238,6 +204,21 @@ export default function ExerciseCreation() {
           </div>
       ) : (
           null
+      )}
+      {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
       )}
     </div>
   );

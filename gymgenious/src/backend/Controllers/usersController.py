@@ -3,52 +3,45 @@ from services.usersRoutes import leave_ranking,join_ranking,get_rankings,create_
 
 def use_geme_route(mail):
     try:
-        booked_class = use_geme(mail)
-        return jsonify({"message": "Usuario actualizado exitosamente"}), 200
+        use_geme(mail)
+        return jsonify({"message": "Gem used successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def join_ranking_route(rankingID,userMail):
     try:
-        ranking = join_ranking(rankingID,userMail)
-        return jsonify({"message": "Ranking actualizado exitosamente"}), 200
+        join_ranking(rankingID,userMail)
+        return jsonify({"message": "Join to ranking successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-    
+      
 def leave_ranking_route(rankingID,userMail):
     try:
-        ranking = leave_ranking(rankingID,userMail)
-        return jsonify({"message": "Ranking actualizado exitosamente"}), 200
+        leave_ranking(rankingID,userMail)
+        return jsonify({"message": "Ranking left successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def get_unique_user_by_email_route(mail):
     try:
-        print(mail)
         user = get_unique_user_by_email(mail)
-        print("controller final",user)
         return jsonify(user), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
-
 
 def get_rankings_route():
     try:
-        user = get_rankings()
-        return jsonify(user), 200
+        rankings = get_rankings()
+        return jsonify(rankings), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
 
-
 def get_user_route(password,mail):
     try:
-        password = request.args.get('password')
-        mail = request.args.get('mail')
         user = get_user(mail, password)
         return jsonify(user), 200
     except ValueError as e:
@@ -58,7 +51,6 @@ def get_user_route(password,mail):
 
 def create_user_route(user):
     try:
-        user = request.json
         created_user = create_user(user)
         return jsonify(created_user), 201
     except RuntimeError as e:
@@ -66,7 +58,6 @@ def create_user_route(user):
 
 def send_email_route(to_email):
     try:
-        to_email = request.json.get('toEmail')
         result = send_email(to_email)
         return jsonify(result), 200
     except RuntimeError as e:
@@ -81,18 +72,17 @@ def get_users_route():
 
 def get_clients_users_route():
     try:
-        users_list = get_clients_users()
-        return jsonify(users_list), 200
+        clients_list = get_clients_users()
+        return jsonify(clients_list), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 def get_coach_users_route():
     try:
-        users_list = get_coach_users()
-        return jsonify(users_list), 200
+        coaches_list = get_coach_users()
+        return jsonify(coaches_list), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 def get_client_users_no_match_routine_route(routine):
     try:
@@ -104,15 +94,14 @@ def get_client_users_no_match_routine_route(routine):
 def update_users_info_route(newUser):
     try:
         update_client_user(newUser)
-        return jsonify({"message": "Usuario actualizado exitosamente"}), 200
+        return jsonify({"message": "User updates successfuly"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 def create_ranking_route(newRanking):
     try:
-        exce = create_ranking(newRanking)
-        return jsonify(exce), 200
+        ranking_created = create_ranking(newRanking)
+        return jsonify(ranking_created), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except RuntimeError as e:

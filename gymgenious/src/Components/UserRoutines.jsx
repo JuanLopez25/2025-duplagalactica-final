@@ -11,11 +11,10 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import { useState, useEffect } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
-import { jwtDecode } from "jwt-decode";
+import verifyToken from '../fetchs/verifyToken.jsx';
 import NewLeftBar from '../real_components/NewLeftBar';
 import ColorToggleButton from '../real_components/ColorToggleButton.jsx';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import DaySelection from '../real_components/DaySelection.jsx';
 import { useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
@@ -23,6 +22,7 @@ import Slide from '@mui/material/Slide';
 import Loader from '../real_components/loader.jsx';
 
 export default function StickyHeadTable() {
+
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [orderBy, setOrderBy] = useState('name');
@@ -34,15 +34,55 @@ export default function StickyHeadTable() {
     const isSmallScreen = useMediaQuery('(max-width:700px)');
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [viewExercises, setViewExercises] = useState(false);
+    const [warningConnection, setWarningConnection] = useState(false);
     const [rows, setRows] = useState([]);
     const [errorToken, setErrorToken] = useState(false);
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
-    const [dense, setDense] = useState(false);
     const navigate = useNavigate();
     const [type, setType] = useState(null);
     const [warningFetchingUserRoutines, setWarningFetchingUserRoutines] = useState(false);
     const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [maxHeight, setMaxHeight] = useState('600px');
+
+     useEffect(() => {
+        if (type!='client' && type!=null) {
+            navigate('/');      
+        }
+    }, [type]);
+
+    const fetchUser = async () => {
+    try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            console.error('Token no disponible en localStorage');
+            return;
+        }
+        const encodedUserMail = encodeURIComponent(userMail);
+        const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
+        method: 'GET', 
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        }
+    });
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+        }
+        const data = await response.json();
+        setType(data.type);
+        if(data.type!='client'){
+            navigate('/');
+        }
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        setOpenCircularProgress(false)
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+            localStorage.removeItem('authToken');
+            navigate('/')
+        }, 3000);
+    }
+    };
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -81,7 +121,7 @@ export default function StickyHeadTable() {
               console.error('Token no disponible en localStorage');
               return;
             }
-            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_assigned_routines', {
+            const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_assigned_routines', {
                 method: 'GET', 
                 headers: {
                   'Authorization': `Bearer ${authToken}`
@@ -94,7 +134,27 @@ export default function StickyHeadTable() {
             const filteredRows = data.filter((row) =>
                 row.users.some((u) => u === userMail)
             );
-            setRows(filteredRows);
+            
+            const routinesData = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            if (!routinesData.ok) {
+                throw new Error('Error fetching routines: ' + routinesData.statusText);
+            }
+            const routines = await routinesData.json();
+            const combinedData = filteredRows.map(assignedRoutine => {
+                const routine = routines.find(routine => routine.id === assignedRoutine.id);
+                if (routine) {
+                    return {
+                        ...assignedRoutine,
+                        routine: routine.name
+                    };
+                }
+            });
+            setRows(combinedData);
             setOpenCircularProgress(false);
         } catch (error) {
             setOpenCircularProgress(false);
@@ -114,7 +174,7 @@ export default function StickyHeadTable() {
                 console.error('Token no disponible en localStorage');
                 return;
             }
-            const response = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_routines', {
+            const response = await fetch('https://two025-duplagalactica-final.onrender.com/get_routines', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -125,7 +185,7 @@ export default function StickyHeadTable() {
             }
             const routines = await response.json();
             const filteredRows = routines.filter((row) => row.name === routineName);
-            const response2 = await fetch('https://two024-duplagalactica-li8t.onrender.com/get_excersices', {
+            const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/get_excersices', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -179,25 +239,10 @@ export default function StickyHeadTable() {
         }
     };
     
-
-    const verifyToken = async (token) => {
-        try {
-            const decodedToken = jwtDecode(token);
-            setUserMail(decodedToken.email);
-        } catch (error) {
-            console.error('Error al verificar el token:', error);
-            setErrorToken(true);
-            setTimeout(() => {
-              setErrorToken(false);
-            }, 3000);
-            throw error;
-        }
-      };
-
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token);
+            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
         } else {
             navigate('/');
             console.error('No token found');
@@ -205,44 +250,18 @@ export default function StickyHeadTable() {
         }
       }, []);
 
-      useEffect(() => {
+    useEffect(() => {
         if (userMail) {
             fetchUser();
         }
     }, [userMail]);
 
-      useEffect(() => {
-        if(type==='client'){
-            fetchRoutines();
-        }
-      }, [type])
-    
-      const fetchUser = async () => {
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-              console.error('Token no disponible en localStorage');
-              return;
-            }
-          const encodedUserMail = encodeURIComponent(userMail);
-          const response = await fetch(`https://two024-duplagalactica-li8t.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
-            method: 'GET', 
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-        });
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-            }
-            const data = await response.json();
-            setType(data.type);
-            if(data.type!='client'){
-              navigate('/');
-            }
-        } catch (error) {
-            console.error("Error fetching user:", error);
-        }
-      };
+    useEffect(() => {
+    if(type==='client'){
+        fetchRoutines();
+    }
+    }, [type])
+
 
     useEffect(() => {
         if (selectedDay) {
@@ -284,14 +303,6 @@ export default function StickyHeadTable() {
 
     return (
         <div className="App">
-            {type!='client' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <NewLeftBar />
             <div className="Table-Container">
@@ -315,7 +326,7 @@ export default function StickyHeadTable() {
                                 borderCollapse: 'collapse',
                                 }}
                                 aria-labelledby="tableTitle"
-                                size={dense ? 'small' : 'medium'}
+                                size={'medium'}
                             >
                                 <TableHead>
                                     <TableRow sx={{ height: '5vh', width: '5vh' }}>
@@ -421,6 +432,7 @@ export default function StickyHeadTable() {
                     </Paper>
                 </Box>
             </div>
+            
             {selectedEvent && (
                 <div className="Modal" onClick={handleCloseModal}>
                     <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>
@@ -472,6 +484,36 @@ export default function StickyHeadTable() {
                     <Loader></Loader>
                 </Backdrop>
             )}
+            {warningConnection ? (
+                <div className='alert-container'>
+                <div className='alert-content'>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                        Connection Error. Try again later!
+                        </Alert>
+                    </Slide>
+                    </Box>
+                </div>
+                </div>
+            ) : (
+                null
+            )}
+            {errorToken ? (
+                <div className='alert-container'>
+                <div className='alert-content'>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                        </Alert>
+                    </Slide>
+                    </Box>
+                </div>
+                </div>
+            ) : (
+                null
+            )}
             { warningFetchingUserRoutines ? (
                     <div className='alert-container'>
                         <div className='alert-content'>
@@ -488,7 +530,6 @@ export default function StickyHeadTable() {
                     null
                 )}
             </>
-        )}
         </div>
     );
 }

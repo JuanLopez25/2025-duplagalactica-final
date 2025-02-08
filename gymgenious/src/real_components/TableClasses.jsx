@@ -11,15 +11,7 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Paper from '@mui/material/Paper';
 import { visuallyHidden } from '@mui/utils';
-import { MDBCol, MDBContainer, MDBRow, MDBCard, MDBCardText, MDBCardBody, MDBCardImage, MDBBtn, MDBTypography, MDBIcon } from 'mdb-react-ui-kit';
-import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
-import WarningConnectionAlert from '../real_components/WarningConnectionAlert.jsx';
-import ErrorTokenAlert from '../real_components/ErrorTokenAlert.jsx';
-import SuccessAlert from '../real_components/SuccessAlert.jsx';
-import EmailIcon from '@mui/icons-material/Email';
-import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
-import CloseIcon from '@mui/icons-material/Close';
 
 function EnhancedTable({ newRows, user, userType, handleSelectEvent }) {
   const [order, setOrder] = useState('asc');
@@ -184,18 +176,7 @@ function EnhancedTable({ newRows, user, userType, handleSelectEvent }) {
               ) : (
                 <>
                   {visibleRows.map((row) => {
-                    const conditions = (
-                      (row.permanent === 'No' &&
-                        (new Date(row.dateInicio).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-                        (new Date(row.dateInicio).getTime() >= new Date().setHours(0, 0, 0, 0))
-                        )
-                        ||
-                      (row.permanent === 'Si' && 
-                        (new Date(row.start).getTime() - new Date().getTime() <= 7 * 24 * 60 * 60 * 1000) &&
-                        (new Date(row.start).getTime() >= new Date().setHours(0, 0, 0, 0))
-                      )
-                    )
-                    const isTransparent = user && userType === 'client' && conditions;
+                    const isTransparent = user && userType === 'client';
                     return (
                       <TableRow
                         onClick={() => handleSelectEvent(row)}
