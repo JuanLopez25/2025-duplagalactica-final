@@ -24,6 +24,7 @@ export default function ResetPassword() {
     const [failure, setFailure] = useState(false);
     const [warningResettingPassword, setWarningResettingPassword] = useState(false);
     const isSmallScreen = useMediaQuery('(max-width:700px)');
+    const [warningConnection, setWarningConnection] = useState(false);
     const auth = getAuth();
     
     useEffect(() => {
@@ -37,7 +38,7 @@ export default function ResetPassword() {
     
       useEffect(() => {
         if (userMail) {
-            fetchUser(()=>{},setOpenCircularProgress,userMail);
+            fetchUser(()=>{},setOpenCircularProgress,userMail,setWarningConnection);
         }
       }, [userMail]);
 
@@ -100,6 +101,21 @@ export default function ResetPassword() {
                                     Invalid Token!
                                 </Alert>
                             </Slide>
+                        </Box>
+                    </div>
+                </div>
+            ) : (
+                null
+            )}
+            {warningConnection ? (
+                <div className='alert-container'>
+                    <div className='alert-content'>
+                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                        <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                            <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                            Connection Error. Try again later!
+                            </Alert>
+                        </Slide>
                         </Box>
                     </div>
                 </div>

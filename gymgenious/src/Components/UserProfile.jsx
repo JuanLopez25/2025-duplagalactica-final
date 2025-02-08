@@ -21,7 +21,6 @@ export default function CreateAccount() {
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [date, setDate] = useState('');
-    const [email, setEmail] = useState('');
     const [nameFetch, setNameFetch] = useState('');
     const [lastNameFetch, setLastNameFetch] = useState('');
     const [dateFetch, setDateFetch] = useState('');
@@ -81,7 +80,7 @@ export default function CreateAccount() {
                 Name: name || nameFetch,
                 Lastname: lastName || lastNameFetch,
                 Birthday: date || dateFetch,
-                Mail: email || emailFetch
+                Mail: emailFetch
             };
 
             const authToken = localStorage.getItem('authToken');
@@ -163,14 +162,6 @@ export default function CreateAccount() {
 
     return (
         <div className='App'>
-            {!userMail ? (
-                <Backdrop
-                sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                open={true}
-                >
-                    <Loader></Loader>
-                </Backdrop>
-            ) : (
             <>
                 <LeftBar/>
                 {openCircularProgress ? (
@@ -292,7 +283,7 @@ export default function CreateAccount() {
                                     style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'auto'}}
                                     id="email"
                                     name="email"
-                                    value={email}
+                                    value={emailFetch}
                                     type='text'
                                     placeholder={emailFetch}
                                     disabled={true}
@@ -330,7 +321,6 @@ export default function CreateAccount() {
           </section>
                 </div>
             </>
-            )}
         </div>
     );
 }

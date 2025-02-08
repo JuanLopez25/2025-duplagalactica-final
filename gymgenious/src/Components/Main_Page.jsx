@@ -8,7 +8,8 @@ import verifyToken from '../fetchs/verifyToken.jsx';
 import Calendar from '../real_components/Calendar.jsx';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import EnhancedTable from '../real_components/TableClasses.jsx';
-import WarningConnectionAlert from '../real_components/WarningConnectionAlert.jsx';
+import Alert from '@mui/material/Alert';
+import Slide from '@mui/material/Slide';
 import ErrorTokenAlert from '../real_components/ErrorTokenAlert.jsx';
 import SuccessAlert from '../real_components/SuccessAlert.jsx';
 import EmailIcon from '@mui/icons-material/Email';
@@ -33,7 +34,6 @@ export default function Main_Page() {
   const [showCalendar, setShowCalendar] = useState(true);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [userMail,setUserMail] = useState(null);
-  const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const [successBook,setSuccessBook] = useState(false);
   const [successUnbook,setSuccessUnbook] = useState(false);
@@ -50,6 +50,7 @@ export default function Main_Page() {
   const [openAchievements, setOpenAchievements] = useState(false);
   const [visibleDrawerAchievements, setVisibleDrawerAchievements] = useState(false);
   const [progress,setProgress] = useState();
+  const [fetchError,setFetchError] = useState(false)
   const [newRows, setNewRows] = useState([]);
   const [errorStars, setErrorStars] = useState(false);
   const [errorComment, setErrorComment] = useState(false);
@@ -80,8 +81,7 @@ export default function Main_Page() {
       }
       const data = await response.json();
       setUserAccount(data)
-      setType(data.type);
-      
+      setType(data.type);      
       const response3 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memb_user`, {
           method: 'GET', 
           headers: {
@@ -110,7 +110,15 @@ export default function Main_Page() {
       const firstFiler = membresia.filter(memb => membershipIds.includes(memb.id))
       setMembership(firstFiler)
     } catch (error) {
-        console.error("Error fetching user:", error);
+      console.error("Error fetching user:", error);
+      setOpenCircularProgress(false)
+      setFetchError(true);
+      setTimeout(() => {
+        setFetchError(false);
+        localStorage.removeItem('authToken');
+        window.location.reload()
+      }, 3000);
+
     }
   };
 
@@ -125,8 +133,7 @@ export default function Main_Page() {
         setVisibleDrawerAchievements(false);
       }, 450);
   }
-  
-  
+   
   const handleChangeCalifyModal = () => {
     setComment(selectedEvent.comentario)
     setStars(selectedEvent.puntuacion)
@@ -166,6 +173,7 @@ export default function Main_Page() {
       </Stack>
     );
   }
+
   useEffect(() => {
     const newRowsList = [];
     const filteredClassesSearcher = filterClasses
@@ -552,20 +560,21 @@ export default function Main_Page() {
           });
         }
       });
-      console.log(calendarEvents)
+      
       if (type!='client') {
         setTimeout(() => {
           setOpenCircularProgress(false)
         }, 6000);
       }
+      
       setEvents(calendarEvents);
       setTotalClasses(calendarEvents);
     } catch (error) {
       console.error("Error fetching classes:", error);
-      setWarningConnection(true);
+      setFetchError(true);
       setOpenCircularProgress(false)
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
     }
   };
@@ -623,9 +632,9 @@ export default function Main_Page() {
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
-      setWarningConnection(true);
+      setFetchError(true);
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
     }
     
@@ -658,8 +667,8 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ id: event,membId:membership[0].id })
       });
-      if (!response.ok) {
-        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      if (!response2.ok) {
+        throw new Error('Error al actualizar la clase: ' + response2.statusText);
       }
       await fetchClasses();
       window.location.reload();
@@ -671,9 +680,9 @@ export default function Main_Page() {
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
-      setWarningConnection(true);
+      setFetchError(true);
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
     }
     
@@ -695,6 +704,9 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ event: event,mail:userMail })
       });
+      if (!response.ok) {
+        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      }
       const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/unuse_membership_class', {
         method: 'PUT', 
         headers: {
@@ -703,8 +715,8 @@ export default function Main_Page() {
         },
         body: JSON.stringify({ id: event,membId:membership[0].id })
       });
-      if (!response.ok) {
-        throw new Error('Error al actualizar la clase: ' + response.statusText);
+      if (!response2.ok) {
+        throw new Error('Error al actualizar la membresia: ' + response2.statusText);
       }
       await fetchClasses();
       window.location.reload();
@@ -716,9 +728,9 @@ export default function Main_Page() {
     } catch (error) {
       console.error("Error fetching classes:", error);
       setOpenCircularProgress(false);
-      setWarningConnection(true);
+      setFetchError(true);
       setTimeout(() => {
-        setWarningConnection(false);
+        setFetchError(false);
       }, 3000);
     }
   };
@@ -770,7 +782,12 @@ export default function Main_Page() {
       }
       window.location.reload();
     } catch (error) {
-        console.error("Error fetching user:", error);
+      console.error("Error fetching missions:", error);
+      setOpenCircularProgress(false);
+      setFetchError(true);
+      setTimeout(() => {
+        setFetchError(false);
+      }, 3000);
     }
   }
 
@@ -815,11 +832,15 @@ export default function Main_Page() {
         handleChangeCalifyModal()
         handleCloseModal();
       } catch (error) {
-          console.error("Error fetching user:", error);
+        console.error("Error fetching clasification:", error);
+        setOpenCircularProgress(false);
+        setFetchError(true);
+        setTimeout(() => {
+          setFetchError(false);
+        }, 3000);
       }
     }
   }
-
 
   const traducirDia = (diaEspañol) => {
     if (diaEspañol=='Lunes') {
@@ -883,7 +904,6 @@ export default function Main_Page() {
         if (!response5.ok) {
           throw new Error('Error al actualizar la clase: ' + response5.statusText);
         }
-        const data = await response5.json();
       } 
 
 
@@ -917,16 +937,34 @@ export default function Main_Page() {
         setOpenCircularProgress(false)
       }, 1000);
     } catch (e) {
+      setOpenCircularProgress(false);
+      setFetchError(true);
+      setTimeout(() => {
+        setFetchError(false);
+      }, 3000);
     } 
   }
 
-  
   return (
     <div className="App">
       {circularProgressClasses ? (<><loader></loader></>):(<></>)}
+      {fetchError ? (
+        <div className='alert-container'>
+          <div className='alert-content'>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Slide direction="up" in={fetchError} mountOnEnter unmountOnExit >
+                <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                  Connection Error. Try again later!
+                </Alert>
+              </Slide>
+            </Box>
+          </div>
+        </div>
+      ) : (
+        null
+      )}
       <SuccessAlert successAlert={successBook} message={'Successfully Booked!'}/>
       <SuccessAlert successAlert={successUnbook} message={'Successfully Unbooked!'}/>
-      <WarningConnectionAlert warningConnection={warningConnection}/>
       <ErrorTokenAlert errorToken={errorToken}/>
       <NewLeftBar/>
       {type==='client' && showCalendar ? (

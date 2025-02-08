@@ -65,10 +65,16 @@ function AllRoutines() {
           console.error('No token found');
       }
   }, []);
+
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
     
   useEffect(() => {
       if (userMail) {
-          fetchUser(setType,()=>{},userMail,navigate)
+          fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
           fetchRoutines(setOpenCircularProgress, setTotalRoutines, setRoutines,setWarningConnection);
       }
   }, [userMail]);
@@ -80,7 +86,6 @@ function AllRoutines() {
 
 
   function ECommerce({event}) {
-    
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
         visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
@@ -144,6 +149,7 @@ function AllRoutines() {
       </div>
     );
   }
+
   const handleCloseModal = () => {
       setSelectedEvent(null);
       setViewExercises(false);
@@ -151,11 +157,6 @@ function AllRoutines() {
 
     return (
       <div className="App">
-        {type!='coach' ? (
-          <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={true}>
-              <CircularProgress color="inherit" />
-          </Backdrop>
-        ) : (
           <>
             <NewLeftBar/>
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
@@ -238,7 +239,6 @@ function AllRoutines() {
               null
             )}
           </>
-        )}
       </div>
     );
 }

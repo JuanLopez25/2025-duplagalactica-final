@@ -1,4 +1,4 @@
-const fetchMembership = async (setMemberships,setOpenCircularProgress,setClassPrice, setMonthlyPrice, setYearlyPrice) => {
+const fetchMembership = async (setMemberships,setOpenCircularProgress,setClassPrice, setMonthlyPrice, setYearlyPrice,setWarningConnection) => {
     setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
@@ -27,6 +27,11 @@ const fetchMembership = async (setMemberships,setOpenCircularProgress,setClassPr
     setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching memberships:", error);
+      setOpenCircularProgress(false);
+      setWarningConnection(true);
+      setTimeout(() => {
+          setWarningConnection(false);
+      }, 3000);
     }
 }
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAuth, checkActionCode,applyActionCode } from 'firebase/auth';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
@@ -13,7 +12,6 @@ export default function VerifyEmail() {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const actionCode = query.get('code');
-  const [verification, setVerification] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(true);
@@ -46,7 +44,7 @@ export default function VerifyEmail() {
 
   useEffect(() => {
     if (!actionCode) {
-      navigate('/error');
+      navigate('/');
       return;
     } else {
         verifyUser()

@@ -5,7 +5,6 @@ import LeftBar from '../real_components/NewLeftBar.jsx';
 import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
-import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
 import { useMediaQuery } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
@@ -23,12 +22,19 @@ export default function UserMemberships() {
   const [openCircularProgress, setOpenCircularProgress] = useState(true);
   const [errorToken,setErrorToken] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:768px)');
+  const [warningConnection, setWarningConnection] = useState(false);
   const [type, setType] = useState(null);
   const [user,setUser] = useState();
   const [membership, setMembership] = useState([]);
   const [errorAquire, setErrorAquire] = useState(false);
   const [upgrade, setUpgrade] = useState(false);
   const [memberships,setMemberships] = useState([])
+
+  useEffect(() => {
+    if (type!='client' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
 
   const hanldeChangeUpgrade = () => {
     setUpgrade(!upgrade);
@@ -59,7 +65,12 @@ export default function UserMemberships() {
         setOpenCircularProgress(false);
       }, 3000);
     } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error("Error usingin memberships:", error);
+        setOpenCircularProgress(false)
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
     }
   }
 
@@ -115,7 +126,12 @@ export default function UserMemberships() {
         
         setOpenCircularProgress(false)
       } catch (error) {
-        console.error("Error fetching classes:", error);
+        console.error("Error aquireing memberships:", error);
+        setOpenCircularProgress(false)
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
       }
     } else {
       setErrorAquire(true);
@@ -217,7 +233,13 @@ export default function UserMemberships() {
           navigate('/');
         }
     } catch (error) {
-        console.error("Error fetching user:", error);
+      setOpenCircularProgress(false)
+      setWarningConnection(true);
+      setTimeout(() => {
+          setWarningConnection(false);
+          localStorage.removeItem('authToken');
+          navigate('/')
+      }, 3000);
     }
   };
 
@@ -335,7 +357,7 @@ export default function UserMemberships() {
 
   return (
     <div className='full-screen-image-2'>
-      {type!='client' || openCircularProgress ? (
+      {openCircularProgress ? (
             <Backdrop
             sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
             open={true}
@@ -352,30 +374,36 @@ export default function UserMemberships() {
             )}
           </>
       )}
-      {openCircularProgress ? (
-                <Backdrop
-                sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                open={openCircularProgress}
-                >
-                <Loader></Loader>
-                </Backdrop>
-            ) : null}
-           
-            { errorToken ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
-                            <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
-                                Invalid Token!
-                            </Alert>
-                        </Slide>
-                        </Box>
-                    </div>
-                </div>
-            ) : (
-                null
-            )}
+      {warningConnection ? (
+          <div className='alert-container'>
+              <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                      Connection Error. Try again later!
+                      </Alert>
+                  </Slide>
+                  </Box>
+              </div>
+          </div>
+      ) : (
+          null
+      )}
+      { errorToken ? (
+          <div className='alert-container'>
+              <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                          Invalid Token!
+                      </Alert>
+                  </Slide>
+                  </Box>
+              </div>
+          </div>
+      ) : (
+          null
+      )}
     </div>
   );
 }

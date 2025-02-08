@@ -19,23 +19,23 @@ export default function CreateAccount() {
     const [date, setDate] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [errors, setErrors] = useState([]);
     const [typeAccount,setTypeAccount] = useState('')
     const navigate = useNavigate();
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const [success, setSuccess] = useState(false);
     const [failure, setFailure] = useState(false);
-    const [failureErrors, setFailureErrors] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(true)
     const auth = getAuth();
     const [errorLastName, setErrorLastName] = useState(false);
     const [errorMail, setErrorMail] = useState(false);
     const [errorPassword, setErrorPassword] = useState(false);
     const [errorName, setErrorName] = useState(false);
     const [errorDate, setErrorDate] = useState(false);
+    const id = openPasswordRequirements ? 'simple-popper' : undefined;
     const [errorType, setErrorType] = useState(false);
     const [errorEmailRepeated, setErrorEmailRepeated] = useState(false);
     const isSmallScreen = useMediaQuery('(max-width:700px)');
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [openPasswordRequirements, setOpenPasswordRequirements] = useState(false);
 
     const validateForm = () => {
         let errors = [];
@@ -90,7 +90,6 @@ export default function CreateAccount() {
         } else {
             setErrorType(false);
         }
-        setErrors(errors);
         return errors.length === 0;
     }
 
@@ -145,9 +144,7 @@ export default function CreateAccount() {
         const token = localStorage.getItem('authToken');
         if (token) {
           navigate('/');
-        } else {
-          setIsAuthenticated(false);
-        }
+        } 
       }, []);
 
     const handleSubmit = (e) => {
@@ -157,25 +154,13 @@ export default function CreateAccount() {
         }
     };
 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [openPasswordRequirements, setOpenPasswordRequirements] = useState(false);
-
     const handleOpenPasswordRequirements = (event) => {
       setAnchorEl(anchorEl ? null : event.currentTarget);
       setOpenPasswordRequirements(!openPasswordRequirements)
     };
 
-    const id = openPasswordRequirements ? 'simple-popper' : undefined;
     return (
         <div className='App'>
-            {isAuthenticated ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <LeftBar value={'profile'}/>
             <div className='create-account-container-new'>
@@ -290,29 +275,6 @@ export default function CreateAccount() {
             ) : (
                 null
             )}
-            { failureErrors ? (
-                <div className='alert-container'>
-                    <div className='alert-content'>
-                    <Box sx={{ position: 'relative', zIndex: 1 }}>
-                        <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                        <div>
-                            <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                            Error creating account!
-                            </Alert>
-                            {errors.length > 0 && errors.map((error, index) => (
-                            <Alert key={index} severity="info" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                                <li>{error}</li>
-                            </Alert>
-                            ))}
-                        </div>
-                        </Slide>
-                    </Box>
-                    </div>
-                </div>
-              
-            ) : (
-                null
-            )}
             { failure ? (
                 <div className='alert-container'>
                     <div className='alert-content'>
@@ -327,7 +289,6 @@ export default function CreateAccount() {
                 null
             )}
             </>
-        )}
         </div>
     );
 }

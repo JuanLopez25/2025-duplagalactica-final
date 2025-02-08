@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Box, useMediaQuery } from '@mui/material';
+import { Box } from '@mui/material';
 import NewLeftBar from '../real_components/NewLeftBar'
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
@@ -22,6 +22,13 @@ function CouchClasses() {
   const [newRows, setNewRows] = useState([]);
 
   useEffect(() => {
+    if (type!='coach' && type!=null) {
+    navigate('/');      
+    }
+  }, [type]);
+
+
+  useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
         verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
@@ -32,7 +39,7 @@ function CouchClasses() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser(setType,setOpenCircularProgress,userMail,navigate)
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
     }
   }, [userMail]);
 
@@ -49,23 +56,6 @@ function CouchClasses() {
 
   return (
     <div className="App">
-        {type!='coach' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <Loader></Loader>
-            </Backdrop>
-        ) : (
-          <>
-        <NewLeftBar/>
-        {openCircularProgress ? (
-            <Backdrop open={openCircularProgress} sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}>
-                <Loader></Loader>
-            </Backdrop>
-        ) : (
-            null
-        )}
         {warningConnection ? (
             <div className='alert-container'>
                 <div className='alert-content'>
@@ -81,6 +71,16 @@ function CouchClasses() {
         ) : (
             null
         )}
+          <>
+        <NewLeftBar/>
+        {openCircularProgress ? (
+            <Backdrop open={openCircularProgress} sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}>
+                <Loader></Loader>
+            </Backdrop>
+        ) : (
+            null
+        )}
+        
         {errorToken ? (
             <div className='alert-container'>
                 <div className='alert-content'>
@@ -100,7 +100,6 @@ function CouchClasses() {
               <CustomTable columnsToShow={['Assisted class','Assisted date','Student','There are users that take assist to your classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['className','fecha','MailAlumno']}/> 
         )}
         </>
-        )}
 
     </div>
     

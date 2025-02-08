@@ -11,7 +11,6 @@ import AssignRoutineToUser from './AssignRoutineToUser.jsx'
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import CircularProgress from '@mui/material/CircularProgress';
 import Inventory from './InventoryCreation.jsx'
 import verifyToken from '../fetchs/verifyToken.jsx';
 import fetchUser from '../fetchs/fetchUser.jsx';
@@ -140,10 +139,16 @@ export default function ManagingRoutines () {
   const [errorToken,setErrorToken] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const navigate = useNavigate();
+  const [warningConnection, setWarningConnection] = useState(false);
   const [activeComponent, setActiveComponent] = useState(null);
   const [type, setType] = useState(null);
 
-
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
+  
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -156,7 +161,7 @@ export default function ManagingRoutines () {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser(setType,setOpenCircularProgress,userMail,navigate);
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection);
     }
   }, [userMail]);
 
@@ -166,14 +171,6 @@ export default function ManagingRoutines () {
   
   return (
   <div className='full-screen-image-3'>
-      {type!='coach' ? (
-          <Backdrop
-          sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-          open={true}
-          >
-              <CircularProgress color="inherit" />
-          </Backdrop>
-      ) : (
           <>
             <NewLeftBar/>
             {activeComponent? (
@@ -208,7 +205,22 @@ export default function ManagingRoutines () {
               {activeComponent} 
             </div>
           </>
-      )} 
+      
+    {warningConnection ? (
+        <div className='alert-container'>
+          <div className='alert-content'>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                  Connection Error. Try again later!
+                </Alert>
+              </Slide>
+            </Box>
+          </div>
+        </div>
+      ) : (
+        null
+      )}
       {errorToken ? (
           <div className='alert-container'>
               <div className='alert-content'>

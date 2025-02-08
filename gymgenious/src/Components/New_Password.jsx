@@ -4,11 +4,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useMediaQuery } from '@mui/material';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import { getAuth, confirmPasswordReset } from 'firebase/auth';
-import { initializeApp } from 'firebase/app';
 import Box from '@mui/material/Box';
 import Popper from '@mui/material/Popper';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
@@ -93,18 +91,18 @@ export default function ChangePassword() {
 
     const handleOpenPasswordRequirements = (event) => {
       if (openPasswordRequirements) {
-          setAnchorEl(null); // Close popper
+          setAnchorEl(null); 
       } else {
-          setAnchorEl(event.currentTarget); // Open popper with the clicked element as anchor
+          setAnchorEl(event.currentTarget); 
       }
       setOpenPasswordRequirements(!openPasswordRequirements);
     };  
 
     const handleOpenPasswordRequirements2 = (event) => {
       if (openPasswordRequirements2) {
-          setAnchorEl2(null); // Close popper
+          setAnchorEl2(null); 
       } else {
-          setAnchorEl2(event.currentTarget); // Open popper with the clicked element as anchor
+          setAnchorEl2(event.currentTarget); 
       }
       setOpenPasswordRequirements2(!openPasswordRequirements2);
     };
@@ -119,14 +117,6 @@ export default function ChangePassword() {
 
     return (
     <div className='App'>
-      {!oobCode ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
         <LeftBar value={'profile'}/>
         <div className='new-password-container'>
@@ -214,7 +204,6 @@ export default function ChangePassword() {
                 null
             )}
             </>
-        )}
     </div>
     );
 }

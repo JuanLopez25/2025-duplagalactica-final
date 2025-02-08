@@ -1,5 +1,5 @@
 
-const fetchUser = async (setType,setOpenCircularProgress,userMail,navigate) => {
+const fetchUser = async (setType,setOpenCircularProgress,userMail,navigate,setWarningConnection) => {
     setOpenCircularProgress(true);
     try {
       const authToken = localStorage.getItem('authToken');
@@ -24,6 +24,13 @@ const fetchUser = async (setType,setOpenCircularProgress,userMail,navigate) => {
 
     } catch (error) {
         console.error("Error fetching user:", error);
+        setOpenCircularProgress(false)
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+            //localStorage.removeItem('authToken');
+            navigate('/')
+        }, 3000);
     } finally {
       setOpenCircularProgress(false)
     }

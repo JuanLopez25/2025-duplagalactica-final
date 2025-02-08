@@ -9,6 +9,8 @@ import Slide from '@mui/material/Slide';
 import verifyToken from '../fetchs/verifyToken.jsx';
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx';
+import fetchUser from '../fetchs/fetchUser.jsx';
+import NewLeftBar from '../real_components/NewLeftBar.jsx';
 
 
 export default function ExerciseCreation() {
@@ -20,11 +22,19 @@ export default function ExerciseCreation() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
-  const [failureErrors, setFailureErrors] = useState(false);
+  const [warningConnection, setWarningConnection] = useState(false);
+  const [type, setType] = useState(null);
   const [errorToken,setErrorToken] = useState(false);
   const [errorName,setErrorName] = useState(false)
   const [errorDesc,setErrorDesc] = useState(false)
   const [errorImage,setErrorImage] = useState(false)
+
+
+  useEffect(() => {
+    if (userMail) {
+        fetchUser(setType,()=>{},userMail,navigate,setWarningConnection)
+    }
+  }, [userMail]);
 
   const validateForm = () => {
       let res = true
@@ -91,11 +101,6 @@ export default function ExerciseCreation() {
           setTimeout(() => {
               setFailure(false);
           }, 3000);
-          
-          setFailureErrors(true);
-          setTimeout(() => {
-              setFailureErrors(false);
-              }, 3000);
       }
     } else {
       setOpenCircularProgress(false);
@@ -116,7 +121,30 @@ export default function ExerciseCreation() {
     }
   }, []);
 
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+    navigate('/');      
+    }
+  }, [type]);
+
   return (
+    <div className='App'>
+    <NewLeftBar />
+    {warningConnection ? (
+        <div className='alert-container'>
+            <div className='alert-content'>
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                            Connection Error. Try again later!
+                        </Alert>
+                    </Slide>
+                </Box>
+            </div>
+        </div>
+    ) : (
+        null
+    )}
     <div className='exercise-creation-container'>
       <button 
         onClick={() => window.location.reload()} 
@@ -199,24 +227,6 @@ export default function ExerciseCreation() {
       ) : (
           null
       )}
-      { failureErrors ? (
-          <div className='alert-container'>
-              <div className='alert-content'>
-              <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                  <div>
-                      <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                      Error creating exercise!
-                      </Alert>
-                  </div>
-                  </Slide>
-              </Box>
-              </div>
-          </div>
-        
-      ) : (
-          null
-      )}
       { failure ? (
           <div className='alert-container'>
               <div className='alert-content'>
@@ -247,6 +257,7 @@ export default function ExerciseCreation() {
             ) : (
               null
       )}
+    </div>
     </div>
   );
 }

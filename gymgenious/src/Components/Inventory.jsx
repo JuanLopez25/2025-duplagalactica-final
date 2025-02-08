@@ -36,6 +36,12 @@ function CouchClasses() {
     return item.total - sumOfSublistValues;
   }
 
+  useEffect(() => {
+    if (type!='coach' && type!=null) {
+    navigate('/');      
+    }
+  }, [type]);
+
   function CardExample() {
     return (
       <div
@@ -147,30 +153,18 @@ function CouchClasses() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser(setType,()=>{},userMail,navigate)
+        fetchUser(setType,()=>{},userMail,navigate,setWarningConnection)
     }
   }, [userMail]);
 
   useEffect(() => {
     if(type==='coach' && userMail!=null){
-        setOpenCircularProgress(true)
-        fetchInventory(setItemData,()=>{})
-        setTimeout(() => {
-          setOpenCircularProgress(false);
-        }, 4000);
+        fetchInventory(setItemData,setOpenCircularProgress,setWarningConnection)
     }
   }, [type])
 
   return (
     <div className="App">
-        {type!='coach' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <Loader></Loader>
-            </Backdrop>
-        ) : (
         <>
         <NewLeftBar/>
         {openCircularProgress ? (
@@ -229,7 +223,6 @@ function CouchClasses() {
           </div>
           
         </>
-        )}
 
     </div>
     

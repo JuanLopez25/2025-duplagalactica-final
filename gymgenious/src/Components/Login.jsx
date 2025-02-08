@@ -19,7 +19,6 @@ export default function Login() {
   const navigate = useNavigate();
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [failure, setFailure] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [errorLogin, setErrorLogin] = useState(false);
@@ -76,14 +75,6 @@ export default function Login() {
 
   return (
     <div className='full-screen-image-1'>
-      {isAuthenticated ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <LeftBar value={'profile'}/>
             <div className='login-container'>
@@ -147,21 +138,7 @@ export default function Login() {
           ) : (
             null
           )}
-          { failure ? (
-            <div className='alert-container'>
-                <div className='alert-content'>
-                  <Box sx={{ position: 'relative', zIndex: 1 }}>
-                    <Slide direction="up" in={failure} mountOnEnter unmountOnExit >
-                      <Alert severity="error" style={{fontSize:'100%', fontWeight:'bold'}}>Credentials or server error. Try again!</Alert>
-                    </Slide>
-                  </Box>
-                </div>
-            </div>
-          ) : (
-            null
-          )}
         </>
-      )}
     </div>
   );
 }

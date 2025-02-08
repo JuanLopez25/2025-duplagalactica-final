@@ -15,7 +15,6 @@ import verifyToken from '../fetchs/verifyToken.jsx';
 import NewLeftBar from '../real_components/NewLeftBar';
 import ColorToggleButton from '../real_components/ColorToggleButton.jsx';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import DaySelection from '../real_components/DaySelection.jsx';
 import { useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
@@ -35,16 +34,21 @@ export default function StickyHeadTable() {
     const isSmallScreen = useMediaQuery('(max-width:700px)');
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [viewExercises, setViewExercises] = useState(false);
+    const [warningConnection, setWarningConnection] = useState(false);
     const [rows, setRows] = useState([]);
     const [errorToken, setErrorToken] = useState(false);
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
-    const [dense, setDense] = useState(false);
     const navigate = useNavigate();
     const [type, setType] = useState(null);
     const [warningFetchingUserRoutines, setWarningFetchingUserRoutines] = useState(false);
     const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [maxHeight, setMaxHeight] = useState('600px');
 
+     useEffect(() => {
+        if (type!='client' && type!=null) {
+            navigate('/');      
+        }
+    }, [type]);
 
     const fetchUser = async () => {
     try {
@@ -70,6 +74,13 @@ export default function StickyHeadTable() {
         }
     } catch (error) {
         console.error("Error fetching user:", error);
+        setOpenCircularProgress(false)
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+            localStorage.removeItem('authToken');
+            navigate('/')
+        }, 3000);
     }
     };
 
@@ -292,14 +303,6 @@ export default function StickyHeadTable() {
 
     return (
         <div className="App">
-            {type!='client' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <NewLeftBar />
             <div className="Table-Container">
@@ -323,7 +326,7 @@ export default function StickyHeadTable() {
                                 borderCollapse: 'collapse',
                                 }}
                                 aria-labelledby="tableTitle"
-                                size={dense ? 'small' : 'medium'}
+                                size={'medium'}
                             >
                                 <TableHead>
                                     <TableRow sx={{ height: '5vh', width: '5vh' }}>
@@ -481,6 +484,36 @@ export default function StickyHeadTable() {
                     <Loader></Loader>
                 </Backdrop>
             )}
+            {warningConnection ? (
+                <div className='alert-container'>
+                <div className='alert-content'>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                        Connection Error. Try again later!
+                        </Alert>
+                    </Slide>
+                    </Box>
+                </div>
+                </div>
+            ) : (
+                null
+            )}
+            {errorToken ? (
+                <div className='alert-container'>
+                <div className='alert-content'>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                        </Alert>
+                    </Slide>
+                    </Box>
+                </div>
+                </div>
+            ) : (
+                null
+            )}
             { warningFetchingUserRoutines ? (
                     <div className='alert-container'>
                         <div className='alert-content'>
@@ -497,7 +530,6 @@ export default function StickyHeadTable() {
                     null
                 )}
             </>
-        )}
         </div>
     );
 }

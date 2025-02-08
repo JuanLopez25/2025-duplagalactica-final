@@ -121,9 +121,6 @@ export default function RoutineCreation() {
                 setFailure(true);
                 setTimeout(() => {
                     setFailure(false);
-                }, 3000);
-                setTimeout(() => {
-                    setFailure(false);
                     window.location.reload()
                 }, 3000);
             }
