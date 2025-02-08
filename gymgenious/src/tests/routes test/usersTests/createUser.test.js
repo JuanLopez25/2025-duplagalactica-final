@@ -1,6 +1,6 @@
-import { createUser } from '../../routes/users';
+import { createUser } from '../../../backend/services/usersRoutes.py';
 
-jest.mock('../../firestoreService', () => ({
+jest.mock('../../../backend/services/usersRoutes.py', () => ({
     createUser: jest.fn()
 }));
 
