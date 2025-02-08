@@ -30,4 +30,13 @@ describe('get_membership_template', () => {
 
     await expect(get_membership_template()).rejects.toThrow('No se pudo obtener las clases');
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

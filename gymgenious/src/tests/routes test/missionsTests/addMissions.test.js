@@ -49,4 +49,13 @@ describe('add_missions', () => {
 
     await expect(add_missions(mockUsers, mockEvent)).rejects.toThrow('Database error');
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

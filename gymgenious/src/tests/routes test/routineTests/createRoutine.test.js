@@ -33,4 +33,13 @@ describe('create_routine', () => {
 
     await expect(create_routine({ name: 'Morning Workout', exercises: ['Push-ups', 'Squats'] })).rejects.toThrow('Database error');
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

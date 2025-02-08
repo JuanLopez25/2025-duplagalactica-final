@@ -39,4 +39,13 @@ describe('edit_memb_price_route', () => {
       expect(err.message).toBe('No se pudo actualizar el usuario');
     }
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

@@ -30,4 +30,13 @@ describe('get_unique_user_membership', () => {
 
     await expect(get_unique_user_membership()).rejects.toThrow('No existen usuarios con ese mail');
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

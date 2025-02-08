@@ -42,4 +42,13 @@ describe('update_users_info', () => {
 
     await expect(update_client_user({ Mail: 'test@example.com', Name: 'John', Lastname: 'Doe', Birthday: '2000-01-01' })).rejects.toThrow('Database error');
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

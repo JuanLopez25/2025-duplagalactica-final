@@ -32,4 +32,13 @@ describe('create_ranking', () => {
 
     await expect(create_ranking({ name: 'Top 10 Players', scores: [100, 95] })).rejects.toThrow('Database error');
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });

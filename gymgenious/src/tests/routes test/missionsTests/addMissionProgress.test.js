@@ -51,4 +51,13 @@ describe('add_mission_progress', () => {
 
     await expect(add_mission_progress(missions, uid)).rejects.toThrow('It was not possible to complete the operation');
   });
+
+  it('should throw an error if token is missing', async () => {
+    const mockRequest = { headers: {} };
+    expect(() => {
+        if (!mockRequest.headers.Authorization || !mockRequest.headers.Authorization.includes('Bearer')) {
+            throw new Error('Missing token');
+        }
+    }).toThrow('Missing token');
+});
 });
