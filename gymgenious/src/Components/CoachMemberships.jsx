@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LeftBar from '../real_components/NewLeftBar.jsx';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Box } from '@mui/material';
 import Loader from '../real_components/loader.jsx'
+import Alert from '@mui/material/Alert';
+import Slide from '@mui/material/Slide';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import fetchMembership from '../fetchs/fetchMembershipsTemplates.jsx';
 import fetchUser from '../fetchs/fetchUser.jsx'
@@ -15,6 +17,7 @@ export default function CoachMemberships() {
   const [userMail,setUserMail] = useState('')
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
+  const [warningConnection, setWarningConnection] = useState(false);
   const [type, setType] = useState(null);
   const [memberships,setMemberships] = useState([])
   const [price1, setPrice1] = useState(0.00);
@@ -62,6 +65,10 @@ export default function CoachMemberships() {
     } catch (error) {
         console.error("Error fetching user:", error);
         setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
     } 
   }
 
@@ -69,6 +76,7 @@ export default function CoachMemberships() {
     savePrice(price2,'Monthly')
     setEditPrice2(!editPrice2);
   }
+
   const handleEditPrice3 = () => {
     savePrice(price3,'Yearly')
     setEditPrice3(!editPrice3);
@@ -87,26 +95,49 @@ export default function CoachMemberships() {
 
   useEffect ( () => {
     if (userMail) {
-      fetchMembership(setMemberships,setOpenCircularProgress,setPrice1,setPrice2,setPrice3)
+      fetchMembership(setMemberships,setOpenCircularProgress,setPrice1,setPrice2,setPrice3,setWarningConnection)
     }
   },[userMail])
 
   useEffect(() => {
     if (userMail) {
-      fetchUser(setType,setOpenCircularProgress,userMail,navigate)
+      fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
     }
   }, [userMail]);
 
   return (
     <div className='full-screen-image-2'>
-      {type!='coach' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
+      
+        {warningConnection ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                        Connection Error. Try again later!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
+            )}
+            {errorToken ? (
+              <div className='alert-container'>
+                <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={errorToken} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
+                        Invalid Token!
+                      </Alert>
+                    </Slide>
+                  </Box>
+                </div>
+              </div>
+            ) : (
+              null
+            )}
             <>
                 <LeftBar/>
                 <div className='membership-choose-container'>
@@ -215,7 +246,6 @@ export default function CoachMemberships() {
                     </div>
                 </div>
             </>
-      )}
       {openCircularProgress ? (
                 <Backdrop
                 sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}

@@ -3,7 +3,6 @@ import { Box, useMediaQuery } from '@mui/material';
 import NewLeftBar from '../real_components/NewLeftBar';
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
 import fetchUser from '../fetchs/fetchUser.jsx'
@@ -334,41 +333,36 @@ function CoachGraphics() {
 };
 
   
-    useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            verifyToken(token,()=>{},setUserMail,setErrorToken)
-        } else {
-            navigate('/');
-            console.error('No token found');
-        }
-      }, []);
+  useEffect(() => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+          verifyToken(token,()=>{},setUserMail,setErrorToken)
+      } else {
+          navigate('/');
+          console.error('No token found');
+      }
+    }, []);
     
-    useEffect(() => {
-        if (userMail) {
-            fetchUser(setType,()=>{},userMail,navigate)
-        }
-    }, [userMail]);
+  useEffect(() => {
+      if (userMail) {
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
+      }
+  }, [userMail]);
 
-    useEffect(() => {
-        if (userMail) { 
-            fetchRoutines();
-            fetchClasses();
-            fetchExcersicesCoachUsers();
-            setTimeout(() => {
-              setOpenCircularProgress(false);
-            }, 5000)
-        }
-    }, [userMail]);
+  useEffect(() => {
+      if (userMail && type) { 
+          fetchRoutines();
+          fetchClasses();
+          fetchExcersicesCoachUsers();
+          setTimeout(() => {
+            setOpenCircularProgress(false);
+          }, 5000)
+      }
+  }, [userMail,type]);
     
 
     return (
       <div className="App">
-        {type!='coach' ? (
-          <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={true}>
-              <CircularProgress color="inherit" />
-          </Backdrop>
-        ) : (
           <>
             <NewLeftBar/>
             <Box
@@ -435,7 +429,6 @@ function CoachGraphics() {
             )}
             
           </>
-        )}
       </div>
     );
 }

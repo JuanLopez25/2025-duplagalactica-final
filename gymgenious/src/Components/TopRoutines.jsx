@@ -11,7 +11,6 @@ import NewLeftBar from '../real_components/NewLeftBar';
 import { useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Slide from '@mui/material/Slide';
@@ -192,11 +191,6 @@ function TopRoutines() {
 
     return (
       <div className="App">
-        {!userMail ? (
-          <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={true}>
-              <CircularProgress color="inherit" />
-          </Backdrop>
-        ) : (
           <div style={{width:'100%'}}>
             {selectedEvent && (
                 <ECommerce event={selectedEvent}/>
@@ -285,7 +279,6 @@ function TopRoutines() {
               null
             )}
           </div>
-        )}
       </div>
     );
 }

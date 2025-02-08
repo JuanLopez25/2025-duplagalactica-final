@@ -18,7 +18,6 @@ export default function ExerciseCreation() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
-  const [failureErrors, setFailureErrors] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const [errorName,setErrorName] = useState(false)
   const [errorDesc,setErrorDesc] = useState(false)
@@ -85,11 +84,7 @@ export default function ExerciseCreation() {
       } catch (error) {
         console.error("Error al crear el ejercicio:", error);
         setOpenCircularProgress(false);
-        setFailure(true);        
-        setFailureErrors(true);
-        setTimeout(() => {
-          setFailureErrors(false);
-        }, 3000);
+        setFailure(true);
         setTimeout(() => {
             setFailure(false);
         }, 3000);
@@ -192,24 +187,6 @@ export default function ExerciseCreation() {
               </Box>
           </div>
           </div>
-      ) : (
-          null
-      )}
-      { failureErrors ? (
-          <div className='alert-container'>
-              <div className='alert-content'>
-              <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                  <div>
-                      <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                      Error creating exercise!
-                      </Alert>
-                  </div>
-                  </Slide>
-              </Box>
-              </div>
-          </div>
-        
       ) : (
           null
       )}

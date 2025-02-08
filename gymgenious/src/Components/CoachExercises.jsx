@@ -169,7 +169,7 @@ export default function CoachExercises() {
     
     useEffect(() => {
         if (userMail) {
-            fetchUser(setType,setOpenCircularProgress,userMail,navigate)
+            fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
         }
     }, [userMail]);
 
@@ -182,14 +182,19 @@ export default function CoachExercises() {
 
     return (
         <div className="App">
-            {type!='coach' ? (
-                <Backdrop
-                sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                open={true}
-                >
-                    <Loader></Loader>
-                </Backdrop>
-            ) : (
+            {warningConnection && (
+                <div className='alert-container'>
+                    <div className='alert-content'>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                        <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit>
+                            <Alert style={{ fontSize: '100%', fontWeight: 'bold' }} severity="info">
+                                Connection Error. Try again later!
+                            </Alert>
+                        </Slide>
+                    </Box>
+                    </div>
+                </div>
+            )}
                 <>
                     <NewLeftBar />
                     <Searcher filteredValues={filterExercises} setFilterValues={setFilterExercises} isSmallScreen={isSmallScreen} searchingParameter={'exercise name'}/>
@@ -198,19 +203,7 @@ export default function CoachExercises() {
                             <Loader></Loader>
                         </Backdrop>
                     )}
-                    {warningConnection && (
-                        <div className='alert-container'>
-                            <div className='alert-content'>
-                            <Box sx={{ position: 'relative', zIndex: 1 }}>
-                                <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit>
-                                    <Alert style={{ fontSize: '100%', fontWeight: 'bold' }} severity="info">
-                                        Connection Error. Try again later!
-                                    </Alert>
-                                </Slide>
-                            </Box>
-                            </div>
-                        </div>
-                    )}
+                    
                     {errorToken && (
                         <div className='alert-container'>
                             <div className='alert-content'>
@@ -309,7 +302,6 @@ export default function CoachExercises() {
                         </div>
                     )}
                 </>
-            )}
         </div>
     );
 }

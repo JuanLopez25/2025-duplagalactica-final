@@ -105,6 +105,11 @@ function CouchClasses() {
           setQrToken(data.token);
         } catch (error) {
           console.error("Error al obtener el token:", error);
+          setOpenCircularProgress(false);
+          setWarningConnection(true);
+          setTimeout(() => {
+              setWarningConnection(false);
+          }, 3000);
         }
       };
   
@@ -220,10 +225,20 @@ function CouchClasses() {
       
       } catch (error) {
         console.error("Error:", error.message);
+        setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
       }
       
     } catch (error) {
         console.error("Error fetching user:", error);
+        setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
     }finally {
       setOpenCircularProgress(false)
     }
@@ -386,6 +401,10 @@ function CouchClasses() {
     } catch (error) {
         console.error("Error updating user:", error);
         setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+            setWarningConnection(false);
+        }, 3000);
         setErrorSala(true);
     }
   };
@@ -431,7 +450,8 @@ function CouchClasses() {
     if (salaInfoValida && validateForm()) {
       fetchModifyClassInformation();
     }
-};
+  };
+
   const handleDeleteClass = async (event) => {
     setOpenCircularProgress(true);
     try {
@@ -507,7 +527,7 @@ function CouchClasses() {
     } finally {
       setOpenCircularProgress(false);
     }
-};
+  };
 
   const fetchClasses = async () => {
     setOpenCircularProgress(true);
@@ -693,7 +713,7 @@ function CouchClasses() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser(setType,setOpenCircularProgress,userMail);
+        fetchUser(setType,setOpenCircularProgress,userMail,setWarningConnection);
     }
   }, [userMail]);
 
@@ -703,7 +723,6 @@ function CouchClasses() {
     }
   }, [type])
   
-
   function ECommerce({event}) {
     return (
       <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
@@ -804,14 +823,6 @@ function CouchClasses() {
 
   return (
     <div className="App">
-        {type!='coach' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <Loader></Loader>
-            </Backdrop>
-        ) : (
           <>
         <NewLeftBar/>
         <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen700} searchingParameter={'class name'}/>
@@ -965,7 +976,6 @@ function CouchClasses() {
             </div>
         )}
         </>
-        )}
         {selectedEvent && (
           <ECommerce event={selectedEvent}/>
         )}

@@ -172,11 +172,6 @@ function AllRoutines() {
         ) : (
           null
         )}
-        {type!='coach' ? (
-          <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={true}>
-              <CircularProgress color="inherit" />
-          </Backdrop>
-        ) : (
           <>
             <NewLeftBar/>
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
@@ -259,7 +254,6 @@ function AllRoutines() {
               null
             )}
           </>
-        )}
       </div>
     );
 }

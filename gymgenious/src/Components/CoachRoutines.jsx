@@ -4,7 +4,6 @@ import { Box, useMediaQuery } from '@mui/material';
 import NewLeftBar from '../real_components/NewLeftBar';
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
 import verifyToken from '../fetchs/verifyToken.jsx';
@@ -390,6 +389,10 @@ function CoachRoutines() {
     } catch (error) {
       console.error("Error fetching users:", error);
       setOpenCircularProgress(false);
+      setWarningConnection(true);
+      setTimeout(() => {
+          setWarningConnection(false);
+      }, 3000);
     }
   };
 
@@ -420,7 +423,7 @@ function CoachRoutines() {
   useEffect(() => {
     setOpenCircularProgress(true)
     if (userMail) {
-        fetchUser(setType,()=>{},userMail,navigate);
+        fetchUser(setType,()=>{},userMail,navigate,setWarningConnection);
     }
   }, [userMail]);
 
@@ -459,11 +462,6 @@ function CoachRoutines() {
 
     return (
       <div className="App">
-        {type!='coach' ? (
-          <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={true}>
-              <CircularProgress color="inherit" />
-          </Backdrop>
-        ) : (
           <>
             <NewLeftBar/>
             <Searcher filteredValues={filterRoutines} setFilterValues={setFilterRoutines} isSmallScreen={isSmallScreen} searchingParameter={'routine name'}/>
@@ -714,7 +712,6 @@ function CoachRoutines() {
               null
             )}
           </>
-        )}
       </div>
     );
 }

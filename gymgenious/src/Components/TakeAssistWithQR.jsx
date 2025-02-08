@@ -82,6 +82,10 @@ const MarkAttendance = () => {
         }
       } catch (error) {
         console.error("Error al obtener el token:", error);
+        setError(true);
+        setTimeout(()=> {
+          setError(false)
+        },3000)
         navigate(`/`);
       }
     };
@@ -113,13 +117,13 @@ const MarkAttendance = () => {
             }
           })
           .catch((error) => {
-            setError("Error al registrar la asistencia.");
+            setError(true);
             console.error("Error:", error);
             setLoading(false);
           });
       } catch (error) {
         console.error("Error al decodificar el token:", error);
-        setError("Token inválido.");
+        setError(true);
       }
     }
   }, [newToken,logeedIn]);

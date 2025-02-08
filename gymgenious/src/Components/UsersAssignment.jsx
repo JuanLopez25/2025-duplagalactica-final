@@ -24,7 +24,6 @@ export default function UserAssignment({ onUsersChange, routine,routineDay }) {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningFetchingUsers, setWarningFetchingUsers] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:950px)');
-
   const [openSearch, setOpenSearch] = useState(false);
   const [filterUsers, setFilterUsers] = useState('');
   const [totalUsers, setTotalUsers] = useState([]);

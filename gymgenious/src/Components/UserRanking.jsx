@@ -25,12 +25,12 @@ import CustomTable from '../real_components/Table4columns.jsx';
 export default function StickyHeadTable() {
     const [userMail, setUserMail] = useState('');
     const isSmallScreen = useMediaQuery('(max-width:700px)');
+    const [warningConnection, setWarningConnection] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [openCircularProgress, setOpenCircularProgress] = useState(false);
     const navigate = useNavigate();    
     const [errorToken,setErrorToken] = useState(false);
     const [type, setType] = useState(null);
-    const isMobileScreen = useMediaQuery('(min-height:750px)');
     const [viewCreateRanking, setViewCreateRanking] = useState(false);
     const [viewJoinRanking, setViewJoinRanking] = useState(false);
     const [name, setName] = useState('');
@@ -131,6 +131,11 @@ export default function StickyHeadTable() {
             }, 3000);
         } catch (error) {
             console.error("Error fetching user:", error);
+            setOpenCircularProgress(false);
+            setWarningConnection(true);
+            setTimeout(() => {
+                setWarningConnection(false);
+            }, 3000);
         }
     };
 
@@ -181,6 +186,10 @@ export default function StickyHeadTable() {
             } catch (error) {
                 console.error("Error al crear el ranking:", error);
                 setOpenCircularProgress(false);
+                setWarningConnection(true);
+                setTimeout(() => {
+                    setWarningConnection(false);
+                }, 3000);
             };
         }
     };
@@ -250,8 +259,13 @@ export default function StickyHeadTable() {
                 if(error=='Error: No existe ningun ranking asi'){
                     setErrorCredentials(true);
                 }
-                if(error=='Error: ya te has unido a este ranking'){
+                else if(error=='Error: ya te has unido a este ranking'){
                     setErrorAlreadyJoined(true);
+                } else {
+                    setWarningConnection(true);
+                    setTimeout(() => {
+                        setWarningConnection(false);
+                    }, 3000);
                 }
             }
         }
@@ -283,6 +297,10 @@ export default function StickyHeadTable() {
         } catch (error) {
             console.error("Error al crear el ranking:", error);
             setOpenCircularProgress(false);
+            setWarningConnection(true);
+            setTimeout(() => {
+                setWarningConnection(false);
+            }, 3000);
         };
     };
     
@@ -300,7 +318,7 @@ export default function StickyHeadTable() {
 
     useEffect(() => {
     if (userMail) {
-        fetchUser(setType,setOpenCircularProgress,userMail,navigate);
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection);
     }
     }, [userMail]);
 
@@ -313,14 +331,6 @@ export default function StickyHeadTable() {
 
     return (
         <div className="App">
-            {type!='client' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <NewLeftBar />
             <div className='input-container-buttons' style={{left: isSmallScreen ? '6vh' : '8vh', position: 'absolute', top: '0.5%'}}>
@@ -515,8 +525,22 @@ export default function StickyHeadTable() {
             ) : (
               null
             )}
+            {warningConnection ? (
+                <div className='alert-container'>
+                    <div className='alert-content'>
+                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                        <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                            <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                            Connection Error. Try again later!
+                            </Alert>
+                        </Slide>
+                        </Box>
+                    </div>
+                </div>
+            ) : (
+                null
+            )}
             </>
-        )}
         </div>
     );
 }

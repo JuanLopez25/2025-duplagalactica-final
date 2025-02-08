@@ -26,6 +26,7 @@ function UsserClasses() {
   const [userMail, setUserMail] = useState('');
   const [userAccount, setUserAccount] = useState([])
   const isSmallScreen = useMediaQuery('(max-width:700px)');
+  const [warningConnection, setWarningConnection] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken, setErrorToken] = useState(false);
   const [warningFetchingClasses, setWarningFetchingClasses] = useState(false);
@@ -73,7 +74,14 @@ function UsserClasses() {
         }
         setOpenCircularProgress(false);
     } catch (error) {
-        console.error("Error fetching user:", error);
+      console.error("Error fetching user:", error);
+      setOpenCircularProgress(false)
+      setWarningConnection(true);
+      setTimeout(() => {
+          setWarningConnection(false);
+          localStorage.removeItem('authToken');
+          navigate('/')
+      }, 3000);
     }
   };
 
@@ -291,7 +299,11 @@ function UsserClasses() {
       setOpenCircularProgress(false);
     } catch (error) {
       console.error("Error fetching classes:", error);
-      setOpenCircularProgress(false);
+      setOpenCircularProgress(false)
+      setWarningFetchingClasses(true);
+      setTimeout(() => {
+        setWarningFetchingClasses(false);
+      }, 3000);
     }
   };
 
@@ -358,7 +370,12 @@ function UsserClasses() {
         handleChangeCalifyModal()
         handleCloseModal();
       } catch (error) {
-          console.error("Error fetching user:", error);
+          console.error("Error saving calification:", error);
+          setOpenCircularProgress(false)
+          setWarningConnection(true);
+          setTimeout(() => {
+              setWarningConnection(false);
+          }, 3000);
       }
     }
   }
@@ -375,9 +392,17 @@ function UsserClasses() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser(setType,setOpenCircularProgress,userMail,navigate);
+        fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection);
     }
   }, [userMail]);
+
+
+  useEffect(() => {
+    if (type!='client' && type!=null) {
+      navigate('/');      
+    }
+  }, [type]);
+
 
   useEffect(() => {
     if(type==='client' && userAccount){
@@ -472,14 +497,6 @@ function UsserClasses() {
 
   return (
     <div className="App">
-      {type!='client' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
       <NewLeftBar />
       <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen} searchingParameter={'classes name'}/>
@@ -542,9 +559,23 @@ function UsserClasses() {
             </Box>
           </div>
         </div>
+      )}      
+      {warningConnection ? (
+          <div className='alert-container'>
+              <div className='alert-content'>
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                      <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                      Connection Error. Try again later!
+                      </Alert>
+                  </Slide>
+                  </Box>
+              </div>
+          </div>
+      ) : (
+          null
       )}
       </>
-      )}
       {selectedEvent && (
         <ECommerce event={selectedEvent}/>
       )}

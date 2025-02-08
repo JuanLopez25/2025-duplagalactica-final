@@ -22,8 +22,8 @@ export default function ExerciseCreation() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
+  const [warningConnection, setWarningConnection] = useState(false);
   const [type, setType] = useState(null);
-  const [failureErrors, setFailureErrors] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
   const [errorName,setErrorName] = useState(false)
   const [errorDesc,setErrorDesc] = useState(false)
@@ -32,7 +32,7 @@ export default function ExerciseCreation() {
 
   useEffect(() => {
     if (userMail) {
-        fetchUser(setType,()=>{},userMail,navigate)
+        fetchUser(setType,()=>{},userMail,navigate,setWarningConnection)
     }
   }, [userMail]);
 
@@ -101,11 +101,6 @@ export default function ExerciseCreation() {
           setTimeout(() => {
               setFailure(false);
           }, 3000);
-          
-          setFailureErrors(true);
-          setTimeout(() => {
-              setFailureErrors(false);
-              }, 3000);
       }
     } else {
       setOpenCircularProgress(false);
@@ -135,6 +130,21 @@ export default function ExerciseCreation() {
   return (
     <div className='App'>
     <NewLeftBar />
+    {warningConnection ? (
+        <div className='alert-container'>
+            <div className='alert-content'>
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Slide direction="up" in={warningConnection} mountOnEnter unmountOnExit >
+                        <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
+                            Connection Error. Try again later!
+                        </Alert>
+                    </Slide>
+                </Box>
+            </div>
+        </div>
+    ) : (
+        null
+    )}
     <div className='exercise-creation-container'>
       <button 
         onClick={() => window.location.reload()} 
@@ -214,24 +224,6 @@ export default function ExerciseCreation() {
               </Box>
           </div>
           </div>
-      ) : (
-          null
-      )}
-      { failureErrors ? (
-          <div className='alert-container'>
-              <div className='alert-content'>
-              <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
-                  <div>
-                      <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                      Error creating exercise!
-                      </Alert>
-                  </div>
-                  </Slide>
-              </Box>
-              </div>
-          </div>
-        
       ) : (
           null
       )}

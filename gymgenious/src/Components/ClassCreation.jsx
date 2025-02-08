@@ -5,7 +5,6 @@ import LeftBar from '../real_components/NewLeftBar.jsx';
 import moment from 'moment'
 import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';
@@ -27,6 +26,8 @@ export default function CreateClass() {
   const [hourFin, setHourFin] = useState('');
   const [permanent, setPermanent] = useState('');
   const [date, setDate] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [openHourRequirements, setOpenHourRequirements] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [salas, setSalas] = useState([]);
   const [showSalas, setShowSalas] = useState(false);
@@ -36,7 +37,6 @@ export default function CreateClass() {
   const [maxNum,setMaxNum] = useState(1);
   const navigate = useNavigate();
   const [userMail,setUserMail] = useState('')
-  const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState(false);
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
@@ -55,6 +55,7 @@ export default function CreateClass() {
   const [errorEndTime30, setErrorEndTime30] = useState(false);
   const [errorName, setErrorName] = useState(false);
   const [errorRecurrent, setErrorRecurrent] = useState(false);
+  const id = 'simple-popper';
   const [errorDate, setErrorDate] = useState(false);
   const [errorDateStart, setErrorDateStart] = useState(false);
   const [salaNoDisponible, setSalaNoDisponible] = useState(['1'])
@@ -175,8 +176,6 @@ export default function CreateClass() {
       } else {
         setErrorDateStart(false);
       }
-
-      setErrors(errors);
       return errors.length === 0;
   }
 
@@ -241,19 +240,11 @@ export default function CreateClass() {
           }, 3000);
       } catch (error) {
           console.error("Error al crear la clase:", error);
-          if(salaAssigned==='PmQ2RZJpDXjBetqThVna'){
-            setErrorSala1(true);
-          } else if(salaAssigned==='cuyAhMJE8Mz31eL12aPO') {
-            setErrorSala2(true);
-          } else if(salaAssigned==='jxYcsGUYhW6pVnYmjK8H') {
-            setErrorSala3(true);
-          } else if(salaAssigned==='waA7dE83alk1HXZvlbyK') {
-            setErrorSala4(true);
-          }
-          if(salaAssigned===null){
-            setErrorSalas(true);
-          }
-          setOpenCircularProgress(false);
+          setOpenCircularProgress(false)
+          setWarningConnection(true);
+          setTimeout(() => {
+              setWarningConnection(false);
+          }, 3000);
       }
     }
   };
@@ -329,8 +320,6 @@ export default function CreateClass() {
   }, [isSmallScreenImages]);
 
   
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [openHourRequirements, setOpenHourRequirements] = useState(false);
   const handleOpenHourRequirements = (event) => {
     if (openHourRequirements) {
         setAnchorEl(null); 
@@ -339,7 +328,7 @@ export default function CreateClass() {
     }
     setOpenHourRequirements(!openHourRequirements);
   };
-  const id = 'simple-popper';
+
   const handleCloseHourRequirements = () => {
     setOpenHourRequirements(false);
   }
@@ -363,14 +352,6 @@ export default function CreateClass() {
       ) : (
         null
       )}
-      {type!='coach' ? (
-            <Backdrop
-            sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-            open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-        ) : (
           <>
             <LeftBar/>
             <div className='class-creation-container'>
@@ -586,7 +567,6 @@ export default function CreateClass() {
               </div>
             </div>
           </>
-      )}
       </>
       ) : (
         <>

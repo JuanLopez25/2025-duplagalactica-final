@@ -1,6 +1,5 @@
 import '../App.css';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
@@ -34,7 +33,6 @@ export default function RoutineCreation() {
     const [errorName,setErrorName] = useState(false)
     const [errorDesc,setErrorDesc] = useState(false)
     const [errorExer,setErrorExers] = useState(false)
-    const [failureErrors, setFailureErrors] = useState(false);
     const [warningFetchingExercises, setWarningFetchingExercises] = useState(false);
     const [openAdvise, setOpenAdvise] = useState(false);
     const [openAddExercise, setOpenAddExercise] = useState(false);
@@ -256,10 +254,6 @@ export default function RoutineCreation() {
           console.error("Error al crear la rutina:", error);
           setOpenCircularProgress(false);
           setFailure(true);
-          setFailureErrors(true);
-          setTimeout(() => {
-              setFailureErrors(false);
-              }, 3000);
           setTimeout(() => {
               setFailure(false);
               window.location.reload()
@@ -518,14 +512,14 @@ export default function RoutineCreation() {
           ) : (
               null
           )}
-          { failureErrors ? (
+          { warningFetchingExercises ? (
               <div className='alert-container'>
                   <div className='alert-content'>
                   <Box sx={{ position: 'relative', zIndex: 1 }}>
-                      <Slide direction="up" in={failureErrors} mountOnEnter unmountOnExit>
+                      <Slide direction="up" in={warningFetchingExercises} mountOnEnter unmountOnExit>
                       <div>
                           <Alert severity="error" style={{ fontSize: '100%', fontWeight: 'bold' }}>
-                          Error creating routine.
+                          Error fetching exercises
                           </Alert>
                       </div>
                       </Slide>
