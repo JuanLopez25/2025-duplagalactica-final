@@ -74,5 +74,5 @@ describe('create_exersice_route', () => {
             throw new Error('Missing token');
         }
     }).toThrow('Missing token');
-});
+  });
 });
