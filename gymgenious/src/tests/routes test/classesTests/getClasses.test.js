@@ -1,7 +1,7 @@
-import {getClasses } from '../../routes/classes'; 
+import {getClasses } from '../../../backend/services/classesRoutes.py'; 
 
 
-jest.mock('../../firestoreService', () => ({
+jest.mock('../../../backend/services/classesRoutes.py', () => ({
   getClasses: jest.fn(),
 }));
 
