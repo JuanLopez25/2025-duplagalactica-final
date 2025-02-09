@@ -28,7 +28,7 @@ const fetchUser = async (setType,setOpenCircularProgress,userMail,navigate,setWa
         setWarningConnection(true);
         setTimeout(() => {
             setWarningConnection(false);
-            //localStorage.removeItem('authToken');
+            localStorage.removeItem('authToken');
             navigate('/')
         }, 3000);
     } finally {
