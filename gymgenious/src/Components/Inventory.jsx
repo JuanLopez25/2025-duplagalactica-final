@@ -23,7 +23,8 @@ import verifyToken from '../fetchs/verifyToken.jsx';
 function CouchClasses() {
   const [userMail,setUserMail] = useState(null)
   const navigate = useNavigate();
-  const isSmallScreen = useMediaQuery('(max-width:700px)');
+  const isSmallScreen = useMediaQuery('(max-width:350px)');
+  const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
@@ -87,11 +88,11 @@ function CouchClasses() {
   
   function ImageData({event}) {
     return (
-      <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',width:'100%',height:'100%',opacity: 1,
-        visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)',alignItems:'center',justifyContent:'center'}} onClick={handleCloseModal}>
-           <MDBContainer style={{display:'flex'}}>
+      <div className="vh-100" style={{position:'fixed',zIndex:1000,display:'flex',flex:1,width:'100%',height:'100%',opacity: 1,
+        visibility: 'visible',backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={handleCloseModal}>
+          <MDBContainer style={{display:'flex', width: isSmallScreen700 ? '90%' : '85%'}}>
             <MDBRow className="justify-content-center" onClick={(e) => e.stopPropagation()} style={{flex:1,display:'flex',alignContent:'center'}}>
-              <MDBCol md="9" lg="7" xl="5" className="mt-5" style={{width:'20%'}}>
+              <MDBCol md="9" lg="7" xl="5" className="mt-5">
                 <MDBCard style={{ borderRadius: '15px', backgroundColor: '#F5F5F5' }}>
                   <MDBCardBody className="p-4 text-black">
                     <div>
