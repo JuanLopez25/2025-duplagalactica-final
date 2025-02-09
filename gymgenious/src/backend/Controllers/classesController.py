@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from services.classesRoutes import add_calification,get_classes, create_class,book_class,unbook_class,delete_class,update_class_info,get_comments
+from services.classesRoutes import add_calification,get_classes, create_class,book_class,unbook_class,delete_class,update_class_info,get_comments,book_class_with_gem
 
 
 
@@ -33,16 +33,25 @@ def add_calification_route(classId,calification,commentary,userId):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def book_class_route(event,mail):
+def book_class_route(event,mail,uid):
     try:
-        book_class(event,mail)
+        book_class(event,mail,uid)
+        return jsonify({"message": "Class booked successfull"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def book_class_with_gem_route(event,mail,membId):
+    try:
+        print("llego hasta aca")
+        book_class_with_gem(event,mail,membId)
         return jsonify({"message": "Class booked successfull"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-def unbook_class_route(event,mail):
+def unbook_class_route(event,mail,uid):
     try:
-        unbook_class(event,mail)
+        unbook_class(event,mail,uid)
         return jsonify({"message": "Class unbooked successfull"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

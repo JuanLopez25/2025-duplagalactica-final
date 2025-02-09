@@ -21,7 +21,6 @@ def get_comments():
         print(f"Error while getting the clasifications: {e}")
         raise RuntimeError("It was not possible to get the clasifications")
 
-
 def create_class(new_class):
     try:
         db.collection('classes').add(new_class)
@@ -31,7 +30,6 @@ def create_class(new_class):
         print(f"Error while creating the class: {e}")
         raise RuntimeError("It was not possible to create the class")
     
-
 def add_calification(classId, calification, commentary, userId):
     try:
         new_calification = {
@@ -56,7 +54,7 @@ def add_calification(classId, calification, commentary, userId):
         print(f"Error while creating the classification: {e}")
         raise RuntimeError("It was not possible to create the classification")
 
-def book_class(event, mail):
+def book_class(event, mail,uid):
     try:
         print("id:",event)
         classes_ref = db.collection('classes')
@@ -69,12 +67,74 @@ def book_class(event, mail):
         doc_ref.update({
             'BookedUsers': booked_users
         })
+        membership_user_ref = db.collection('membershipsUsers').where('userId', '==', uid)
+        membership_user_docs = membership_user_ref.stream()
+
+        membership_id = None
+        for doc in membership_user_docs:
+            membership_id = doc.to_dict().get('membershipId')
+            break 
+        if not membership_id:
+            print("No se encontró ninguna membresía para este usuario.")
+            return None
+        memberships_ref = db.collection('memberships')
+        doc_ref = memberships_ref.document(membership_id)
+        doc = doc_ref.get()
+        if doc.exists: 
+            current_data = doc.to_dict()
+            booked_users = current_data.get('BookedClasses', [])
+            if event not in booked_users:
+                booked_users.append(event)
+            doc_ref.update({
+                'BookedClasses': booked_users
+            })
+        else:
+            print("No se encontró la membresía correspondiente.")
+            return None
+        return {"message": "Actualización realizada"} 
+    except Exception as e:
+        print(f"Error while booking the class: {e}")
+        raise RuntimeError("It was not possible to book the class")
+
+def book_class_with_gem(event, mail,membId):
+    try:
+        print("id:",event)
+        classes_ref = db.collection('classes')
+        doc_ref = classes_ref.document(event)
+        doc = doc_ref.get()
+        current_data = doc.to_dict()
+        booked_users = current_data.get('BookedUsers', [])
+        if mail not in booked_users:
+            booked_users.append(mail)
+        doc_ref.update({
+            'BookedUsers': booked_users
+        })
+        memberships_ref = db.collection('memberships')
+        doc_ref = memberships_ref.document(membId)
+        doc = doc_ref.get()
+        if doc.exists: 
+            current_data = doc.to_dict()
+            booked_users = current_data.get('BookedClasses', [])
+            if event not in booked_users:
+                booked_users.append(event)
+            doc_ref.update({
+                'BookedClasses': booked_users
+            })
+        users_ref = db.collection('users')
+        docs = users_ref.where('Mail', '==', mail).stream()
+        for doc in docs:
+            doc_ref = users_ref.document(doc.id)
+            doc = doc_ref.get()
+            gems_amount = doc.to_dict().get('Gemas',' ')
+            doc_ref.update({
+                'Gemas': gems_amount-1
+            })
         return {"message": "Actualización realizada"} 
     except Exception as e:
         print(f"Error while booking the class: {e}")
         raise RuntimeError("It was not possible to book the class")
     
-def unbook_class(event, mail):
+def unbook_class(event, mail,uid):
     try:
         classes_ref = db.collection('classes')
         doc_ref = classes_ref.document(event)
@@ -86,7 +146,32 @@ def unbook_class(event, mail):
             doc_ref.update({
                 'BookedUsers': booked_users
             })
-        return {"message": "Actualización realizada"} 
+        
+        membership_user_ref = db.collection('membershipsUsers').where('userId', '==', uid)
+        membership_user_docs = membership_user_ref.stream()
+
+        membership_id = None
+        for doc in membership_user_docs:
+            membership_id = doc.to_dict().get('membershipId')
+            break 
+        if not membership_id:
+            print("No se encontró ninguna membresía para este usuario.")
+            return None
+        membership_ref = db.collection('memberships')
+        doc_ref = membership_ref.document(membership_id)
+        doc = doc_ref.get()
+        if doc.exists: 
+            current_data = doc.to_dict()
+            booked_users = current_data.get('BookedClasses', [])
+            if event in booked_users:
+                booked_users.remove(event)
+                doc_ref.update({
+                    'BookedClasses': booked_users
+                })
+        else:
+            print("No se encontró la membresía correspondiente.")
+            return None
+        
     except Exception as e:
         print(f"Error while unbooking the class: {e}")
         raise RuntimeError("It was not possible to unbook the class")

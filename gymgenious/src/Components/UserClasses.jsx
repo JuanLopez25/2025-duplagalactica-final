@@ -152,7 +152,7 @@ function UsserClasses() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ event: event, mail: userMail })
+        body: JSON.stringify({ event: event, mail: userMail,uid: userAccount.uid })
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);

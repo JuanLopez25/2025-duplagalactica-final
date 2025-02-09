@@ -6,7 +6,6 @@ import LeftBar from '../real_components/NewLeftBar.jsx';
 import { auth } from '../firebase-config.js';
 import {signInWithEmailAndPassword } from 'firebase/auth';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
@@ -20,7 +19,6 @@ export default function Login() {
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [success, setSuccess] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [errorLogin, setErrorLogin] = useState(false);
   const isSmallScreen = useMediaQuery('(max-width:700px)');
 
@@ -64,13 +62,10 @@ export default function Login() {
   
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-      if (token) {
-        navigate('/');
-        return;
-      } else {
-        setIsAuthenticated(false);
-        return;
-      }
+    if (token) {
+      navigate('/');
+      return;
+    } 
   }, []);
 
   return (

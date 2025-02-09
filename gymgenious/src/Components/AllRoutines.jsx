@@ -4,7 +4,6 @@ import Paper from '@mui/material/Paper';
 import NewLeftBar from '../real_components/NewLeftBar';
 import { useNavigate } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
 import Loader from '../real_components/loader.jsx';

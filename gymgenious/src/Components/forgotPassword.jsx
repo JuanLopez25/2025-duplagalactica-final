@@ -25,8 +25,6 @@ export default function ResetPassword() {
         setOpenCircularProgress(true);
         e.preventDefault();
         try {
-            const url = new URL('https://2025-duplagalactica-final.vercel.app/get_unique_user_by_email');
-            url.searchParams.append('mail', email); 
             await sendPasswordResetEmail(auth, email, {
                 url: 'https://2025-duplagalactica-final.vercel.app/redirections?mode=resetPassword', 
                 handleCodeInApp: true

@@ -7,7 +7,6 @@ import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from '
 import Box from '@mui/material/Box';
 import Popper from '@mui/material/Popper';
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Slide from '@mui/material/Slide';

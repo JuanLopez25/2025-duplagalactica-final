@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from Controllers.classesController import add_calification_route,get_comments_route,get_classes_route, create_class_route,book_class_route,unbook_class_route,delete_class_route,update_class_info_route
+from Controllers.classesController import add_calification_route,get_comments_route,get_classes_route, create_class_route,book_class_route,book_class_with_gem_route,unbook_class_route,delete_class_route,update_class_info_route
 from Controllers.usersController import leave_ranking_route,join_ranking_route,get_rankings_route,create_ranking_route,use_geme_route,get_unique_user_by_email_route ,get_user_route, send_email_route, create_user_route,get_users_route,get_coach_users_route,get_clients_users_route,get_client_users_no_match_routine_route,update_users_info_route
 from Controllers.excersicesController import create_exersice_route,get_excersice_by_owner_route,get_excersices_route,update_exer_info_route
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
@@ -108,8 +108,16 @@ def get_client_users_no_match_routine():
 
 @app.route('/get_unique_user_by_email', methods=['GET'])
 def get_unique_user_by_email():
-    username = request.args.get('mail')
-    return get_unique_user_by_email_route(username)
+    try:
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        username = request.args.get('mail')
+        return get_unique_user_by_email_route(username)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+
 
 #------------------------------------------------
 #------------------------------------------------
@@ -685,7 +693,8 @@ def unbook_class():
             return jsonify({'error':'Missing token'})
         event = request.json.get('event')
         mail = request.json.get('mail')
-        return unbook_class_route(event,mail)
+        uid = request.json.get('uid')
+        return unbook_class_route(event,mail,uid)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -698,10 +707,28 @@ def book_class():
             return jsonify({'error':'Missing token'})
         event = request.json.get('event')
         mail = request.json.get('mail')
-        return book_class_route(event,mail)
+        uid = request.json.get('uid')
+        return book_class_route(event,mail,uid)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
+    
+@app.route('/book_class_with_gem', methods=['PUT'])
+def book_class_with_gem():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        print("a")
+        event = request.json.get('event')
+        mail = request.json.get('mail')
+        membId = request.json.get('membId')
+        print("n")
+        return book_class_with_gem_route(event,mail,membId)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
+    
 
 @app.route('/add_calification', methods=['PUT'])
 def add_calification():

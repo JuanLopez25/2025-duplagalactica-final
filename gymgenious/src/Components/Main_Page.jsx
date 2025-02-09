@@ -587,42 +587,17 @@ export default function Main_Page() {
         console.error('Token no disponible en localStorage');
         return;
       }
-      const response = await fetch('https://two025-duplagalactica-final.onrender.com/book_class', {
+      const response = await fetch('https://two025-duplagalactica-final.onrender.com/book_class_with_gem', {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ event: event,mail:userMail })
+        body: JSON.stringify({ event: event,mail:userMail,membId: membership[0].id })
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
-      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/use_membership_class', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ id: event,membId:membership[0].id })
-      });
-      if (!response2.ok) {
-        throw new Error('Error al actualizar la clase: ' + response2.statusText);
-      }
-
-      const response3 = await fetch('https://two025-duplagalactica-final.onrender.com/use_geme', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({mail:userMail})
-      });
-      if (!response3.ok) {
-        throw new Error('Error al actualizar la clase: ' + response3.statusText);
-      }
-
-
       await fetchClasses();
       window.location.reload();
       handleCloseModal();
@@ -654,21 +629,10 @@ export default function Main_Page() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ event: event,mail:userMail })
+        body: JSON.stringify({ event: event,mail:userMail,uid: userAccount.uid })
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
-      }
-      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/use_membership_class', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ id: event,membId:membership[0].id })
-      });
-      if (!response2.ok) {
-        throw new Error('Error al actualizar la clase: ' + response2.statusText);
       }
       await fetchClasses();
       window.location.reload();
@@ -702,22 +666,12 @@ export default function Main_Page() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ event: event,mail:userMail })
+        body: JSON.stringify({ event: event,mail:userMail,uid: userAccount.uid })
       });
       if (!response.ok) {
         throw new Error('Error al actualizar la clase: ' + response.statusText);
       }
-      const response2 = await fetch('https://two025-duplagalactica-final.onrender.com/unuse_membership_class', {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ id: event,membId:membership[0].id })
-      });
-      if (!response2.ok) {
-        throw new Error('Error al actualizar la membresia: ' + response2.statusText);
-      }
+      
       await fetchClasses();
       window.location.reload();
       handleCloseModal();
