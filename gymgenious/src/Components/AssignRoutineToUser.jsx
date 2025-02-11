@@ -86,9 +86,10 @@ export default function RoutineCreation() {
                 }
                 const data2 = await response2.json();
                 const filteredRoutines = data2.filter(event => event.id==routineAssigned);
+                const mails = users.map(user => user.Mail);
                 const newAsignRoutine = {
                     id: routineAssigned,
-                    user: users,
+                    user: mails,
                     owner: filteredRoutines[0].owner,
                     assigner: userMail,
                     day: day,

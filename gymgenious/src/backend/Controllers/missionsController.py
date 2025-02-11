@@ -9,9 +9,9 @@ def add_missions_route(users,selectedEvent):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-def assign_mission_route(amount,users):
+def assign_mission_route(users):
     try:
-        assignes_mission = assign_mission(amount,users)
+        assignes_mission = assign_mission(users)
         return jsonify(assignes_mission), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500

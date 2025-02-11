@@ -146,12 +146,6 @@ export default function ExerciseCreation() {
         null
     )}
     <div className='exercise-creation-container'>
-      <button 
-        onClick={() => window.location.reload()} 
-        className="custom-button-go-back-managing"
-      >
-        <KeyboardBackspaceIcon sx={{ color: '#F5F5F5' }} />
-      </button>
       <div className='exercise-creation-content'>
         <h2 style={{color:'#14213D'}}>Add items</h2>
         <form onSubmit={handleSubmit}>
