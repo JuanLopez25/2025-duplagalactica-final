@@ -21,7 +21,7 @@ def add_missions(users,selectedEvent):
         print(f"Error while adding a mission: {e}")
         raise RuntimeError("It was not possible to add a mission")
     
-def assign_mission(amount,users):
+def assign_mission(users):
     try:
         created_missions = []
         templates_ref = db.collection('missionTemplate')

@@ -29,12 +29,12 @@ export default function CreateAccount() {
     const [errorPassword, setErrorPassword] = useState(false);
     const [errorName, setErrorName] = useState(false);
     const [errorDate, setErrorDate] = useState(false);
+    const [openPasswordRequirements, setOpenPasswordRequirements] = useState(false);
     const id = openPasswordRequirements ? 'simple-popper' : undefined;
     const [errorType, setErrorType] = useState(false);
     const [errorEmailRepeated, setErrorEmailRepeated] = useState(false);
     const isSmallScreen = useMediaQuery('(max-width:700px)');
     const [anchorEl, setAnchorEl] = useState(null);
-    const [openPasswordRequirements, setOpenPasswordRequirements] = useState(false);
 
     const validateForm = () => {
         let errors = [];

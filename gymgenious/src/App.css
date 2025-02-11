@@ -1158,6 +1158,7 @@ iframe {
   text-align: center;
   position:absolute;
   overflow-y: auto;
+  max-height: '95%';
 }
 
 .membership-choose-container {

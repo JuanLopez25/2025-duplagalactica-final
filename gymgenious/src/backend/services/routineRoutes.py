@@ -16,7 +16,7 @@ def create_routine(newRoutine):
 
 def assign_routine_to_user(newAssignRoutine):
     try:
-        mails = [user['Mail'] for user in newAssignRoutine['user']]
+        mails = newAssignRoutine['user']
         
         assignes_routine_ref = db.collection('assigned_routines')
         

@@ -11,6 +11,8 @@ from Controllers.attendanceController import mark_attendance_route,get_coach_cli
 from Controllers.inventoryController import get_inventory_route,create_inventory_route
 import jwt
 import json
+import re
+from dateutil import parser
 import datetime
 
 
@@ -45,7 +47,11 @@ def get_user():
             return jsonify({'error':'Missing token'})
         password = request.args.get('password')
         mail = request.args.get('mail')
-        return get_user_route(password,mail)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, mail):
+            return get_user_route(password,mail)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -113,7 +119,11 @@ def get_unique_user_by_email():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         username = request.args.get('mail')
-        return get_unique_user_by_email_route(username)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, username):
+            return get_unique_user_by_email_route(username)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -133,7 +143,11 @@ def use_geme():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         mail = request.json.get('mail')
-        return use_geme_route(mail)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, mail):
+            return use_geme_route(mail)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -146,7 +160,11 @@ def join_ranking():
             return jsonify({'error':'Missing token'})
         rankingID = request.json.get('id')
         userMail = request.json.get('user')
-        return join_ranking_route(rankingID,userMail)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, userMail):
+            return join_ranking_route(rankingID,userMail)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -159,7 +177,11 @@ def leave_ranking():
             return jsonify({'error':'Missing token'})
         rankingID = request.json.get('id')
         userMail = request.json.get('user')
-        return leave_ranking_route(rankingID,userMail)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, userMail):
+            return leave_ranking_route(rankingID,userMail)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -171,6 +193,28 @@ def update_users_info():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         newUserInfo = request.json.get('newUser')
+        campos_requeridos = {
+            "Birthday": str,
+            "Gemas": int,
+            "Lastname": str,
+            "Mail": str,
+            "MissionsComplete": int, 
+            "Name": str,
+            "type": str,
+            "uid": str
+        }
+        
+        for campo, tipo in campos_requeridos.items():
+            if campo not in newUserInfo:
+                print(f"Falta el campo requerido: {campo}")
+                return jsonify({'error':'Something went wrong'})
+            if not isinstance(newUserInfo[campo], tipo):
+                print(f"El campo '{campo}' debe ser de tipo {tipo.__name__}")
+                return jsonify({'error':'Something went wrong'})
+            if isinstance(newUserInfo[campo], str) and not newUserInfo[campo].strip():
+                print(f"El campo '{campo}' no puede estar vacío")
+                return jsonify({'error':'Something went wrong'})
+
         return update_users_info_route(newUserInfo)
     except Exception as e:
         print("Error")
@@ -186,6 +230,37 @@ def update_users_info():
 @app.route('/create_user', methods=['POST'])
 def create_user():
     user = request.json
+    campos_requeridos = {
+        "uid": str,
+        "Name": str,
+        "Lastname": str,
+        "Mail": str,
+        "Birthday": str,
+        "Gemas": int,  
+        "MissionsComplete": int,
+        "type": str
+    }
+
+    email_pattern = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+
+    for campo, tipo in campos_requeridos.items():
+        if campo not in user:
+            return jsonify({'error':'Something went wrong'})
+        if not isinstance(user[campo], tipo):
+            return jsonify({'error':'Something went wrong'})
+
+    if not re.match(email_pattern, user["Mail"]):
+        return jsonify({'error':'Something went wrong'})
+    if not user["Name"].strip():
+        return jsonify({'error':'Something went wrong'})
+    if not user["Lastname"].strip():
+        return jsonify({'error':'Something went wrong'})
+    if user["Gemas"] != 0:
+        return jsonify({'error':'Something went wrong'})
+    if user["MissionsComplete"] != 0:
+        return jsonify({'error':'Something went wrong'})
+    if user["type"] not in ["client", "coach"]:
+        return jsonify({'error':'Something went wrong'})
     return create_user_route(user)
 
 @app.route('/send_email', methods=['POST'])
@@ -195,7 +270,11 @@ def send_email():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         to_email = request.json.get('toEmail')
-        return send_email_route(to_email)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, to_email):
+            return send_email_route(to_email)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -312,22 +391,8 @@ def assign_mission():
         token = request.headers.get('Authorization')
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
-        amount = request.form.get('cant')
         userId = request.form.get('uid')
-        return assign_mission_route(amount,userId)
-    except Exception as e:
-        print("Error")
-        return jsonify({'error':'Something went wrong'})
-
-@app.route('/add_missions', methods=['POST'])
-def add_missions():
-    try :
-        token = request.headers.get('Authorization')
-        if not token or 'Bearer' not in token:
-            return jsonify({'error':'Missing token'})
-        users = request.form.get('usuarios')
-        event = request.form.get('selectedEvent')
-        return add_missions_route(users,event)
+        return assign_mission_route(userId)
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -377,11 +442,10 @@ def add_mission_progress():
 
 @app.route('/get_memb_user', methods=['GET'])
 def get_memb_user():
+    token = request.headers.get('Authorization')
+    if not token or 'Bearer' not in token:
+        return jsonify({'error':'Missing token'})
     return get_memb_user_route()
-
-@app.route('/get_memberships', methods=['GET'])
-def get_unique_user_membership():
-    return get_unique_user_membership_route()
 
 @app.route('/get_membership_template', methods=['GET'])
 def get_membership_template():
@@ -411,6 +475,29 @@ def aquire_membership_month():
         uid = request.json.get('userId')
         endDate = request.json.get('fin')
         type_memb = request.json.get('type_memb')
+        campos_requeridos = {
+            "inicio": str,
+            "userId": str,
+            "fin": str,
+            "type_memb": str
+        }
+        request_json = {
+            "inicio": startDate,
+            "userId": uid,
+            "fin": endDate,
+            "type_memb": type_memb
+        }
+        valores_validos_type_memb = {"never", "yearly", "monthly"}
+        for campo, tipo in campos_requeridos.items():
+            if campo not in request_json:
+                return jsonify({'error':'Something went wrong'})
+            if not isinstance(request_json[campo], tipo):
+                return jsonify({'error':'Something went wrong'})
+            if not request_json[campo].strip():
+                return jsonify({'error':'Something went wrong'})
+
+        if request_json["type_memb"] not in valores_validos_type_memb:
+            return jsonify({'error':'Something went wrong'})
         return aquire_membership_month_route(startDate,uid,endDate,type_memb)
     except Exception as e:
         print("Error")
@@ -449,7 +536,12 @@ def edit_memb_price():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         type_user = request.json.get('tipo')
-        price = request.json.get('precio')
+        price = request.json.get('precio') 
+        print("precio",price)
+        if not isinstance(float(price), float):
+            return jsonify({'error':'Something went wrong'})
+        if float(price) <= 0.00:
+            return jsonify({'error':'Something went wrong'})
         return edit_memb_price_route(type_user,price)
     except Exception as e:
         print("Error")
@@ -520,7 +612,11 @@ def mark_attendance():
         dateInicio = decoded_token['start']
         dateEnd = decoded_token['end']
         userMail = decoded_token['userMail']
-        return mark_attendance_route(event_id,dateInicio,dateEnd,userMail)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, userMail):
+            return mark_attendance_route(event_id,dateInicio,dateEnd,userMail)
+        else:
+            return jsonify({'error':'Not a mail'})
 
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token had expired'}), 400
@@ -575,6 +671,12 @@ def create_inventory():
             return jsonify({'error':'Missing token'})
         name = request.form.get('name')
         total = request.form.get('total')
+        if not isinstance(int(total), int):
+            print("error")
+            return jsonify({'error':'Something went wrong'})
+        if int(total) <= 0:
+            print("error")
+            return jsonify({'error':'Something went wrong'})
         image = request.files.get('image')
         image_data = None
         if image:
@@ -634,6 +736,47 @@ def create_class():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         new_class = request.json
+        required_fields = ["name", "dateInicio", "dateFin", "hour", "reservations", 
+                       "day", "permanent", "owner", "capacity", "sala", "BookedUsers"]
+
+        for field in required_fields:
+            if field not in new_class or new_class[field] in [None,""]:
+                return jsonify({'error':'Something went wrong'})
+        try:
+            date_inicio = parser.isoparse(new_class["dateInicio"])
+            date_fin = parser.isoparse(new_class["dateFin"])
+            if date_fin <= date_inicio + datetime.timedelta(minutes=30):
+                return jsonify({'error':'Something went wrong'})
+        except ValueError:
+            return jsonify({'error':'Something went wrong'})
+
+        now = datetime.datetime.now(datetime.UTC) 
+        if date_inicio < now:
+            return jsonify({'error':'Something went wrong'})
+
+        if not re.match(r"^\d{2}:\d{2}$", new_class["hour"]):
+            return jsonify({'error':'Something went wrong'})
+
+        if not isinstance(new_class["reservations"], list):
+            return jsonify({'error':'Something went wrong'})
+
+        if new_class["permanent"] not in ["Si", "No"]:
+            return jsonify({'error':'Something went wrong'})
+        
+        patron = r"^[\w\.\+-]+@[\w\.-]+\.\w+$"
+        if not re.match(patron, new_class["owner"]):
+            return jsonify({'error':'Something went wrong'})
+
+        try:
+            capacity = int(new_class["capacity"])
+            if capacity <= 0:
+                return jsonify({'error':'Something went wrong'})
+        except ValueError:
+            return jsonify({'error':'Something went wrong'})
+        
+        if not new_class["sala"].strip():
+            return jsonify({'error':'Something went wrong'})
+        
         return create_class_route(new_class)
     except Exception as e:
         print("Error")
@@ -680,6 +823,34 @@ def update_class_info():
             'capacity':capacity,
             'reservations':reservations
         }
+        try:
+            date_inicio = parser.isoparse(DateInicio)
+            date_fin = parser.isoparse(DateFin)
+            if date_fin <= date_inicio + datetime.timedelta(minutes=30):
+                return jsonify({'error':'Something went wrong'})
+        except ValueError:
+            return jsonify({'error':'Something went wrong'})
+
+        now = datetime.datetime.now(datetime.UTC) 
+        if DateInicio < now:
+            return jsonify({'error':'Something went wrong'})
+        if not re.match(r"^\d{2}:\d{2}$", Hour):
+            return jsonify({'error':'Something went wrong'})
+
+        if not isinstance(reservations, list):
+            return jsonify({'error':'Something went wrong'})
+
+        if permanent not in ["Si", "No"]:
+            return jsonify({'error':'Something went wrong'})
+        try:
+            capacity = int(capacity)
+            if capacity <= 0:
+                return jsonify({'error':'Something went wrong'})
+        except ValueError:
+            return jsonify({'error':'Something went wrong'})
+        
+        if not place.strip():
+            return jsonify({'error':'Something went wrong'})
         return update_class_info_route(newClassInfo)
     except Exception as e:
         print("Error")
@@ -694,7 +865,11 @@ def unbook_class():
         event = request.json.get('event')
         mail = request.json.get('mail')
         uid = request.json.get('uid')
-        return unbook_class_route(event,mail,uid)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, mail):
+            return unbook_class_route(event,mail,uid)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -708,7 +883,11 @@ def book_class():
         event = request.json.get('event')
         mail = request.json.get('mail')
         uid = request.json.get('uid')
-        return book_class_route(event,mail,uid)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, mail):
+            return book_class_route(event,mail,uid)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -723,8 +902,11 @@ def book_class_with_gem():
         event = request.json.get('event')
         mail = request.json.get('mail')
         membId = request.json.get('membId')
-        print("n")
-        return book_class_with_gem_route(event,mail,membId)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, mail):
+            return book_class_with_gem_route(event,mail,membId)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -740,6 +922,12 @@ def add_calification():
         calification = request.json.get('calification')
         commentary = request.json.get('commentary')        
         userId = request.json.get('user')
+        if not isinstance(commentary, str):
+            return jsonify({'error':'Something went wrong'})
+        if not isinstance(calification, (int, float)):
+            return jsonify({'error':'Something went wrong'})
+        elif calification < 1 or calification > 5:
+            return jsonify({'error':'Something went wrong'})
         return add_calification_route(classId,calification,commentary,userId)
     except Exception as e:
         print("Error")
@@ -759,7 +947,11 @@ def delete_class():
             return jsonify({'error':'Missing token'})
         event = request.json.get('event')
         mail = request.json.get('mail')
-        return delete_class_route(event,mail)
+        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, mail):
+            return delete_class_route(event,mail)
+        else:
+            return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
         return jsonify({'error':'Something went wrong'})
@@ -955,6 +1147,38 @@ def create_routine():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         newRoutine = request.json
+        name = newRoutine['name']
+        if not name or name == '':
+            return jsonify({'error':'Something went wrong'})
+        description = newRoutine['description']
+        if not description or description == '':
+            return jsonify({'error':'Something went wrong'})
+        routineExercises = newRoutine['excercises']
+        if not routineExercises or len(routineExercises) == 0:
+            return jsonify({'error':'Something went wrong'})
+
+        for index, exercise in enumerate(routineExercises):
+            reps = exercise['reps']
+            if not isinstance(reps, list):
+                return jsonify({'error':'Something went wrong'})
+            else:
+                parsed_reps = [float(item) if item else None for item in reps]
+                if any(item is None or item == '' for item in parsed_reps):
+                    return jsonify({'error':'Something went wrong'})
+                elif any(isinstance(item, str) and not item.isdigit() for item in reps):
+                    print(6)
+                    return jsonify({'error':'Something went wrong'})
+
+            timing = exercise['timing']
+            if int(timing) == 0:
+                print(7)
+                return jsonify({'error':'Something went wrong'})
+            print("8")
+            series = exercise['series']
+            if not isinstance(int(series), int) or int(series) <= 0:
+                print(8)
+                return jsonify({'error':'Something went wrong'})
+            
         return create_routine_route(newRoutine)
     except Exception as e:
         print("Error")
@@ -974,6 +1198,38 @@ def update_routine_info():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         newRoutine = request.json.get('newRoutine')
+        name = newRoutine['name']
+        if not name or name == '':
+            return jsonify({'error':'Something went wrong'})
+        description = newRoutine['description']
+        if not description or description == '':
+            return jsonify({'error':'Something went wrong'})
+        routineExercises = newRoutine['excercises']
+        if not routineExercises or len(routineExercises) == 0:
+            return jsonify({'error':'Something went wrong'})
+
+        for index, exercise in enumerate(routineExercises):
+            reps = exercise['reps']
+            if not isinstance(reps, list):
+                return jsonify({'error':'Something went wrong'})
+            else:
+                parsed_reps = [float(item) if item else None for item in reps]
+                if any(item is None or item == '' for item in parsed_reps):
+                    return jsonify({'error':'Something went wrong'})
+                elif any(isinstance(item, str) and not item.isdigit() for item in reps):
+                    print(6)
+                    return jsonify({'error':'Something went wrong'})
+
+            timing = exercise['timing']
+            if int(timing) == 0:
+                print(7)
+                return jsonify({'error':'Something went wrong'})
+            print("8")
+            series = exercise['series']
+            if not isinstance(int(series), int) or int(series) <= 0:
+                print(8)
+                return jsonify({'error':'Something went wrong'})
+            
         return update_routine_info_route(newRoutine)
     except Exception as e:
         print("Error")
@@ -986,6 +1242,18 @@ def assign_routine_to_user():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         newAssignRoutine = request.json
+        if not isinstance(newAssignRoutine['id'], str) or not newAssignRoutine.get('id'):
+            return jsonify({'error':'Something went wrong'})
+        if not isinstance(newAssignRoutine['user'], list) or not newAssignRoutine['user'] or any(not isinstance(email, str) or not email for email in newAssignRoutine['user']):
+            return jsonify({'error':'Something went wrong'})
+        if not isinstance(newAssignRoutine['owner'], str) or not newAssignRoutine['owner']: 
+            return jsonify({'error':'Something went wrong'})
+        if not isinstance(newAssignRoutine['assigner'], str) or not newAssignRoutine['assigner']:   
+            return jsonify({'error':'Something went wrong'})
+        if not isinstance(newAssignRoutine['day'], str) or not newAssignRoutine['day']:  
+            return jsonify({'error':'Something went wrong'})
+        if not isinstance(newAssignRoutine['routine'], str) or not newAssignRoutine['routine']:  
+            return jsonify({'error':'Something went wrong'})
         return assign_routine_to_user_route(newAssignRoutine)
     except Exception as e:
         print("Error")
