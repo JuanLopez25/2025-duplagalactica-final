@@ -100,7 +100,7 @@ export default function Main_Page() {
       const formattedDate = `${year}-${month}-${day}`;
       const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
       const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
-      const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memberships`, {
+      const response2 = await fetch(`http://127.0.0.1:5000/get_memberships`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -115,8 +115,8 @@ export default function Main_Page() {
       setFetchError(true);
       setTimeout(() => {
         setFetchError(false);
-        localStorage.removeItem('authToken');
-        window.location.reload()
+        //localStorage.removeItem('authToken');
+        //window.location.reload()
       }, 3000);
 
     }

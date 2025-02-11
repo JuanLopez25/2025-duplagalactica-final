@@ -5,8 +5,8 @@ from Controllers.usersController import leave_ranking_route,join_ranking_route,g
 from Controllers.excersicesController import create_exersice_route,get_excersice_by_owner_route,get_excersices_route,update_exer_info_route
 from Controllers.routineController import create_routine_route,assign_routine_to_user_route,get_routines_route,get_assigned_routines_route,update_routine_info_route,delete_routine_route
 from Controllers.salasController import get_salas_route
-from Controllers.missionsController import add_mission_progress_route,add_missions_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
-from Controllers.membershipController import edit_memb_price_route,get_membership_template_route,get_unique_user_membership_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
+from Controllers.missionsController import add_mission_progress_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
+from Controllers.membershipController import edit_memb_price_route,get_unique_user_membership_route,get_membership_template_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 from Controllers.attendanceController import mark_attendance_route,get_coach_clients_assistance_route
 from Controllers.inventoryController import get_inventory_route,create_inventory_route
 import jwt
@@ -446,6 +446,13 @@ def get_memb_user():
     if not token or 'Bearer' not in token:
         return jsonify({'error':'Missing token'})
     return get_memb_user_route()
+
+@app.route('/get_memberships', methods=['GET'])
+def get_unique_user_membership():
+    token = request.headers.get('Authorization')
+    if not token or 'Bearer' not in token:
+        return jsonify({'error':'Missing token'})
+    return get_unique_user_membership_route()
 
 @app.route('/get_membership_template', methods=['GET'])
 def get_membership_template():
