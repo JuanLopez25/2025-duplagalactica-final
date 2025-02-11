@@ -17,18 +17,20 @@ export default function VerifyEmail() {
   const [openCircularProgress, setOpenCircularProgress] = useState(true);
   const auth = getAuth();
 
+  const [verified, setVerified] = useState(false);
+
   const verifyUser = async () => {
+    setOpenCircularProgress(true);
     try {
+      if (verified) return;
+      setVerified(true);
       await checkActionCode(auth, actionCode);
       await applyActionCode(auth, actionCode);
-      setTimeout(() => {
-        setOpenCircularProgress(false);
-        setSuccess(true);
-      }, 1500);
-      setTimeout(() => {
+      setOpenCircularProgress(false);
+      setSuccess(true);
+      setTimeout(()=>{
         navigate('/');
-        return;
-      }, 3000);
+      }, 2000)
     } catch (error) {
       console.error("Error al verificar el correo electrónico:", error);
       setTimeout(() => {
@@ -41,15 +43,15 @@ export default function VerifyEmail() {
       }, 5000);
     }
   };
-
+  
   useEffect(() => {
     if (!actionCode) {
       navigate('/');
       return;
-    } else {
-        verifyUser()
-      }
-    }, []);
+    }
+    verifyUser();
+  }, [actionCode]);
+  
 
   return (
     <div className='full-screen-image-login'>
@@ -89,7 +91,7 @@ export default function VerifyEmail() {
                   <Box sx={{ position: 'relative', zIndex: 1 }}>
                   <Slide direction="up" in={failure} mountOnEnter unmountOnExit >
                       <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="error">
-                          Error verifying email. Try again!
+                          Error verifying email. The code has already been used or does not exist.
                       </Alert>
                   </Slide>
                   </Box>
