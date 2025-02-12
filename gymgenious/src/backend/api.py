@@ -8,7 +8,7 @@ from Controllers.salasController import get_salas_route
 from Controllers.missionsController import add_mission_progress_route,get_missions_route,delete_missions_route,get_missions_progress_route,get_missions_template_route,assign_mission_route
 from Controllers.membershipController import edit_memb_price_route,get_unique_user_membership_route,get_membership_template_route,update_class_use_route,use_membership_class_route,get_memb_user_route,unuse_membership_class_route,aquire_membership_month_route
 from Controllers.attendanceController import mark_attendance_route,get_coach_clients_assistance_route
-from Controllers.inventoryController import get_inventory_route,create_inventory_route
+from Controllers.inventoryController import get_inventory_route,create_inventory_route,update_item_info_route
 import jwt
 import json
 import re
@@ -703,6 +703,32 @@ def create_inventory():
 
 #------------------------------------------------
 #------------------------------------------------
+
+@app.route('/update_item_info', methods=['PUT'])
+def update_item_info():
+    try :
+        token = request.headers.get('Authorization')
+        if not token or 'Bearer' not in token:
+            return jsonify({'error':'Missing token'})
+        name = request.form.get('name')
+        total = request.form.get('total')
+        image_url = request.form.get('image_url')        
+        image = request.files.get('image')
+        image_data = None
+        if image:
+            image_data = image.read()  
+        id = request.form.get('id')
+        newItem = {
+            'id' : id,
+            'name': name,
+            'total': total,
+            'image_url': image_url,
+            'image': image_data 
+        }
+        return update_item_info_route(newItem)
+    except Exception as e:
+        print("Error")
+        return jsonify({'error':'Something went wrong'})
 
 #------------------------------------------------
 #------------------------------------------------

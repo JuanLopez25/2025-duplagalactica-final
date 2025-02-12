@@ -166,6 +166,7 @@ function CouchClasses() {
   }, [userMail,maxNum,fetchCapacity]);
 
   const handleSelectEvent = (event) => {
+    console.log("evento",event)
     setSelectedEvent(event);
   };
 
@@ -419,10 +420,17 @@ function CouchClasses() {
           cantidad1: item.cantidad,
           cantidad2: matchedItem.cantidad
         };
+      } else {
+        return {
+          id: item.id,
+          cantidad1: item.cantidad,
+          cantidad2: 0
+        }
       }
-      return null; 
     })
     .filter(item => item !== null);
+    console.log("validando",itemData)
+    console.log("fetched",fetchedInventory)
     let res = true;
     let allMatch = matchedItems.every((item)=>item.cantidad1==item.cantidad2);
     if (name==='' && hour === '' && hourFin === '' && date=== '' && salaAssigned==null && maxNum===null && permanent==='' && allMatch) {
@@ -503,8 +511,7 @@ function CouchClasses() {
       const data = await response.json();
       const dataFinal = data.filter(room => room.id == sala);
       
-      console.log("data final", dataFinal);
-      console.log("capacidad", (maxNum || fetchCapacity));
+   
       if (dataFinal.length === 0) {
         console.error("No se encontró la sala.");
         setErrorCapacity(true);
@@ -783,6 +790,7 @@ function CouchClasses() {
                       >
                         <CloseIcon sx={{ color: '#F5F5F5' }} />
                       </button>
+                      { (new Date(event.start).getDate() > new Date().getDate()) && (
                       <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -792,6 +800,7 @@ function CouchClasses() {
                         >
                           Edit class
                         </MDBBtn>
+                      )}
                         {new Date(event.start).getDate() == new Date().getDate() && event.BookedUsers.length>0? (
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
@@ -1000,16 +1009,7 @@ function CouchClasses() {
                     <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
                       {selectedEvent.reservations.map((cm) => (
                         <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
-                          {cm.name}
-                        </li>
-                      ))}
-                    </ul>
-                </div>
-                <div className="input-small-container" style={{flex: 3}}>
-                    <ul style={{maxHeight: '400px', overflowY: 'auto',listStyle:'none'}}>
-                      {selectedEvent.reservations.map((cm) => (
-                        <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
-                          {cm.cantidad}
+                          {cm.name} : {cm.cantidad}
                         </li>
                       ))}
                     </ul>

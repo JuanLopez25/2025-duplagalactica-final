@@ -51,11 +51,12 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
             throw new Error('Error fetching Train Mate exercises: ' + exercisesDataExternal.statusText);
         }
         const exercisesFromTrainMate = await exercisesDataExternal.json();
-         const routinesWithExercises = routines.map((routine) => {
+        console.log("ejers",exercisesFromTrainMate)
+        const routinesWithExercises = routines.map((routine) => {
             const updatedExercises = routine.excercises.map((exercise) => {
                 let matchedExercise = exercisesList.find((ex) => ex.id === exercise.id);
-                if (!matchedExercise && Array.isArray(exercisesFromTrainMate.excercises)) {
-                    matchedExercise = exercisesFromTrainMate.excercises.find((ex) => ex.id === exercise.id);
+                if (!matchedExercise) {
+                    matchedExercise = exercisesFromTrainMate.exercises.find((ex) => ex.id === exercise.id);
                 }
                 if (matchedExercise) {
                     return {
@@ -88,7 +89,6 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
             ...routine,
             exercise_length: routine.exercises ? routine.exercises.length : 0,
         }));
-        console.log("b",finalRoutines)
         
 
         setRoutines(finalRoutines);

@@ -64,13 +64,11 @@ export default function Main_Page() {
   const fetchUser = async () => {
     setOpenCircularProgress(true);
     try {
-      console.log("hola")
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
         console.error('Token no disponible en localStorage');
         return;
       }
-      console.log("hola",userMail)
       const encodedUserMail = encodeURIComponent(userMail);
       const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
           method: 'GET', 
@@ -82,7 +80,6 @@ export default function Main_Page() {
           throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
       }
       const data = await response.json();
-      console.log("data",data)
       setUserAccount(data)
       setType(data.type);      
       const response3 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memb_user`, {
@@ -524,7 +521,6 @@ export default function Main_Page() {
         const CorrectStarDate = new Date(startDate.getTime() + 60 * 3 * 60 * 1000);
         const endDate = new Date(clase.dateFin);
         const CorrectEndDate = new Date(endDate.getTime() + 60 * 3 * 60 * 1000);
-        console.log("esto es el correct",(CorrectEndDate.getTime()-CorrectStarDate.getTime())/(1000*60))
         today.setHours(CorrectStarDate.getHours(), CorrectStarDate.getMinutes(), CorrectStarDate.getSeconds(), CorrectStarDate.getMilliseconds())
         if (clase.permanent === "Si") {
           let nextStartDate = CorrectStarDate;
@@ -552,7 +548,7 @@ export default function Main_Page() {
             nextEndDate.setDate(nextEndDate.getDate() + 7);
           }
         } else {
-          if(startDate >= today)
+          if(CorrectStarDate >= new Date())
           calendarEvents.push({
             title: clase.name,
             start: new Date(CorrectStarDate),
@@ -888,7 +884,6 @@ export default function Main_Page() {
         const template = templates.find(temp => temp.id === mission.mid);
         return template ? { ...mission, ...template } : mission;
       });
-      console.log("resultado nuevo",enrichedProgress)
       setProgress(enrichedProgress)
       setTimeout(() => {
         setOpenCircularProgress(false)

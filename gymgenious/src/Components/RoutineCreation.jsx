@@ -274,7 +274,8 @@ export default function RoutineCreation() {
           if (!element.owner) {
               return {
                   name: element.name,
-                  description: 'aaaa',
+                  description: '-',
+                  id: element.id,
                   owner: 'Train-Mate'
               };
           }
