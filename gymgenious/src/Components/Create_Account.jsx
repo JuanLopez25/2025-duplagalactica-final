@@ -108,13 +108,17 @@ export default function CreateAccount() {
                     MissionsComplete:0,
                     type: typeAccount
                 };
-                await fetch('https://two025-duplagalactica-final.onrender.com/create_user', {
+                const response = await fetch('https://two025-duplagalactica-final.onrender.com/create_user', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(newUser),
                 });
+                const responseData = await response.json();
+                if (!response.ok || response.error) {
+                    throw new Error(responseData.error || "Failed to create user in backend");
+                }
                 await sendEmailVerification(firebaseUser, {
                     url: 'https://2025-duplagalactica-final.vercel.app/redirections?mode=verifyEmail', 
                     handleCodeInApp: true

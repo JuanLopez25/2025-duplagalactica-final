@@ -185,17 +185,18 @@ export default function TemporaryDrawer() {
         console.error('Token no disponible en localStorage');
         return;
       }
+      console.log("hola,toy aca")
       const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
       });
-        if (!response.ok) {
-            throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
-        }
-        const data = await response.json();
-        setType(data.type);
+      if (!response.ok) {
+          throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
+      }
+      const data = await response.json();
+      setType(data.type);
     } catch (error) {
         console.error("Error fetching user:", error);
     }
@@ -223,6 +224,7 @@ export default function TemporaryDrawer() {
 
   useEffect(() => {
     if (userMail) {
+      console.log("este es el user mail",userMail)
       fetchUser(); 
     }
   }, [userMail]);

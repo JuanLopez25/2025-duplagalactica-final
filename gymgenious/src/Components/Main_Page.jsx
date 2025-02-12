@@ -64,11 +64,13 @@ export default function Main_Page() {
   const fetchUser = async () => {
     setOpenCircularProgress(true);
     try {
+      console.log("hola")
       const authToken = localStorage.getItem('authToken');
       if (!authToken) {
         console.error('Token no disponible en localStorage');
         return;
       }
+      console.log("hola",userMail)
       const encodedUserMail = encodeURIComponent(userMail);
       const response = await fetch(`https://two025-duplagalactica-final.onrender.com/get_unique_user_by_email?mail=${encodedUserMail}`, {
           method: 'GET', 
@@ -80,6 +82,7 @@ export default function Main_Page() {
           throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
       }
       const data = await response.json();
+      console.log("data",data)
       setUserAccount(data)
       setType(data.type);      
       const response3 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memb_user`, {
@@ -100,7 +103,7 @@ export default function Main_Page() {
       const formattedDate = `${year}-${month}-${day}`;
       const membresiaFiltered = membershipsOfUser.filter(memb => memb.exp.split('T')[0] > formattedDate); 
       const membershipIds = membresiaFiltered.map(memb => memb.membershipId);
-      const response2 = await fetch(`http://127.0.0.1:5000/get_memberships`, {
+      const response2 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_memberships`, {
         method: 'GET', 
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -115,8 +118,8 @@ export default function Main_Page() {
       setFetchError(true);
       setTimeout(() => {
         setFetchError(false);
-        //localStorage.removeItem('authToken');
-        //window.location.reload()
+        localStorage.removeItem('authToken');
+        window.location.reload()
       }, 3000);
 
     }

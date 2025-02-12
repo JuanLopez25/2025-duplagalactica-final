@@ -222,7 +222,7 @@ function TopRoutines() {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {selectedEvent?.excercises?.map((exercise) => (
+                                        {selectedEvent?.exercises?.map((exercise) => (
                                             <TableRow key={exercise.id}>
                                                 <TableCell>{exercise.name}</TableCell>
                                                 <TableCell>{exercise.series} x</TableCell>

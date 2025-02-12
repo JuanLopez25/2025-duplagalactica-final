@@ -331,7 +331,8 @@ function CoachRoutines() {
       if (!response.ok) {
         throw new Error('Error al eliminar la rutina: ' + response.statusText);
       }
-      await fetchRoutines(()=>{},setAllRoutines,setAllRoutines,setWarningConnection);
+      await fetchRoutines(setOpenCircularProgress,setAllRoutines,setAllRoutines,setWarningConnection);
+      window.location.reload()
       setOpenCircularProgress(false);
       handleCloseModalEvent();
     } catch (error) {
@@ -454,6 +455,9 @@ function CoachRoutines() {
               setOpenCircularProgress(false); 
           }, 1000); 
       } else {
+        setTimeout (()=> {
+          setOpenCircularProgress(false)
+        },5000)
       }
   }, [allRoutines, userMail]);
 

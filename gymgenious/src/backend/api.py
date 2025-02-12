@@ -47,7 +47,7 @@ def get_user():
             return jsonify({'error':'Missing token'})
         password = request.args.get('password')
         mail = request.args.get('mail')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, mail):
             return get_user_route(password,mail)
         else:
@@ -119,10 +119,13 @@ def get_unique_user_by_email():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         username = request.args.get('mail')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        print("hgola")
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, username):
+            print("1")
             return get_unique_user_by_email_route(username)
         else:
+            print("2")
             return jsonify({'error':'Not a mail'})
     except Exception as e:
         print("Error")
@@ -143,7 +146,7 @@ def use_geme():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         mail = request.json.get('mail')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, mail):
             return use_geme_route(mail)
         else:
@@ -160,7 +163,7 @@ def join_ranking():
             return jsonify({'error':'Missing token'})
         rankingID = request.json.get('id')
         userMail = request.json.get('user')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, userMail):
             return join_ranking_route(rankingID,userMail)
         else:
@@ -177,7 +180,7 @@ def leave_ranking():
             return jsonify({'error':'Missing token'})
         rankingID = request.json.get('id')
         userMail = request.json.get('user')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, userMail):
             return leave_ranking_route(rankingID,userMail)
         else:
@@ -241,14 +244,13 @@ def create_user():
         "type": str
     }
 
-    email_pattern = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+    email_pattern = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
 
     for campo, tipo in campos_requeridos.items():
         if campo not in user:
             return jsonify({'error':'Something went wrong'})
         if not isinstance(user[campo], tipo):
             return jsonify({'error':'Something went wrong'})
-
     if not re.match(email_pattern, user["Mail"]):
         return jsonify({'error':'Something went wrong'})
     if not user["Name"].strip():
@@ -270,7 +272,7 @@ def send_email():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         to_email = request.json.get('toEmail')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, to_email):
             return send_email_route(to_email)
         else:
@@ -619,7 +621,7 @@ def mark_attendance():
         dateInicio = decoded_token['start']
         dateEnd = decoded_token['end']
         userMail = decoded_token['userMail']
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, userMail):
             return mark_attendance_route(event_id,dateInicio,dateEnd,userMail)
         else:
@@ -752,7 +754,7 @@ def create_class():
         try:
             date_inicio = parser.isoparse(new_class["dateInicio"])
             date_fin = parser.isoparse(new_class["dateFin"])
-            if date_fin <= date_inicio + datetime.timedelta(minutes=30):
+            if date_fin < date_inicio + datetime.timedelta(minutes=30):
                 return jsonify({'error':'Something went wrong'})
         except ValueError:
             return jsonify({'error':'Something went wrong'})
@@ -830,33 +832,44 @@ def update_class_info():
             'capacity':capacity,
             'reservations':reservations
         }
+        print("1")
         try:
             date_inicio = parser.isoparse(DateInicio)
             date_fin = parser.isoparse(DateFin)
-            if date_fin <= date_inicio + datetime.timedelta(minutes=30):
+            if date_fin < date_inicio + datetime.timedelta(minutes=30):
+                print("2")
                 return jsonify({'error':'Something went wrong'})
         except ValueError:
+            print("3")
             return jsonify({'error':'Something went wrong'})
-
+        print("20")
         now = datetime.datetime.now(datetime.UTC) 
-        if DateInicio < now:
+        print("30")
+        if parser.isoparse(DateInicio) < now:
+            print("4")
             return jsonify({'error':'Something went wrong'})
+        print("39")
         if not re.match(r"^\d{2}:\d{2}$", Hour):
+            print("5")
             return jsonify({'error':'Something went wrong'})
-
+        print("35")
         if not isinstance(reservations, list):
+            print("6")
             return jsonify({'error':'Something went wrong'})
-
         if permanent not in ["Si", "No"]:
+            print("7")
             return jsonify({'error':'Something went wrong'})
+        print("33")
         try:
-            capacity = int(capacity)
-            if capacity <= 0:
+            capacity2 = int(capacity)
+            if capacity2 <= 0:
+                print("81")
                 return jsonify({'error':'Something went wrong'})
         except ValueError:
+            print("9")
             return jsonify({'error':'Something went wrong'})
-        
         if not place.strip():
+            print("10")
             return jsonify({'error':'Something went wrong'})
         return update_class_info_route(newClassInfo)
     except Exception as e:
@@ -872,7 +885,7 @@ def unbook_class():
         event = request.json.get('event')
         mail = request.json.get('mail')
         uid = request.json.get('uid')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, mail):
             return unbook_class_route(event,mail,uid)
         else:
@@ -890,7 +903,7 @@ def book_class():
         event = request.json.get('event')
         mail = request.json.get('mail')
         uid = request.json.get('uid')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, mail):
             return book_class_route(event,mail,uid)
         else:
@@ -909,7 +922,7 @@ def book_class_with_gem():
         event = request.json.get('event')
         mail = request.json.get('mail')
         membId = request.json.get('membId')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, mail):
             return book_class_with_gem_route(event,mail,membId)
         else:
@@ -954,7 +967,7 @@ def delete_class():
             return jsonify({'error':'Missing token'})
         event = request.json.get('event')
         mail = request.json.get('mail')
-        patron = r'^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
+        patron = r'^[\w\.-]+(\+[\w\.-]+)?@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$'
         if re.match(patron, mail):
             return delete_class_route(event,mail)
         else:
