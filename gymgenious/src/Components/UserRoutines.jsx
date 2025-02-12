@@ -51,6 +51,7 @@ export default function StickyHeadTable() {
     }, [type]);
 
     const fetchUser = async () => {
+    setOpenCircularProgress(true)
     try {
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
@@ -68,6 +69,7 @@ export default function StickyHeadTable() {
             throw new Error('Error al obtener los datos del usuario: ' + response.statusText);
         }
         const data = await response.json();
+        setOpenCircularProgress(false)
         setType(data.type);
         if(data.type!='client'){
             navigate('/');
@@ -242,7 +244,7 @@ export default function StickyHeadTable() {
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         if (token) {
-            verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken);
+            verifyToken(token,()=>{},setUserMail,setErrorToken);
         } else {
             navigate('/');
             console.error('No token found');

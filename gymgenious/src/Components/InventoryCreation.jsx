@@ -7,7 +7,6 @@ import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Slide from '@mui/material/Slide';
 import verifyToken from '../fetchs/verifyToken.jsx';
-import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import Loader from '../real_components/loader.jsx';
 import fetchUser from '../fetchs/fetchUser.jsx';
 import NewLeftBar from '../real_components/NewLeftBar.jsx';
@@ -212,7 +211,7 @@ export default function ExerciseCreation() {
               <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Slide direction="up" in={success} mountOnEnter unmountOnExit >
                   <Alert style={{fontSize:'100%', fontWeight:'bold'}} icon={<CheckIcon fontSize="inherit" /> } severity="success">
-                      Exercise successfully created!
+                      Item successfully created!
                   </Alert>
               </Slide>
               </Box>
@@ -227,7 +226,7 @@ export default function ExerciseCreation() {
                   <Box sx={{ position: 'relative', zIndex: 1 }}>
                   <Slide direction="up" in={failure} mountOnEnter unmountOnExit >
                       <Alert style={{fontSize:'100%', fontWeight:'bold'}} severity="info">
-                          Error creating exercise. Try again!
+                          Error creating item. Try again!
                       </Alert>
                   </Slide>
                   </Box>

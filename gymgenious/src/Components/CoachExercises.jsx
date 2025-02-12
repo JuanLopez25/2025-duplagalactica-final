@@ -68,6 +68,7 @@ export default function CoachExercises() {
             if (!element.owner) {
                 return {
                     name: element.name,
+                    image_url: `${process.env.PUBLIC_URL}/logoTrainMate.png`,
                     description: '-',
                     owner: 'Train-Mate'
                 };
@@ -231,7 +232,7 @@ export default function CoachExercises() {
                                     {selectedEvent.description}
                                 </p>
                                 <img 
-                                    src={selectedEvent.image_url} 
+                                    src={`${selectedEvent.image_url}?t=${new Date().getTime()}`}  
                                     alt={selectedEvent.name}
                                     style={{
                                         display: 'block',

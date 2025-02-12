@@ -41,3 +41,34 @@ def create_inventory(item):
     except Exception as e:
         print(f"Error while creating the item: {e}")
         raise RuntimeError("It was not possible to create the item")
+    
+
+def update_item_info(newItem):
+    try:
+        exercises_ref = db.collection('inventory')
+        doc_ref = exercises_ref.document(newItem['id'])
+        doc = doc_ref.get()
+        print("hola",newItem)
+        if doc.exists:
+            if newItem['image']: 
+                file_name = f"{newItem['id']}_exercise_image.jpg"
+                image_url = upload_image_to_storage(newItem['image'], file_name)
+                doc_ref.update({
+                    'total': int(newItem['total']),
+                    'name': newItem['name'],
+                    'image_url': image_url 
+                })
+            else:
+                doc_ref.update({
+                    'total': int(newItem['total']),
+                    'name': newItem['name']
+                })
+                
+            return {"message": "Actualización realizada"}
+        else:
+            print(f"It was not find an item with the id: {newItem['id']}")
+            return {"message": "The item was not found"}
+
+    except Exception as e:
+        print(f"Error actualizando el item: {e}")
+        raise RuntimeError("No se pudo actualizar el item")
