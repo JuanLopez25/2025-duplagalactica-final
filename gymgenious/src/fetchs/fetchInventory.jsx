@@ -53,7 +53,7 @@ const fetchInventory = async ( setItemData,setOpenCircularProgress,setWarningCon
                 }
             });
         });
-        
+        console.log("inventario",inventoryWithQuantities)
         setItemData(inventoryWithQuantities);      
       } catch (error) {
         console.error("Error fetching inventory:", error);
