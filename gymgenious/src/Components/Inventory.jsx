@@ -28,6 +28,8 @@ function CouchClasses() {
   const [total, setTotal] = useState(0);
   const [image, setImage] = useState(null);
   const navigate = useNavigate();
+  const isSmallScreen = useMediaQuery('(max-width:350px)');
+  const isSmallScreen700 = useMediaQuery('(max-width:700px)');
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
   const [warningConnection, setWarningConnection] = useState(false);
   const [errorToken,setErrorToken] = useState(false);
