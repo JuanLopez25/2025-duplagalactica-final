@@ -28,7 +28,9 @@ const ItemList = ({data,setItemData}) => {
       <div style={{ width: "100%", margin: "auto" }}>
         <label style={{color:'#424242'}}>Items for the class:</label>
         <ul style={{ listStyleType: "none", padding: 0, backgroundColor: "white" }}>
+          <>
           {data.map((item) => (
+            <>
             <li
               key={item.name}
               style={{
@@ -42,9 +44,17 @@ const ItemList = ({data,setItemData}) => {
                 color: "#424242",
               }}
             >
-              <span>
-                {item.name} ({item.id})
-              </span>
+              
+              {item.mantainance=='no'? (
+                <span>
+                  {item.name} ({item.id})
+                </span>
+              ) :
+              (
+                <span style={{color:'red'}}>
+                  {item.name} ({item.id}) (item on manteinance)
+                </span>
+              )}
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 {item.cantidad > 0 && (
                   <button
@@ -88,7 +98,10 @@ const ItemList = ({data,setItemData}) => {
                 )}
               </div>
             </li>
+                   
+          </>
           ))}
+          </>
         </ul>
       </div>
     );

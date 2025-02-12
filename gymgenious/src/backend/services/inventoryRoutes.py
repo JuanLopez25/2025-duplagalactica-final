@@ -72,3 +72,22 @@ def update_item_info(newItem):
     except Exception as e:
         print(f"Error actualizando el item: {e}")
         raise RuntimeError("No se pudo actualizar el item")
+
+
+def update_item_manteinance(id):
+    try:
+        exercises_ref = db.collection('inventory')
+        doc_ref = exercises_ref.document(id)
+        doc = doc_ref.get()
+        print("id",id)
+        if doc.exists:
+            current_data = doc.to_dict()
+            maintenance_value = current_data.get('mantainance', 'no')
+            new_value = 'no' if maintenance_value == 'yes' else 'yes'
+            doc_ref.update({'mantainance': new_value})
+            print(f"Campo 'mantainance' actualizado a: {new_value}")
+        else:
+            print("El documento no existe")
+    except Exception as e:
+        print(f"Error actualizando el item: {e}")
+        raise RuntimeError("No se pudo actualizar el item")

@@ -650,7 +650,7 @@ function CouchClasses() {
       const mapData5 = new Map();
 
       data5.forEach(item => {
-        mapData5.set(item.id, { name: item.name, img: item.img }); 
+        mapData5.set(item.id, { name: item.name, img: item.img,mantainance: item.mantainance }); 
       });
 
       const updatedDataMatches = calendarEvents.map(match => {
@@ -659,6 +659,7 @@ function CouchClasses() {
           return {
             cantidad: reservation.cantidad,
             item: reservation.item,
+            mantainance : matchedData?.mantainance,
             name: matchedData?.name || null,  
             img: matchedData?.img || null,
           };
@@ -801,7 +802,7 @@ function CouchClasses() {
                           Edit class
                         </MDBBtn>
                       )}
-                        {new Date(event.start).getDate() == new Date().getDate() && event.BookedUsers.length>0? (
+                        {new Date() >= new Date(event.start) && new Date() <= new Date(event.end) && event.BookedUsers.length>0? (
                         <MDBBtn
                           style={{ backgroundColor: '#48CFCB', color: 'white', width: '70%', left: '15%' }} 
                           rounded
@@ -991,7 +992,7 @@ function CouchClasses() {
         {viewInventory && (
         <div className="Modal" onClick={handleViewInventory}>
           <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{marginBottom: '0px'}}>Qualifications</h2>
+            <h2 style={{marginBottom: '0px'}}>Items</h2>
             <p style={{
                 marginTop: '5px',
                 whiteSpace: 'nowrap',
@@ -1008,9 +1009,20 @@ function CouchClasses() {
                 <div className="input-small-container" style={{flex: 3}}>
                     <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
                       {selectedEvent.reservations.map((cm) => (
+                        <>
                         <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
-                          {cm.name} : {cm.cantidad}
+                          {cm.mantainance=='no'? (
+                            <span>
+                              {cm.name} ({cm.cantidad})
+                            </span>
+                          ) :
+                          (
+                            <span style={{color:'red'}}>
+                              {cm.name} ({cm.cantidad}) (item on manteinance)
+                            </span>
+                          )}
                         </li>
+                        </>
                       ))}
                     </ul>
                 </div>

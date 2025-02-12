@@ -54,12 +54,16 @@ export default function Main_Page() {
   const [newRows, setNewRows] = useState([]);
   const [errorStars, setErrorStars] = useState(false);
   const [errorComment, setErrorComment] = useState(false);
+  const [viewInventory, setViewInventory] = useState(false)
   const [membership, setMembership] = useState([])
   const [userAccount, setUserAccount] = useState([])
   const [changingStars,setChangingStars] = useState(false)
   const [changingComment,setChangingComment] = useState(false)
   const [viewQualifications, setViewQualifications] = useState(false)
 
+  const handleViewInventory = () => {
+    setViewInventory(!viewInventory)
+  }
 
   const fetchUser = async () => {
     setOpenCircularProgress(true);
@@ -227,6 +231,17 @@ export default function Main_Page() {
                         <div>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1"  style={{color: '#424242' }}>Capacity {event.capacity}</MDBBtn>
                           <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>{event.permanent==='Si' ? 'Every week' : 'Just this day'}</MDBBtn>
+                          {userMail && type==='coach' && event.reservations.length!==0? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleViewInventory}>Inventory reserves</MDBBtn>
+                          ) : (
+                            <>
+                            {userMail && type==='coach' ? (
+                              <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }}>No inventory reserves</MDBBtn>
+                            ) :
+                            (<></>)
+                            }
+                            </>
+                          )}  
                           {userMail && type==='client' && selectedEvent.BookedUsers.includes(userMail) && (
                             <MDBBtn outline color="dark" rounded size="sm" className="mx-1" style={{color: '#424242' }} onClick={handleChangeCalifyModal}>Calify</MDBBtn>
                           )}
@@ -514,7 +529,45 @@ export default function Main_Page() {
         };
       });
       
-      dataWithSalaAndComments.forEach(clase => {
+      let updatedDataMatches = []
+      if (localStorage.getItem('authToken')) {
+        const response5 = await fetch(`https://two025-duplagalactica-final.onrender.com/get_inventory`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+        if (!response5.ok) {
+          throw new Error('Error al obtener los datos del inventario: ' + response5.statusText);
+        }
+        const data5 = await response5.json();
+        const mapData5 = new Map();
+
+        data5.forEach(item => {
+          mapData5.set(item.id, { name: item.name, img: item.img,mantainance: item.mantainance }); 
+        });
+        console.log("data",mapData5)
+        updatedDataMatches = dataWithSalaAndComments.map(match => {
+          const updatedReservations = match.reservations.map(reservation => {
+            const matchedData = mapData5.get(reservation.item);
+            return {
+              cantidad: reservation.cantidad,
+              item: reservation.item,
+              mantainance : matchedData?.mantainance,
+              name: matchedData?.name || null,  
+              img: matchedData?.image_url || null,
+            };
+          });
+          return {
+            ...match,
+            reservations: updatedReservations,
+          };
+        });
+      } else {
+        updatedDataMatches=dataWithSalaAndComments
+      }
+      console.log("reser",updatedDataMatches)
+      updatedDataMatches.forEach(clase => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const startDate = new Date(clase.dateInicio);
@@ -559,7 +612,7 @@ export default function Main_Page() {
           });
         }
       });
-      
+      console.log("clases",calendarEvents)
       if (type!='client') {
         setTimeout(() => {
           setOpenCircularProgress(false)
@@ -1073,6 +1126,48 @@ export default function Main_Page() {
   {selectedEvent && (
     <ECommerce event={selectedEvent}/>
   )}
+  {viewInventory && (
+      <div className="Modal" onClick={handleViewInventory}>
+        <div className="Modal-Content-qualifications" onClick={(e) => e.stopPropagation()}>
+          <h2 style={{marginBottom: '0px'}}>Items</h2>
+          <p style={{
+              marginTop: '5px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+              textAlign: 'center',
+              justifyContent: 'center',
+              alignItems: 'center',
+          }}>
+              Items reserved
+          </p>
+          <div className="input-container" style={{display:'flex', justifyContent: 'space-between', marginRight: '0px'}}>
+              <div className="input-small-container" style={{flex: 3}}>
+                  <ul style={{maxHeight: '400px', overflowY: 'auto'}}>
+                    {selectedEvent.reservations.map((cm) => (
+                      <>
+                      <li style={{textOverflow: 'ellipsis', maxWidth: 'auto'}}>
+                        {cm.mantainance=='no'? (
+                          <span>
+                            {cm.name} ({cm.cantidad})
+                          </span>
+                        ) :
+                        (
+                          <span style={{color:'red'}}>
+                            {cm.name} ({cm.cantidad}) (item on manteinance)
+                          </span>
+                        )}
+                      </li>
+                      </>
+                    ))}
+                  </ul>
+              </div>
+          </div>
+          <button onClick={handleViewInventory}>Close</button>
+        </div>
+      </div>
+    )}
         {califyModal && (
         <div className="Modal" onClick={handleChangeCalifyModal}>
           <div className="Modal-Content" onClick={(e) => e.stopPropagation()}>

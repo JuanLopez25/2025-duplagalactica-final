@@ -104,8 +104,8 @@ function CouchClasses() {
             setEditedItem(true)
             setEditItem(!editItem);
             handleCloseModal()
+            setOpenCircularProgress(false);
             setTimeout(() => {
-                setOpenCircularProgress(false);
                 setEditedItem(false)
                 window.location.reload();
             }, 2000);
@@ -130,6 +130,50 @@ function CouchClasses() {
     setId(event.id)
   } 
 
+  const handleChangeManteinance= (event) => {    
+    setId(event.id)
+    fetchChangeManteinance(event)
+  }
+
+  const fetchChangeManteinance = async event => {
+    setOpenCircularProgress(true);
+    try {
+        const formData = new FormData();
+        formData.append('id',event.id);
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+        console.error('Token no disponible en localStorage');
+        return;
+        }
+        const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_item_manteinance', {
+            method: 'PUT', 
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData,
+        });
+        if (!response.ok) {
+            throw new Error('Error al actualizar el item: ' + response.statusText);
+        }
+        setEditedItem(true)
+        setEditItem(!editItem);
+        handleCloseModal()
+        setOpenCircularProgress(false);
+        setTimeout(() => {
+            setEditedItem(false)
+            window.location.reload();
+        }, 2000);
+    } catch (error) {
+        console.error("Error actualizarndo el item:", error);
+        setOpenCircularProgress(false);
+        setWarningConnection(true);
+        setTimeout(() => {
+        setWarningConnection(false);
+        }, 3000);
+        setEditItem(!editItem);
+    }
+}
+
   useEffect(() => {
     if (type!='coach' && type!=null) {
     navigate('/');      
@@ -142,6 +186,7 @@ function CouchClasses() {
       'name':item.name,
       'total': item.total,
       'reservas':item.reservas,
+      'mantainance':item.mantainance,
       image_url: `${item.image_url}?t=${new Date().getTime()}`,  
     }));
     setUpdatedItemData(updatedUrls);
@@ -235,6 +280,12 @@ function CouchClasses() {
                       </div>
                     </div>
                     <button style={{width: isSmallScreen650 ? '70%' : '30%'}} className='BotonEditItemData' onClick={()=> handleEditItem(selectedEvent)}>Edit item</button>
+                    {event.mantainance==='no'? (
+                        <button style={{width: isSmallScreen650 ? '70%' : isSmallScreen700 ? '30%':'50%',marginLeft: isSmallScreen650 ? '0%' : '10%',marginTop: isSmallScreen650 ? '10%' : '0%'}} className='BotonEditItemData' onClick={()=> handleChangeManteinance(selectedEvent)}>Put on manteinance</button>
+                      ) : (
+                        <button style={{width: isSmallScreen650 ? '70%' : isSmallScreen700 ? '30%':'50%',marginLeft: isSmallScreen650 ? '0%' : '10%',marginTop: isSmallScreen650 ? '10%' : '0%'}} className='BotonEditItemData' onClick={()=> handleChangeManteinance(selectedEvent)}>Put it available</button>
+                      )
+                    }
                     <button 
                       onClick={handleCloseModal}
                       className="custom-button-go-back-managing"
