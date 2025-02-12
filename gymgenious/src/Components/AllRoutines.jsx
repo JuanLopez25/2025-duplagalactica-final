@@ -57,8 +57,9 @@ function AllRoutines() {
 
   useEffect(() => {
       const token = localStorage.getItem('authToken');
+      setOpenCircularProgress(true)
       if (token) {
-          verifyToken(token,setOpenCircularProgress,setUserMail,setErrorToken)
+          verifyToken(token,()=>{},setUserMail,setErrorToken)
       } else {
           navigate('/');
           console.error('No token found');
@@ -72,8 +73,9 @@ function AllRoutines() {
   }, [type]);
     
   useEffect(() => {
+      setOpenCircularProgress(true)
       if (userMail) {
-          fetchUser(setType,setOpenCircularProgress,userMail,navigate,setWarningConnection)
+          fetchUser(setType,()=>{},userMail,navigate,setWarningConnection)
           fetchRoutines(setOpenCircularProgress, setTotalRoutines, setRoutines,setWarningConnection);
       }
   }, [userMail]);
@@ -181,7 +183,7 @@ function AllRoutines() {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {selectedEvent?.excercises?.map((exercise) => (
+                                        {selectedEvent?.exercises?.map((exercise) => (
                                             <TableRow key={exercise.id}>
                                                 <TableCell>{exercise.name}</TableCell>
                                                 <TableCell>{exercise.series} x</TableCell>

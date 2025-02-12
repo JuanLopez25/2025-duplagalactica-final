@@ -11,7 +11,6 @@ import AssignRoutineToUser from './AssignRoutineToUser.jsx'
 import Backdrop from '@mui/material/Backdrop';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
-import Inventory from './InventoryCreation.jsx'
 import verifyToken from '../fetchs/verifyToken.jsx';
 import fetchUser from '../fetchs/fetchUser.jsx';
 import Box from '@mui/material/Box';
@@ -192,11 +191,6 @@ export default function ManagingRoutines () {
                   heading="Assigments"
                   subheading="Assign routine to users"
                   onClick={() => handleLinkClick(<AssignRoutineToUser />)}
-                />
-                <Link
-                  heading="Inventory"
-                  subheading="Add inventory so then other coaches can use it"
-                  onClick={() => handleLinkClick(<Inventory />)}
                 />
               </div>
             </section>

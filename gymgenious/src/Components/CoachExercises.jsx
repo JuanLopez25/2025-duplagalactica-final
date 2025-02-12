@@ -68,7 +68,7 @@ export default function CoachExercises() {
             if (!element.owner) {
                 return {
                     name: element.name,
-                    description: 'aaaa',
+                    description: '-',
                     owner: 'Train-Mate'
                 };
             }
