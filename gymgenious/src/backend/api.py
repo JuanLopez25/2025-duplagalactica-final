@@ -691,12 +691,13 @@ def create_inventory():
         if image:
             image_data = image.read()  
 
-        newExersice = {
+        newItem = {
             'name': name,
             'total': int(total),
-            'image': image_data 
+            'image': image_data,
+            'mantainance' : 'no'
         }
-        return create_inventory_route(newExersice)
+        return create_inventory_route(newItem)
     except Exception as e:
         print("Error a")
         return jsonify({'error':'Something went wrong'})
