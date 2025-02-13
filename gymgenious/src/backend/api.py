@@ -784,6 +784,7 @@ def create_class():
         if not token or 'Bearer' not in token:
             return jsonify({'error':'Missing token'})
         new_class = request.json
+        new_class["capacity"] = int(new_class.get("capacity", 0))
         required_fields = ["name", "dateInicio", "dateFin", "hour", "reservations", 
                        "day", "permanent", "owner", "capacity", "sala", "BookedUsers"]
 

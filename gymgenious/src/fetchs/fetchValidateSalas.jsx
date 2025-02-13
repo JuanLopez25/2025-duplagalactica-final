@@ -47,35 +47,38 @@ const validateSalas = async (setValidating,setOpenCircularProgress,setErrorSalas
           
       } 
       else if (permanent == "Si") {
-          const hasPastPermanentConflict = conflictingClasses.filter(existingClass =>
-              existingClass.permanent == "Si" &&
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-              newClassStartTime.getFullYear()>= (new Date(existingClass.dateFin)).getFullYear() &&
-              newClassEndTime.getFullYear()>= (new Date(existingClass.dateInicio)).getFullYear() &&
-              String((newClassStartTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-              String((newClassEndTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-              String((newClassStartTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-              String((newClassEndTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-          );
-
-          const hasNonPermanentConflict = conflictingClasses.filter(existingClass =>
+        const hasPastPermanentConflict = conflictingClasses.some(existingClass =>
+            existingClass.permanent == "Si" &&
             newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
             newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-            newClassStartTime.getFullYear()<= (new Date(existingClass.dateFin)).getFullYear() &&
-            newClassEndTime.getFullYear()<= (new Date(existingClass.dateInicio)).getFullYear() &&
-            String((newClassStartTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-            String((newClassEndTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-            String((newClassStartTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-            String((newClassEndTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
-          );
+            newClassStartTime.getFullYear()>= (new Date(existingClass.dateFin)).getFullYear() &&
+            newClassEndTime.getFullYear()>= (new Date(existingClass.dateInicio)).getFullYear() &&
+            String((newClassStartTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
+            String((newClassEndTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
+            String((newClassStartTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
+            String((newClassEndTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
+        );
 
-          const hasPermanentConflict = conflictingClasses.filter(existingClass =>
-            newClassStartTime < new Date(existingClass.dateFin) &&
-            newClassEndTime > new Date(existingClass.dateInicio)
-          );
-          hasNonPermanentConflict.forEach(clas => salasError.push(clas.sala))
-          hasPermanentConflict.forEach(clas => salasError.push(clas.sala))
+        const hasNonPermanentConflict = conflictingClasses.some(existingClass =>
+          newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
+          newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
+          newClassStartTime.getFullYear()<= (new Date(existingClass.dateFin)).getFullYear() &&
+          newClassEndTime.getFullYear()<= (new Date(existingClass.dateInicio)).getFullYear() &&
+          String((newClassStartTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
+          String((newClassEndTime.getMonth() + 1)).padStart(2, '0')<= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
+          String((newClassStartTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
+          String((newClassEndTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
+        );
+
+        const hasPermanentConflict = conflictingClasses.some(existingClass =>
+          newClassStartTime < new Date(existingClass.dateFin) &&
+          newClassEndTime > new Date(existingClass.dateInicio)
+        );
+        if (hasPastPermanentConflict || hasPermanentConflict || hasNonPermanentConflict) {
+            console.error('Ya existe una clase permanente en esta sala para este horario.');
+            setOpenCircularProgress(false);
+            throw new Error('Error al crear la clase: Ya existe una clase permanente en esta sala para este horario.');
+        }
       }
       setSalaNoDisponible(salasError)
       setValidating(false)

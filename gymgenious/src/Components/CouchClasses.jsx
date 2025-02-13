@@ -669,7 +669,7 @@ function CouchClasses() {
           reservations: updatedReservations,
         };
       });
-
+      console.log("upodated matches",updatedDataMatches)
       const formattedRoutines = updatedDataMatches.map((routine) => {
         return {
             ...routine,
@@ -694,6 +694,8 @@ function CouchClasses() {
   useEffect(() => {
     const newRowsList = [];
     const clasesAgregadas = [];
+    console.log("tota",totalClasses)
+    console.log("filter classes",filterClasses)
     const filteredClassesSearcher = filterClasses
       ? totalClasses.filter(item =>
           item.name.toLowerCase().startsWith(filterClasses.toLowerCase())
@@ -701,8 +703,8 @@ function CouchClasses() {
       : totalClasses;
   
     filteredClassesSearcher.forEach(row => {
-      if (!clasesAgregadas.includes(row.cid)){
-        clasesAgregadas.push(row.cid)
+      if (!clasesAgregadas.includes(row.id)){
+        clasesAgregadas.push(row.id)
         newRowsList.push(row);
       }
     });

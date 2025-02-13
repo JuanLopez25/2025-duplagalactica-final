@@ -585,7 +585,7 @@ export default function Main_Page() {
             today.setDate(today.getDate() + daysUntilNextClass);
             nextEndDate = new Date(today.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()));
           } else {
-            today.setDate(nextStartDate.getDate())
+            today.setTime(CorrectStarDate.getTime());
           }
           
           for (let i = 0; i < 4; i++) {

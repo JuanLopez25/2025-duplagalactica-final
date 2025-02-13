@@ -236,7 +236,7 @@ export default function CreateClass() {
           setSuccess(true);
           setTimeout(() => {
               setSuccess(false);
-              navigate(`/?mail=${userMail}`, { state: { message: 'block' } });
+              navigate('/');
           }, 3000);
       } catch (error) {
           console.error("Error al crear la clase:", error);
