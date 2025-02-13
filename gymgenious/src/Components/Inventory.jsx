@@ -26,6 +26,7 @@ function CouchClasses() {
   const [name, setName] = useState('');
   const [errorNoChange,setErrorNoChange] = useState(false)
   const [total, setTotal] = useState(0);
+  const [totalReserved,setTotalReserved] = useState(0)
   const [image, setImage] = useState(null);
   const navigate = useNavigate();
   const [openCircularProgress, setOpenCircularProgress] = useState(false);
@@ -45,6 +46,7 @@ function CouchClasses() {
   const [fetchName,setNameFetch] = useState('')
   const [updatedItems,setUpdatedItemData] = useState([])
   const [fetchTotal,setTotalFetch] = useState(0)
+  const [errorCannotDowngradeDueToReservations,setErrorCannotDowngradeDueToReservations] = useState(false)
 
   function calculateRemainingAmount(item) {
     const sumOfSublistValues = item.reservas.reduce((acc, obj) => acc + obj.cantidad, 0);
@@ -58,6 +60,12 @@ function CouchClasses() {
         setErrorNoChange(true)
     } else {
         setErrorNoChange(false)
+    }
+    if (total<totalReserved) {
+      res = false
+      setErrorCannotDowngradeDueToReservations(true)
+    } else {
+      setErrorCannotDowngradeDueToReservations(false)
     }
 
     return res
@@ -123,6 +131,8 @@ function CouchClasses() {
 
   const handleEditItem = (event) => {
     setEditItem(!editItem);
+    const totalReserved = event.reservas.reduce((acc, item) => acc + (item.cantidad || 0), 0);
+    setTotalReserved(totalReserved);
     setImageFetch(event.image_url);
     setNameFetch(event.name);
     setTotal(event.total)
@@ -142,8 +152,8 @@ function CouchClasses() {
         formData.append('id',event.id);
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-        console.error('Token no disponible en localStorage');
-        return;
+          console.error('Token no disponible en localStorage');
+          return;
         }
         const response = await fetch('https://two025-duplagalactica-final.onrender.com/update_item_manteinance', {
             method: 'PUT', 
@@ -432,6 +442,7 @@ function CouchClasses() {
                                       onChange={(e) => setTotal(e.target.value)} 
                                     />
                                     {errorTotal && (<p style={{color: 'red', margin: '0px'}}>Total cannot be 0</p>)}
+                                    {errorCannotDowngradeDueToReservations && (<p style={{color: 'red', margin: '0px'}}>Total cannot be lower than the reserved</p>)}
                                 </div>
                             </div>
                             <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>

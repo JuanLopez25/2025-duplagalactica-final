@@ -33,7 +33,7 @@ const fetchAssistance = async (setOpenCircularProgress,setRows,setWarningConnect
           throw new Error('Error fetching attendance data: ' + attendanceRequest.statusText);
       }
       const attendanceRecords = await attendanceRequest.json();
-
+      console.log("attendances",ownedClasses)
       const formattedAttendance = attendanceRecords.map(attendance => {
           const matchingClass = ownedClasses.find(classItem => classItem.id === attendance.IdClase);
           return {
@@ -41,7 +41,9 @@ const fetchAssistance = async (setOpenCircularProgress,setRows,setWarningConnect
               className: matchingClass ? matchingClass.name : null,
               fecha: formatDate(new Date(attendance.Inicio))
           };
-      });
+      })
+      .filter(attendance => attendance.className !== null);
+
       console.log("estos sopn los datos",formattedAttendance)
       setRows(formattedAttendance);
 

@@ -75,13 +75,16 @@ const fetchRoutines = async (setOpenCircularProgress, setTotalRoutines, setRouti
         });
         const routinesWithAssignedCount = routinesWithExercises.map((routine) => {
             const assignedForRoutine = assignedRoutines.filter((assigned) => assigned.id === routine.id);
-            const totalAssignedUsers = assignedForRoutine.reduce((acc, assigned) => {
-                return acc + (assigned.users ? assigned.users.length : 0);
-            }, 0);
+            const uniqueUsers = new Set();
+            assignedForRoutine.forEach((assigned) => {
+                if (assigned.users) {
+                    assigned.users.forEach((user) => uniqueUsers.add(user)); 
+                }
+            });
 
             return {
                 ...routine,
-                cant_asignados: totalAssignedUsers,
+                cant_asignados: uniqueUsers.size,
             };
         });
 

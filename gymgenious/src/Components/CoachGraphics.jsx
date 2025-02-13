@@ -224,10 +224,9 @@ function CoachGraphics() {
             throw new Error('Error al obtener las clases: ' + response.statusText);
         }
         const data = await response.json();
-        const assignedRoutines = data.filter(routine => routine.assigner === userMail);
 
         const uniqueBookedUsers = new Set();
-        assignedRoutines.forEach(routine => {
+        data.forEach(routine => {
             routine.users.forEach(user => uniqueBookedUsers.add(user));
         });
 
@@ -236,7 +235,7 @@ function CoachGraphics() {
 
         for (const user of bookedUsersArray) {
             userRoutinesMap[user] = [];
-            assignedRoutines.forEach(routine => {
+            data.forEach(routine => {
                 if (routine.users.includes(user)) {
                     userRoutinesMap[user].push(routine.id);
                 }
@@ -320,7 +319,7 @@ function CoachGraphics() {
         }
 
         const resultArray = Object.entries(exerciseCountMap).map(([exercise, count]) => ({ exercise, count }));
-
+        console.log("resultado",resultArray)
         setExersCoachUsers(resultArray);
     } catch (error) {
         console.error("Error fetching classes:", error);
