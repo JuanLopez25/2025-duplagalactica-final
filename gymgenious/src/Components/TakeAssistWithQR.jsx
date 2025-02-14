@@ -235,7 +235,7 @@ const MarkAttendance = () => {
         ) : (
           null
         )}
-      {loading && (
+      {loading && logeedIn && (
         <Loader></Loader>
       )}
       {successLecture ? (
@@ -263,7 +263,7 @@ const MarkAttendance = () => {
               </div>
         </div>
       ) : (
-        <p>Marcando asistencia...</p> 
+        <></> 
       )}
         </>
     </div>

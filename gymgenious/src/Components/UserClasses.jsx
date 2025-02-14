@@ -501,7 +501,7 @@ function UsserClasses() {
       <NewLeftBar />
       <Searcher filteredValues={filterClasses} setFilterValues={setFilterClasses} isSmallScreen={isSmallScreen} searchingParameter={'classes name'}/>
       {newRows && (
-              <CustomTable columnsToShow={['Name','Start time','Date','Recurren','There are no booked classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['name','dateInicioHora','startFecha','recurrent']}/> 
+              <CustomTable columnsToShow={['Name','Start time','Date','Recurrent','There are no booked classes']} data={newRows} handleSelectEvent={handleSelectEvent} vals={['name','dateInicioHora','startFecha','recurrent']}/> 
       )}
       {openCircularProgress && (
         <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })} open={openCircularProgress}>
