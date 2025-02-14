@@ -70,12 +70,15 @@ export default function RoutineCreation() {
         return;
       }
       const parsedReps = reps.map((item) => Number(item));
-      if (reps.some((item) => item === null || item === "")) {
+      if (reps.some((item) => item === null || item === "" )) {
         res=false
         setErrorAddExercise(true);
         setErrorNumbRepes(false);
-      } 
-      else if (parsedReps.some((item) => isNaN(item))) {
+      } else if (reps.some((item) => item === null || item === "" || item.includes(",") || item.includes(".") )) {
+        res=false
+        setErrorNumbRepes(true);
+        setErrorAddExercise(false);
+      }else if (parsedReps.some((item) => isNaN(item))) {
         res=false
         setErrorNumbRepes(true);
         setErrorAddExercise(false);
@@ -84,7 +87,8 @@ export default function RoutineCreation() {
         setErrorAddExercise(false);
         setErrorNumbRepes(false);
       }
-      if (timing==0) {
+      
+      if (timing==0 || timing>500) {
         res=false
         setErrorTiming(true)
       } else {
@@ -95,10 +99,11 @@ export default function RoutineCreation() {
 
     const handleAddExercise = (exercise) => {
       if(validateExerciseData()){
+        const repsInt = reps.map((val)=> parseInt(val))
         let exerciseWithParams = {
           id: exercise.id,
           owner: exercise.owner,
-          reps: reps,
+          reps: repsInt,
           series: series,
           timing: timing,
         }
@@ -412,11 +417,10 @@ export default function RoutineCreation() {
                       name="timing" 
                       value={timing}
                       min="1"
-                      max="500"
                       step='1'
                       onChange={(e) => setTiming(e.target.value)}
                       />
-                      {errorTiming && (<p style={{color: 'red', margin: '0px'}}>Timing must be grater than 0</p>)}
+                      {errorTiming && (<p style={{color: 'red', margin: '0px'}}>Timing must be grater than 0 and lower than 500</p>)}
                   </div>
               </div>
               <div className="input-container" style={{display:'flex', justifyContent: 'space-between'}}>
@@ -433,7 +437,7 @@ export default function RoutineCreation() {
                       />
                   ))}
                   {errorAddExercise && (<p style={{color: 'red', margin: '0px'}}>Complete all fields</p>)}
-                  {errorNumRepes && (<p style={{color: 'red', margin: '0px'}}>The fields must be numbers</p>)}
+                  {errorNumRepes && (<p style={{color: 'red', margin: '0px'}}>The fields must be integer numbers</p>)}
                 </div>
               </div>
               <button onClick={() => handleAddExercise(selectedExercise)} style={{width: isSmallScreen ? '70%' : '30%'}}>Add exercise</button>

@@ -601,7 +601,7 @@ export default function Main_Page() {
             nextEndDate.setDate(nextEndDate.getDate() + 7);
           }
         } else {
-          if(CorrectStarDate >= new Date())
+          if(CorrectStarDate >= new Date() || (CorrectStarDate<=new Date() && CorrectEndDate<=new Date()))
           calendarEvents.push({
             title: clase.name,
             start: new Date(CorrectStarDate),

@@ -180,8 +180,8 @@ export default function CreateClass() {
   }
 
   const handleCreateClass = async () => {
+    setOpenCircularProgress(true);
     if(validateForm()) {
-      setOpenCircularProgress(true);
       setErrorSalas(false);
       try {
           const authToken = localStorage.getItem('authToken');
@@ -265,9 +265,10 @@ export default function CreateClass() {
   }
 
   const handleViewRooms = () => {
+    setOpenCircularProgress(true)
     if(validateForm()){
       setSalaNoDisponible([])
-      validateSalas(setValidating,setOpenCircularProgress,setErrorSalas,setSalaNoDisponible,setErrorSala1,setErrorSala2,setErrorSala3,setErrorSala4,date,hour,hourFin,permanent,salaAssigned)
+      validateSalas(setValidating,()=>{},setErrorSalas,setSalaNoDisponible,setErrorSala1,setErrorSala2,setErrorSala3,setErrorSala4,date,hour,hourFin,permanent,salaAssigned)
       setTimeout(() => {
         if( !validating ){
           setShowSalas(true);

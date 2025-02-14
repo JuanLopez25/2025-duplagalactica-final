@@ -882,13 +882,6 @@ def update_class_info():
         except ValueError:
             print("3")
             return jsonify({'error':'Something went wrong'})
-        print("20")
-        now = datetime.datetime.now(datetime.UTC) 
-        print("30")
-        if parser.isoparse(DateInicio) < now:
-            print("4")
-            return jsonify({'error':'Something went wrong'})
-        print("39")
         if not re.match(r"^\d{2}:\d{2}$", Hour):
             print("5")
             return jsonify({'error':'Something went wrong'})

@@ -31,35 +31,45 @@ const validateSalas = async (setValidating,setOpenCircularProgress,setErrorSalas
         if (permanent == "No") {
           const hasPermanentConflict = conflictingClasses.filter(existingClass => 
               existingClass.permanent == "Si" && 
-              newClassStartTime > new Date(existingClass.dateFin) &&
+              newClassStartTime < new Date(existingClass.dateFin) &&
               newClassEndTime > new Date(existingClass.dateInicio) &&
-              newClassEndTime > new Date(existingClass.dateFin) &&
-              newClassStartTime > new Date(existingClass.dateInicio) &&
-              newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-              newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5))
+              existingClass.day == day(date)
           );
+          const hasPermanentConflictPast = conflictingClasses.filter(existingClass => {
+            if (existingClass.permanent !== "Si") return false;
+            const existingStart = new Date(existingClass.dateInicio);
+            const existingEnd = new Date(existingClass.dateFin);
+        
+            const existingStartSeconds = existingStart.getHours() * 3600 + existingStart.getMinutes() * 60 + existingStart.getSeconds();
+            const existingEndSeconds = existingEnd.getHours() * 3600 + existingEnd.getMinutes() * 60 + existingEnd.getSeconds();
+            
+            const newStartSeconds = newClassStartTime.getHours() * 3600 + newClassStartTime.getMinutes() * 60 + newClassStartTime.getSeconds();
+            const newEndSeconds = newClassEndTime.getHours() * 3600 + newClassEndTime.getMinutes() * 60 + newClassEndTime.getSeconds();
+            const overlap =
+                (newStartSeconds >= existingStartSeconds && newStartSeconds < existingEndSeconds) || 
+                (newEndSeconds > existingStartSeconds && newEndSeconds <= existingEndSeconds) || 
+                (newStartSeconds <= existingStartSeconds && newEndSeconds >= existingEndSeconds); 
+        
+            return overlap;
+          });
           const hasNonPermanentConflict = conflictingClasses.filter(existingClass =>
               newClassStartTime < new Date(existingClass.dateFin) &&
               newClassEndTime > new Date(existingClass.dateInicio)
           );
           hasNonPermanentConflict.forEach(clas => salasError.push(clas.sala))
+          hasPermanentConflictPast.forEach(clas => salasError.push(clas.sala))
           hasPermanentConflict.forEach(clas => salasError.push(clas.sala))
           
       } 
       else if (permanent == "Si") {
-        const hasPastPermanentConflict = conflictingClasses.some(existingClass =>
+        const hasPastPermanentConflict = conflictingClasses.filter(existingClass =>
             existingClass.permanent == "Si" &&
-            newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
-            newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
-            newClassStartTime.getFullYear()>= (new Date(existingClass.dateFin)).getFullYear() &&
-            newClassEndTime.getFullYear()>= (new Date(existingClass.dateInicio)).getFullYear() &&
-            String((newClassStartTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateFin).getMonth() + 1)).padStart(2, '0') &&                
-            String((newClassEndTime.getMonth() + 1)).padStart(2, '0')>= String((new Date(existingClass.dateInicio).getMonth() + 1)).padStart(2, '0') &&
-            String((newClassStartTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateFin).getDate())).padStart(2, '0') && 
-            String((newClassEndTime.getDate())).padStart(2, '0') >= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
+            newClassStartTime < new Date(existingClass.dateFin) &&
+            newClassEndTime > new Date(existingClass.dateInicio) &&
+            existingClass.day == day(date)
         );
-
-        const hasNonPermanentConflict = conflictingClasses.some(existingClass =>
+        console.log("has no permanent",hasPastPermanentConflict)
+        const hasNonPermanentConflict = conflictingClasses.filter(existingClass =>
           newClassStartTimeInMinutes < timeToMinutes(existingClass.dateFin.split('T')[1].substring(0, 5)) &&
           newClassEndTimeInMinutes > timeToMinutes(existingClass.dateInicio.split('T')[1].substring(0, 5)) &&
           newClassStartTime.getFullYear()<= (new Date(existingClass.dateFin)).getFullYear() &&
@@ -70,15 +80,31 @@ const validateSalas = async (setValidating,setOpenCircularProgress,setErrorSalas
           String((newClassEndTime.getDate())).padStart(2, '0') <= String((new Date(existingClass.dateInicio).getDate())).padStart(2, '0')
         );
 
-        const hasPermanentConflict = conflictingClasses.some(existingClass =>
+        const hasPermanentConflict = conflictingClasses.filter(existingClass =>
           newClassStartTime < new Date(existingClass.dateFin) &&
           newClassEndTime > new Date(existingClass.dateInicio)
         );
-        if (hasPastPermanentConflict || hasPermanentConflict || hasNonPermanentConflict) {
-            console.error('Ya existe una clase permanente en esta sala para este horario.');
-            setOpenCircularProgress(false);
-            throw new Error('Error al crear la clase: Ya existe una clase permanente en esta sala para este horario.');
-        }
+        const hasPermanentConflictPast = conflictingClasses.filter(existingClass => {
+          if (existingClass.permanent !== "Si") return false;
+          const existingStart = new Date(existingClass.dateInicio);
+          const existingEnd = new Date(existingClass.dateFin);
+      
+          const existingStartSeconds = existingStart.getHours() * 3600 + existingStart.getMinutes() * 60 + existingStart.getSeconds();
+          const existingEndSeconds = existingEnd.getHours() * 3600 + existingEnd.getMinutes() * 60 + existingEnd.getSeconds();
+          
+          const newStartSeconds = newClassStartTime.getHours() * 3600 + newClassStartTime.getMinutes() * 60 + newClassStartTime.getSeconds();
+          const newEndSeconds = newClassEndTime.getHours() * 3600 + newClassEndTime.getMinutes() * 60 + newClassEndTime.getSeconds();
+          const overlap =
+              (newStartSeconds >= existingStartSeconds && newStartSeconds < existingEndSeconds) || 
+              (newEndSeconds > existingStartSeconds && newEndSeconds <= existingEndSeconds) || 
+              (newStartSeconds <= existingStartSeconds && newEndSeconds >= existingEndSeconds); 
+      
+          return overlap;
+        });
+        hasPastPermanentConflict.forEach(clas => salasError.push(clas.sala))
+        hasPermanentConflictPast.forEach(clas => salasError.push(clas.sala))
+        hasNonPermanentConflict.forEach(clas => salasError.push(clas.sala))
+        hasPermanentConflict.forEach(clas => salasError.push(clas.sala))
       }
       setSalaNoDisponible(salasError)
       setValidating(false)
@@ -93,7 +119,10 @@ const validateSalas = async (setValidating,setOpenCircularProgress,setErrorSalas
         } else if(salaAssigned==='waA7dE83alk1HXZvlbyK') {
           setErrorSala4(true);
         }
+        setValidating(false)
         setOpenCircularProgress(false);
+    } finally {
+      setValidating(false)
     }
   };
 
