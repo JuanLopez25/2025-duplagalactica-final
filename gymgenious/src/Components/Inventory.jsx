@@ -209,7 +209,7 @@ function CouchClasses() {
         <div
           style={{
             width: "80%",
-            height: "85%",
+            maxHeight: "85%",
             overflowY: "auto",
             overflowX: "hidden",
           }}
@@ -339,8 +339,7 @@ function CouchClasses() {
   }, [type])
 
   return (
-    <div className="App">
-        <>
+    <div className="App" style={{overflowY:'auto'}}>
         <NewLeftBar/>
         {openCircularProgress ? (
             <Backdrop open={openCircularProgress} sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}>
@@ -400,7 +399,7 @@ function CouchClasses() {
               justifyContent: 'center',
               alignItems: 'center',
               width: '100%',
-              height: '100vh',
+              maxHeight: '90%',
             }}
           >
             { updatedItems.length>0 && updatedItems!=[] && (
@@ -474,9 +473,6 @@ function CouchClasses() {
               <></>
             )}
           </div>
-          
-        </>
-
     </div>
     
   );
